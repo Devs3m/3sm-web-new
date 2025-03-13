@@ -1,0 +1,92 @@
+<section>
+  <div class="form-container"[class.open]="isFormOpen">
+    <p style="font-size: larger;">Add VAT %</p>
+    <button (click)="restvatForm()" class="close-btn">&times;</button>
+      <form [formGroup]="vatForm" (ngSubmit)="onSubmit()">
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">VAT%</mat-label>
+            <input matInput placeholder="Instance" class="mat-input-element custom-placeholder" formControlName="vatpercent">
+        </mat-form-field >
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Active</mat-label>
+           <select matNativeControl formControlName="vatisactive">
+            <option  value="" disabled>Select</option>
+            <option  value="true">Active</option>
+            <option  value="false">Inactive</option>
+           </select>     
+        </mat-form-field>
+        <div class="form-submit">
+          <button mat-raised-button type="submit" class="btn-primary" (click)="createVat()">
+            Submit
+          </button>
+          </div>
+</form>
+  </div>
+  <div class="pos-relative">
+      <div class="btn-pos">
+        <button (click)="toggleForm()" class="add-btn" >
+          <mat-icon>add_circle</mat-icon>
+        </button>
+      </div>
+  
+      <p style="font-size: larger;">VAT %</p>
+  
+  <div class="example-card">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{totalVat}}</mat-card-title>
+        <mat-card-title>VAT</mat-card-title>
+      </mat-card-header>
+    </mat-card>
+  
+   <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{activeVat}}</mat-card-title>
+        <mat-card-title>Active</mat-card-title>
+      </mat-card-header>
+    </mat-card>
+    
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{deactiveVat}}</mat-card-title>
+        <mat-card-title>In-Active</mat-card-title>
+      </mat-card-header>
+    </mat-card>
+    
+  </div>
+      <dx-data-grid 
+      [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
+      [dataSource]="apiData"
+      [allowColumnReordering]="true" 
+      [allowColumnResizing]="true" 
+      [showBorders]="true"
+      [headerFilter]="{ visible: true }" 
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
+      title="VAT %" 
+      [columns]="['vatpercent', 'igstpercent', 'updateddate', 'userroleisactive','Actions']"
+      [paging]="{ pageSize: 12 }" 
+      [showBorders]="true" (onExporting)="onExporting($event)">
+  
+      <dxi-column dataField="vatpercent" caption="VAT%"></dxi-column>
+      <dxi-column dataField="createddate" caption="Created Date"></dxi-column>
+      <dxi-column dataField="updateddate" caption="Updated Date%"></dxi-column>
+      <dxi-column dataField="vatisactive" caption="Active"></dxi-column>
+     
+  
+    
+      <!-- Actions Column -->
+      <dxi-column caption="Actions" [width]="150" [cellTemplate]="'actionTemplate'"></dxi-column>
+    
+      <!-- Action Template -->
+      <ng-template #actionTemplate let-data>
+        <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
+        <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
+      </ng-template>
+  
+  
+        <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+      </dx-data-grid>
+  
+    </div>
+</section>

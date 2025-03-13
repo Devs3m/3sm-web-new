@@ -1,0 +1,226 @@
+/* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; margin:0 !important;padding: 0;}
+body { margin: 10; font-family: Roboto, "Helvetica Neue", sans-serif; padding: 0; }
+
+.example-spacer {
+  flex: 1 1 auto;
+}
+.example-icon{
+  padding: 1 14px;
+  color:rgb(241, 237, 237)
+
+}
+mat-toolbar {
+  display: flex !important;
+  align-items: left !important;
+}
+.mdc-list-item__primary-text{
+  display: flex;
+  align-items: center; /* Vertically aligns the items */
+  text-decoration: none; /* Removes the underline from the link */
+  width: 110px;
+}
+
+.aligned-icon {
+  margin-right: 8px; /* Adds some space between the icon and the text */
+}
+
+body .mat-drawer-container{
+  background-color: #ffffff !important;
+  height: calc(100vh - 64px);
+  color:black;
+  overflow-x: hidden;
+}
+
+body .mat-mdc-text-field-wrapper{          /* Form Field width*/
+  border-bottom:1px solid black !important;
+  width:200px;
+  height:50px !important;
+}
+.mdc-text-field__input{          /*From Field Label color*/
+  color:black !important;
+}
+.form-row {
+  display: flex; /* Arrange fields in a row */
+  flex-wrap: wrap; /* Allow wrapping for smaller screens */
+  gap: 20px; /* Spacing between form fields */
+  justify-content: space-between; /* Add even spacing */
+}
+
+/* Form field width */
+.form-field {
+  flex: 1 1 calc(25% - 20px) !important; /* Set equal width for fields (4 in a row) */
+  min-width: 100px !important; /* Ensure a minimum width for smaller screens */
+  margin-right: 1%; 
+  margin-left: 1%;
+  margin-top: 5px;
+}
+.mat-input-element{
+  font-size: small;
+  margin-top:1% !important;
+  margin-bottom: 1% !important;
+}
+.mdc-text-field--focused {
+  border-color: #f0eff4 !important;
+  border-width: 2px !important;  
+  border-style: solid !important;
+}
+.mat-form-field.mat-focused .mat-input-element {
+  border: 2px solid #f2f0f4 !important;
+  border-radius: 4px !important;
+  outline: none !important;
+}
+
+/* Dev Express*/
+
+
+html, body {
+  scroll-behavior: smooth; /* Enables smooth scrolling */
+}
+
+.content {
+  height: 100vh; /* Extra space to allow scrolling */
+  background: lightgray;
+  padding: 20px;
+}
+
+.form-container {
+  padding: 20px;
+  background: white;
+  border: 1px solid #ddd;
+  margin-top: 50px;
+  width: 300px;
+}
+
+.form-container {
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  right: -100%; /* Initially hidden */
+  width: 1000px;
+  height: 100vh;
+  background: #f8f9fa;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  transition: right 0.3s ease-in-out;
+}
+
+.form-container.open {
+  right: 0; /* Slide into view */
+}
+
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+.form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.form-overlay.show {
+  opacity: 1;
+  visibility: visible;}
+
+  .close-btn{
+    background:transparent ;
+    box-shadow: none;
+    border: none;
+    font-size: 30px;
+    color: black;
+    font-weight: 700px;
+    margin-left: 1182px;
+    margin-top: -28px;
+  }
+  /* Body*/
+  .container-body{
+    height: 100%;
+    padding: 10px;
+    overflow-y: auto;
+    position: relative;
+  }
+.pos-relative{
+  position: relative;
+}
+.btn-pos{
+  position:absolute;
+  z-index: 1;
+  top: 1px;
+  right: 347px;
+}
+.add-btn{
+  border-radius: 2px;
+  background: transparent ;
+  color: black;
+  text-align: center;
+  font-size: 18px;
+  border: none;
+  box-shadow: none;
+  margin-top: 113px !important;
+  margin-left: 0px !important;
+  width: inherit !important;
+}
+.add-btn .material-icons {
+  font-size: 32px;
+}
+.add-btn .mat-icon{
+  width: 31px !important;
+  height: 31px !important;
+}
+
+/*Card*/
+.example-card {
+  display: flex !important;
+  flex-direction: row !important;
+  max-width: 100px;
+  border: 1px solid rgb(247, 243, 243);
+box-shadow: gray;
+  text-align: left;
+  gap:15px;
+}
+.mat-mdc-card-header {
+  display: flex;
+  padding: 20px 16px 0;
+  background-color: whitesmoke !important;
+  border: 1px solid rgb(247, 243, 243) !important;
+  border-color:whitesmoke !important;
+}
+.mat-mdc-card-title, .mat-mdc-card-subtitle {
+  display: block;
+  margin: 8px;
+  width: 196px;
+}
+.btn-primary{
+  display: block;
+  margin-top: 20px;
+  width: 10%;
+  /* margin-left: 855px !important; */
+  margin: 0 auto;
+  box-shadow: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 5px;
+}
+
+
+.main-bg{
+  position: relative;
+  width: 100%;
+}

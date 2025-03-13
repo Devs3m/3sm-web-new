@@ -1,0 +1,212 @@
+<section>
+    <div class="form-container"[class.open]="isFormOpen">
+        <p style="font-size: larger;">Add Instance</p>
+        <button (click)="restinstanceForm()" class="close-btn">&times;</button>
+        <form [formGroup]="instanceForm" (ngSubmit)="onSubmit()">
+ 
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Instance Name</mat-label>
+                <input matInput placeholder="Instance" class="mat-input-element custom-placeholder" 
+                formControlName="instancename">
+        </mat-form-field >
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Owner Name</mat-label>
+                 <input matInput placeholder="Owner" class="mat-input-element custom-placeholder" 
+                 formControlName="ownername">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Owner Mobile</mat-label>
+             <span style="color:black" matTextPrefix>+91 &nbsp;</span>
+                <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
+                 formControlName="ownermobile">
+            <mat-icon matSuffix>mode_edit</mat-icon>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Owner Email</mat-label>
+                <input matInput placeholder="Owner Email" class="mat-input-element custom-placeholder" 
+                formControlName="owneremail">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Manager Name</mat-label>
+                <input matInput placeholder="Manager Name" class="mat-input-element custom-placeholder" 
+                formControlName="managername">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Manager Mobile</mat-label>
+            <span style="color:black" matTextPrefix>+91 &nbsp;</span>
+            <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
+             formControlName="managermobile">
+             
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Manager Email</mat-label>
+                <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" 
+                formControlName="manageremail">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Address</mat-label>
+                <input matInput placeholder="Address" class="mat-input-element custom-placeholder" 
+                formControlName="instanceaddress">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">City</mat-label>
+                <select matNativeControl 
+                formControlName="instancecity"
+                (change)="onSelectionChange($event)">   
+                    <option value="" disabled>Select</option>
+                     <option *ngFor="let item of dropdownItems" value={{item.cityname}}>
+                          {{ item.cityname }}
+                    </option>
+                </select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">State</mat-label>
+              <input matInput placeholder="State" class="mat-input-element custom-placeholder" 
+              formControlName="instancestate">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Country</mat-label>
+              <input matInput placeholder="Country" class="mat-input-element custom-placeholder" 
+              formControlName="instancecountry">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Pincode</mat-label>
+               <input matInput placeholder="Pincode" class="mat-input-element custom-placeholder" 
+               formControlName="instancepincode">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Sales Amount</mat-label>
+               <input matInput placeholder="Sales Amount" class="mat-input-element custom-placeholder" 
+               formControlName="instancesalesamount">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black ;">Sales Date</mat-label>
+               <input matInput placeholder="Sales Date" class="mat-input-element custom-placeholder" 
+               formControlName="instancesalesdate">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Asa End Date</mat-label>
+               <input matInput placeholder="Asa End Date" class="mat-input-element custom-placeholder" 
+               formControlName="instanceasaenddate">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Asa Amount</mat-label>
+               <input matInput placeholder="Asa Amount" class="mat-input-element custom-placeholder" 
+               formControlName="instanceasaamount">
+        </mat-form-field>
+
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">GST Number</mat-label>
+            <input matInput placeholder="GST Number" class="mat-input-element custom-placeholder" 
+            formControlName="instancegstno">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">VAT Number</mat-label>
+            <input matInput placeholder="VAT Number" class="mat-input-element custom-placeholder" 
+            formControlName="instancevatno">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">FSSAI Number</mat-label>
+            <input matInput placeholder="FSSAI Number" class="mat-input-element custom-placeholder" 
+            formControlName="instancefssaino">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label style="color:black">Active</mat-label>
+              <select matNativeControl formControlName="instanceisactive">
+               <option  value="" disabled>Select</option>
+               <option  value="true">Active</option>
+               <option  value="false">Inactive</option>
+         </select>
+
+      </mat-form-field>
+
+          
+         <div class="form-submit">
+          <button mat-raised-button type="submit" (click)="createInstance()">
+            Submit
+          </button>
+          </div>
+    </form>
+    </div>
+
+    <div class="pos-relative">
+        <div class="btn-pos">
+          <button (click)="toggleForm()" class="add-btn" >
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+        <p style="font-size: larger;">Instance</p>
+    <div class="example-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{totalInstance}}</mat-card-title>
+          <mat-card-title>Instance</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+     <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{activeInstance}}</mat-card-title>
+          <mat-card-title>Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{deactiveInstance}}</mat-card-title>
+          <mat-card-title>In-Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      
+    </div>
+        <dx-data-grid 
+        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
+        [dataSource]="apiData"
+        [allowColumnReordering]="true" 
+        [allowColumnResizing]="true" 
+        [showBorders]="true"
+        [headerFilter]="{ visible: true }" 
+        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
+        title="Instance" 
+        [columns]="['instancename', 'ownername', 'ownermobile', 'owneremail','isactive','Actions']"
+        [paging]="{ pageSize: 12 }" 
+        [showBorders]="true" (onExporting)="onExporting($event)">
+    
+        <dxi-column dataField="instancename" caption="Instance Name"></dxi-column>
+        <dxi-column dataField="ownername" caption="Owner Name"></dxi-column>
+        <dxi-column dataField="ownermobile" caption="Owner Mobile"></dxi-column>
+        <dxi-column dataField="owneremail" caption="Owner Email"></dxi-column>
+        <dxi-column dataField="isactive" caption="Active"></dxi-column>
+      
+        <!-- Actions Column -->
+        <dxi-column caption="Actions" [width]="50" [cellTemplate]="'actionTemplate'"></dxi-column>
+      
+        <!-- Action Template -->
+        <ng-template #actionTemplate let-data>
+          <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
+          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
+        </ng-template>
+    
+    
+          <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+        </dx-data-grid>
+    
+      </div>
+</section>

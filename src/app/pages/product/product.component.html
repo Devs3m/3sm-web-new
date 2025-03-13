@@ -1,0 +1,209 @@
+<section>
+  <div class="form-container" [class.open]="isFormOpen">
+    <p style="font-size: larger;">Add Instance</p>
+    <button (click)="restproductForm()" class="close-btn">&times;</button>
+    <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Product Name</mat-label>
+        <input matInput placeholder="Product" class="mat-input-element custom-placeholder"
+          formControlName="productname">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Generic Name</mat-label>
+        <input matInput placeholder="Generic Name" class="mat-input-element custom-placeholder"
+          formControlName="productgeneric">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Manufacturer Name</mat-label>
+        <input matInput placeholder="Manufacturer Name" class="mat-input-element custom-placeholder"
+          formControlName="productmanufacturer">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Pack Name</mat-label>
+        <input matInput placeholder="Pack Name" class="mat-input-element custom-placeholder"
+          formControlName="productpackname">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Pack Quantity</mat-label>
+        <input matInput placeholder="Pack Quantity" class="mat-input-element custom-placeholder"
+          formControlName="productpackqty">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">GST %</mat-label>
+        <input matInput placeholder="Generic Name" class="mat-input-element custom-placeholder"
+          formControlName="productgstpercent">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">TAX %</mat-label>
+        <input matInput placeholder="Generic Name" class="mat-input-element custom-placeholder"
+          formControlName="producttaxpercent">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Category</mat-label>
+        <input matInput placeholder="category" class="mat-input-element custom-placeholder"
+          formControlName="productcategory">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Sub Category</mat-label>
+        <input matInput placeholder="Sub Category" class="mat-input-element custom-placeholder"
+          formControlName="productsubcategory">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Previous MRP</mat-label>
+        <input matInput placeholder="MRP" class="mat-input-element custom-placeholder" formControlName="productlastmrp">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Previous MRP</mat-label>
+        <input matInput placeholder="MRP" class="mat-input-element custom-placeholder" formControlName="productlastmrp">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Previous MRP</mat-label>
+        <input matInput placeholder="MRP" class="mat-input-element custom-placeholder" formControlName="productlastmrp">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Previous MRP</mat-label>
+        <input matInput placeholder="MRP" class="mat-input-element custom-placeholder" formControlName="productlastmrp">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Previous Price</mat-label>
+        <input matInput placeholder="MRP" class="mat-input-element custom-placeholder"
+          formControlName="productlastprice">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Previous Cost</mat-label>
+        <input matInput placeholder="MRP" class="mat-input-element custom-placeholder"
+          formControlName="productlastcost">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Sales Discount %</mat-label>
+        <input matInput placeholder="Sales Discount %" class="mat-input-element custom-placeholder"
+          formControlName="productsaledisper">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Pruchase Discount %</mat-label>
+        <input matInput placeholder="Pruchase Discount %" class="mat-input-element custom-placeholder"
+          formControlName="productpurdisper">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Purchase Offer Qty</mat-label>
+        <input matInput placeholder="Purchase Offer Qty" class="mat-input-element custom-placeholder"
+          formControlName="productlastpuroffqty">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Purchase Offer Free Qty</mat-label>
+        <input matInput placeholder="Previous Offer Free Qty" class="mat-input-element custom-placeholder"
+          formControlName="productlastpurofffreeqty">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Product Image</mat-label>
+        <input matInput placeholder="Product Image" class="mat-input-element custom-placeholder"
+          formControlName="productimage">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Product Description</mat-label>
+        <input matInput placeholder="Product Description" class="mat-input-element custom-placeholder"
+          formControlName="productdescription">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Sale Offer Qty</mat-label>
+        <input matInput placeholder="Sale Offer Qty" class="mat-input-element custom-placeholder"
+          formControlName="productlastsaloffqty">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Sale Offer Free Qty</mat-label>
+        <input matInput placeholder="Sale Offer Free Qty" class="mat-input-element custom-placeholder"
+          formControlName="productlastsalofffreeqty">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Active</mat-label>
+        <select matNativeControl formControlName="instanceisactive">
+          <option value="" disabled>Select</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+
+      </mat-form-field>
+
+
+      <div class="form-submit">
+        <button mat-raised-button type="submit" (click)="createProduct()">
+          Submit
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="pos-relative">
+    <div class="btn-pos">
+      <button (click)="toggleForm()" class="add-btn">
+        <mat-icon>add_circle</mat-icon>
+      </button>
+    </div>
+    <p style="font-size: larger;">Product</p>
+    <div class="example-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{totalProduct}}</mat-card-title>
+          <mat-card-title>Product</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{activeProduct}}</mat-card-title>
+          <mat-card-title>Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{deactiveProduct}}</mat-card-title>
+          <mat-card-title>In-Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+
+    </div>
+    <dx-data-grid [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" [dataSource]="apiData"
+      [allowColumnReordering]="true" [allowColumnResizing]="true" [showBorders]="true"
+      [headerFilter]="{ visible: true }" [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }"
+      title="Product"
+      [columns]="['productname', 'productmanufacturer', 'productpackqty', 'productcategory','isactive','Actions']"
+      [paging]="{ pageSize: 12 }" [showBorders]="true" (onExporting)="onExporting($event)">
+
+      <dxi-column dataField="productname" caption="Product Name"></dxi-column>
+      <dxi-column dataField="productmanufacturer" caption="Manufacturer"></dxi-column>
+      <dxi-column dataField="productpackqty" caption="Packing"></dxi-column>
+      <dxi-column dataField="productcategory" caption="Category"></dxi-column>
+      <dxi-column dataField="isactive" caption="Active"></dxi-column>
+
+      <!-- Actions Column -->
+      <dxi-column caption="Actions" [width]="50" [cellTemplate]="'actionTemplate'"></dxi-column>
+
+      <!-- Action Template -->
+      <ng-template #actionTemplate let-data>
+        <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
+        <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
+      </ng-template>
+
+
+      <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+    </dx-data-grid>
+
+  </div>
+</section>

@@ -1,0 +1,49 @@
+<mat-toolbar class="example-spacer">
+  <!-- <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
+       <mat-icon>menu</mat-icon>
+     </button>-->
+  <span>My App</span>
+  <span class="example-spacer"></span>
+
+  <button mat-icon-button *ngIf="authService.isAuthenticated()" (click)="authService.logout()">
+    <mat-icon class="example-icon" aria-label="Example"></mat-icon>Logout</button>
+
+  <button mat-icon-button><mat-icon class="example-icon" aria-label="Example">
+      share</mat-icon></button>
+
+
+</mat-toolbar>
+
+<mat-sidenav-container>
+  <mat-sidenav mode="side" opened>
+    <mat-nav-list style="width: 2ovh;">
+      <a mat-list-item routerLink='dashboard' href="#" class="aligned-list-item"><mat-icon
+          class="aligned-icon">dashboard</mat-icon>Dashboard</a>
+      <a mat-list-item routerLink='account' href="#" class="aligned-list-item"><mat-icon
+          class="aligned-icon">perm_identity</mat-icon>Account</a>
+      <a mat-list-item routerLink='instance' href="#" class="aligned-list-item"><mat-icon class="aligned-icon">
+          business</mat-icon>Instance</a>
+      <a mat-list-item routerLink='users' href="#" class="aligned-list-item"><mat-icon
+          class="aligned-icon">person_add</mat-icon>User</a>
+      <a mat-list-item routerLink='userrole' href="#" class="aligned-list-item"><mat-icon
+          class="aligned-icon">settings_applications</mat-icon>User Role</a>
+      <a mat-list-item routerLink='digicard' href="#" class="aligned-list-item"><mat-icon
+          class="aligned-icon">local_activity</mat-icon>Digicard</a>
+      <a mat-list-item routerLink='product' href="#" class="aligned-list-item"><mat-icon
+          class="aligned-icon">fastfood</mat-icon>Product</a>
+      <a mat-list-item routerLink='city' href="#" class="aligned-list-item"><mat-icon
+          class="aligned-icon">location_on</mat-icon>City</a>
+      <a mat-list-item routerLink='gst' href="#" class="aligned-list-item"><mat-icon
+          class="aligned-icon">money</mat-icon>Gst</a>
+      <a mat-list-item routerLink='vat' href="#" class="aligned-list-item"><mat-icon
+          class="aligned-icon">money</mat-icon>Vat</a>
+      <a mat-list-item routerLink='highchart' href="#" class="aligned-list-item"><mat-icon class="aligned-icon">High
+          Chart</mat-icon>Highcharts</a>
+
+
+    </mat-nav-list>
+  </mat-sidenav>
+  <div class="container-body">
+    <router-outlet></router-outlet>
+  </div>
+</mat-sidenav-container>

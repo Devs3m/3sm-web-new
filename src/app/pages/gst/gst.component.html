@@ -1,0 +1,115 @@
+<section>  
+    <div class="form-container"[class.open]="isFormOpen">
+    <p style="font-size: larger;">Add GST %</p>
+    <button (click)="restGstForm()" class="close-btn">&times;</button>
+      <form [formGroup]="gstForm" (ngSubmit)="onSubmit()">
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Total GST%</mat-label>
+            <input matInput placeholder="Instance" class="mat-input-element custom-placeholder" formControlName="totalgstpercent">
+        </mat-form-field >
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">IGST%</mat-label>
+            <input matInput placeholder="Owner" class="mat-input-element custom-placeholder" formControlName="igstpercent">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">CGST%</mat-label>
+            <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" formControlName="cgstpercent">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">SGST%</mat-label>
+            <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" formControlName="sgstpercent">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">UGST%</mat-label>
+            <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" formControlName="ugstpercent">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Chess%</mat-label>
+        <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" formControlName="chesspercent">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Active</mat-label>
+           <select matNativeControl formControlName="isactive">
+            <option  value="" disabled>Select</option>
+            <option  value="true">Active</option>
+            <option  value="false">Inactive</option>
+           </select>     
+        </mat-form-field>
+       
+        <div class="form-submit">
+            <button mat-raised-button type="submit" class="btn-primary" (click)="createGst()">
+              Submit
+            </button>
+            </div>
+</form>
+    </div>
+    <div class="pos-relative">
+        <div class="btn-pos">
+          <button (click)="toggleForm()" class="add-btn" >
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+    
+        <p style="font-size: larger;">GST %</p>
+    
+    <div class="example-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{totalGst}}</mat-card-title>
+          <mat-card-title>GST</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+    
+     <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{activeGst}}</mat-card-title>
+          <mat-card-title>Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{deactiveGst}}</mat-card-title>
+          <mat-card-title>In-Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      
+    </div>
+        <dx-data-grid 
+        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
+        [dataSource]="apiData"
+        [allowColumnReordering]="true" 
+        [allowColumnResizing]="true" 
+        [showBorders]="true"
+        [headerFilter]="{ visible: true }" 
+        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
+        title="GST %" 
+        [columns]="['totalgstpercent', 'igstpercent', 'updateddate', 'userroleisactive','Actions']"
+        [paging]="{ pageSize: 12 }" 
+        [showBorders]="true" (onExporting)="onExporting($event)">
+    
+        <dxi-column dataField="totalgstpercent" caption="Total GST%"></dxi-column>
+        <dxi-column dataField="igstpercent" caption="IGST %"></dxi-column>
+        <dxi-column dataField="cgstpercent" caption="CGST %"></dxi-column>
+        <dxi-column dataField="sgstpercent" caption="SGST %"></dxi-column>
+        <dxi-column dataField="ugstpercent" caption="UGST %"></dxi-column>
+        <dxi-column dataField="chesspercent" caption="CHESS %"></dxi-column>
+    
+      
+        <!-- Actions Column -->
+        <dxi-column caption="Actions" [width]="150" [cellTemplate]="'actionTemplate'"></dxi-column>
+      
+        <!-- Action Template -->
+        <ng-template #actionTemplate let-data>
+          <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
+          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
+        </ng-template>
+    
+    
+          <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+        </dx-data-grid>
+    
+      </div>
+  </section>
+  

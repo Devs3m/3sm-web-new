@@ -1,0 +1,152 @@
+<section>
+    <div class="form-container"[class.open]="isFormOpen">
+        <p style="font-size: larger;">Add User</p>
+
+        <button (click)="restuserForm()" class="close-btn">&times;</button>
+
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">User Name</mat-label>
+            <input matInput placeholder="Instance" class="mat-input-element custom-placeholder" 
+            formControlName="username">
+        </mat-form-field >
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">User Mobile</mat-label>
+            <span style="color:black" matTextPrefix>+91 &nbsp;</span>
+            <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
+            formControlName="usermobile">
+           
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">User Email</mat-label>
+            <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" 
+            formControlName="useremail">
+        </mat-form-field>
+       
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Address</mat-label>
+            <input matInput placeholder="Address" class="mat-input-element custom-placeholder" 
+            formControlName="useraddress">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label style="color:black">City</mat-label>
+          <select matNativeControl 
+          formControlName="usercity"
+          (change)="onSelectionChange($event)">   
+          <option value="" disabled>Select</option>
+              <option *ngFor="let item of dropdownItems" value={{item.cityname}}>
+                {{ item.cityname }}
+              </option>
+            </select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">State</mat-label>
+        <input matInput placeholder="State" class="mat-input-element custom-placeholder" 
+        formControlName="userstate">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Country</mat-label>
+        <input matInput placeholder="Country" class="mat-input-element custom-placeholder"
+          formControlName="usercountry">
+      </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Pincode</mat-label>
+            <input matInput placeholder="Pincode" class="mat-input-element custom-placeholder" 
+            formControlName="userpincode">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">User Role</mat-label>
+            <input matInput placeholder="Sales Amount" class="mat-input-element custom-placeholder" 
+            formControlName="userrole">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Active</mat-label>
+           <select matNativeControl formControlName="isactive">
+            <option  value="" disabled>Select</option>
+            <option  value="true">Active</option>
+            <option  value="false">Inactive</option>
+           </select>     
+
+          
+        </mat-form-field>
+        <div class="form-submit">
+          <button mat-raised-button type="submit" (click)="createUser()">
+            Submit
+          </button>
+          </div>
+
+
+        </form>  
+    </div>
+
+    <div class="pos-relative">
+        <div class="btn-pos">
+          <button (click)="toggleForm()" class="add-btn" >
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+        <p style="font-size: larger;">User</p>
+    <div class="example-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{totalUser}}</mat-card-title>
+          <mat-card-title>User</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+     <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{activeUser}}</mat-card-title>
+          <mat-card-title>Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{deactiveUser}}</mat-card-title>
+          <mat-card-title>In-Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      
+    </div>
+        <dx-data-grid 
+        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
+        [dataSource]="apiData"
+        [allowColumnReordering]="true" 
+        [allowColumnResizing]="true" 
+        [showBorders]="true"
+        [headerFilter]="{ visible: true }" 
+        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
+        title="User" 
+        [columns]="['username', 'usermobile', 'useremail', 'usercity','isactive','Actions']"
+        [paging]="{ pageSize: 12 }" 
+        [showBorders]="true" (onExporting)="onExporting($event)">
+    
+        <dxi-column dataField="username" caption="User Name"></dxi-column>
+        <dxi-column dataField="usermobile" caption="User Mobile"></dxi-column>
+        <dxi-column dataField="useremail" caption="User Email"></dxi-column>
+        <dxi-column dataField="usercity" caption="User City"></dxi-column>
+        <dxi-column dataField="isactive" caption="Active"></dxi-column>
+      
+        <!-- Actions Column -->
+        <dxi-column caption="Actions" [width]="50" [cellTemplate]="'actionTemplate'"></dxi-column>
+      
+        <!-- Action Template -->
+        <ng-template #actionTemplate let-data>
+          <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
+          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
+        </ng-template>
+    
+    
+          <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+        </dx-data-grid>
+    </div>
+  </section>
+  

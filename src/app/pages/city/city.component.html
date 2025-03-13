@@ -1,0 +1,99 @@
+<section>
+    <div class="form-container"[class.open]="isFormOpen">
+        <p style="font-size: larger;">Add City</p>
+        <button (click)="restCityForm()" class="close-btn">&times;</button>
+          <form [formGroup]="cityForm" (ngSubmit)="onSubmit()">
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">City Name</mat-label>
+            <input matInput placeholder="Instance" class="mat-input-element custom-placeholder" formControlName="cityname">
+        </mat-form-field >
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">City State</mat-label>
+            <input matInput placeholder="Owner" class="mat-input-element custom-placeholder" formControlName="citystate">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">City Country</mat-label>
+            <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" formControlName="citycountry">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Active</mat-label>
+           <select matNativeControl formControlName="isactive">
+            <option  value="" disabled>Select</option>
+            <option  value="true">Active</option>
+            <option  value="false">Inactive</option>
+           </select>     
+        </mat-form-field>
+        <div class="form-submit">
+            <button mat-raised-button type="submit" class="btn-primary" (click)="createCity()">
+              Submit
+            </button>
+            </div>
+</form>
+    </div>
+    <div class="pos-relative">
+        <div class="btn-pos">
+          <button (click)="toggleForm()" class="add-btn" >
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+    
+        <p style="font-size: larger;">City</p>
+    
+    <div class="example-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{totalCity}}</mat-card-title>
+          <mat-card-title>City</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+    
+     <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{activeCity}}</mat-card-title>
+          <mat-card-title>Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{deactiveCity}}</mat-card-title>
+          <mat-card-title>In-Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      
+    </div>
+        <dx-data-grid 
+        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
+        [dataSource]="apiData"
+        [allowColumnReordering]="true" 
+        [allowColumnResizing]="true" 
+        [showBorders]="true"
+        [headerFilter]="{ visible: true }" 
+        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
+        title="City" 
+        [columns]="['cityname', 'createddate', 'updateddate', 'userroleisactive','Actions']"
+        [paging]="{ pageSize: 12 }" 
+        [showBorders]="true" (onExporting)="onExporting($event)">
+    
+        <dxi-column dataField="cityname" caption="City Name"></dxi-column>
+        <dxi-column dataField="createddate" caption="Created Date"></dxi-column>
+        <dxi-column dataField="updateddate" caption="Updated Date"></dxi-column>
+        <dxi-column dataField="userroleisactive" caption="Active"></dxi-column>
+      
+        <!-- Actions Column -->
+        <dxi-column caption="Actions" [width]="150" [cellTemplate]="'actionTemplate'"></dxi-column>
+      
+        <!-- Action Template -->
+        <ng-template #actionTemplate let-data>
+          <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
+          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
+        </ng-template>
+    
+    
+          <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+        </dx-data-grid>
+    
+      </div>
+  </section>
+  

@@ -1,0 +1,16 @@
+
+<div class="main-bg">
+  <button (click)="toggleForm()" class="toggle-btn">Open Form</button>
+
+  <div class="form-container" [class.open]="isFormOpen">
+    <form [formGroup]="accountForm">
+      <label>Company Name:</label>
+      <input formControlName="companyname" type="text" />
+
+      <label>Owner Name:</label>
+      <input formControlName="ownername" type="text" />
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+</div>
