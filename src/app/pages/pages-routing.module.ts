@@ -2,8 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { PagesComponent } from './pages.component';
 import { HighchartComponent } from './highchart/highchart.component';
-import { DigicardComponent } from './digicard/digicard.component';
-
 
 const routes: Routes = [
   { path: '', component:PagesComponent,
@@ -20,7 +18,7 @@ const routes: Routes = [
       { path: 'gdigicardst', loadChildren: () => import(`./digicard/digicard.module`).then(m => m.DigicardModule) },
       { path: 'product', loadChildren: () => import(`./product/product.module`).then(m => m.ProductModule) },
       {path:'highchart',component:HighchartComponent},
-      {path:'digicard',component:DigicardComponent}
+      { path: 'digicard', loadChildren: () => import(`./digicard/digicard.module`).then(m => m.DigicardModule) },
     ]
   }
  

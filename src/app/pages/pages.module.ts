@@ -6,7 +6,6 @@ import { PagesComponent } from './pages.component';
 import { FormMaterialModule } from './service/form-material.module';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { HighchartComponent } from './highchart/highchart.component';
-import { DigicardComponent } from './digicard/digicard.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DxButtonModule, DxChartModule, DxDataGridModule } from 'devextreme-angular';
@@ -14,8 +13,7 @@ import { DxButtonModule, DxChartModule, DxDataGridModule } from 'devextreme-angu
 @NgModule({
   declarations: [
     PagesComponent,
-    HighchartComponent,
-    DigicardComponent
+    HighchartComponent
   ],
   imports: [
     PagesRoutingModule,
