@@ -13,7 +13,6 @@ import { DxButtonModule, DxChartModule, DxDataGridModule } from 'devextreme-angu
 @NgModule({
   declarations: [
     PagesComponent,
-<<<<<<< HEAD
     HighchartComponent,
    
   ],
