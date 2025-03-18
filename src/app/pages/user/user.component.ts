@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild  } from '@angular/core';
-import{ UserService} from'../service/users.service';
+import{ UserService} from'../service/user.service';
 import { FormBuilder,FormGroup,Validators  } from '@angular/forms';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
@@ -16,7 +16,7 @@ import { Workbook } from 'exceljs';
 export class UserComponent implements OnInit {
 
 
-  restinstanceForm() {
+  restuserForm() {
     throw new Error('Method not implemented.');
     }
     isFormOpen = false; // Controls the slider visibility
@@ -175,18 +175,7 @@ export class UserComponent implements OnInit {
   toggleForm(): void {
     this.isFormOpen = true;}
 
-  restuserForm(): void {
-   this.isFormOpen=false;
-   this.userForm.reset();
-   this.userForm.patchValue({
-    companycity: null,  // Reset dropdown
-    companystate: '',
-    companycountry: '',
-    isactive: true,      // Set default value
-    createddate: new Date(),
-    updateddate: new Date(),
-  });
-  }
+
 
   getDropDownValues(): void {
     this.http.get<any[]>('http://49.50.112.46:3002/user/list').subscribe(data => {

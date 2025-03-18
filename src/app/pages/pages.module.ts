@@ -15,7 +15,7 @@ import { DxButtonModule, DxChartModule, DxDataGridModule } from 'devextreme-angu
   declarations: [
     PagesComponent,
     HighchartComponent,
-    DigicardComponent
+   
   ],
   imports: [
     PagesRoutingModule,
