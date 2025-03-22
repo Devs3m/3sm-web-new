@@ -8,10 +8,14 @@ import { DxButtonModule, DxChartModule, DxDataGridModule } from 'devextreme-angu
 import { InstanceService } from '../service/instance.service';
 import { DigicardComponent } from './digicard.component';
 import { DigicardRoutingModule } from './digicard-routing.module';
+import { CardComponent } from './card/card.component';
+import { DigicardFormComponent } from './digicard-form/digicard-form.component';
 
 @NgModule({
   declarations: [
-    DigicardComponent
+    DigicardComponent,
+    CardComponent,
+    DigicardFormComponent
   ],
   imports: [
     DigicardRoutingModule,

@@ -1,0 +1,216 @@
+<section>
+    <div class="form-container"[class.open]="isFormOpen">
+        <p style="font-size: larger;">Add City</p>
+        <button (click)="restDigicardForm()" class="close-btn">&times;</button>
+          <form [formGroup]="digicardForm" (ngSubmit)="onSubmit()">
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Company Name</mat-label>
+            <input matInput placeholder="Company Name" class="mat-input-element custom-placeholder" formControlName="companyname">
+        </mat-form-field >
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Company Address</mat-label>
+            <input matInput placeholder="Address" class="mat-input-element custom-placeholder" formControlName="companyaddress">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">City</mat-label>
+                <select matNativeControl 
+                formControlName="companycity"
+                (change)="onSelectionChange($event)">   
+                    <option value="" disabled>Select</option>
+                     <option *ngFor="let item of dropdownItems" value={{item.cityname}}>
+                          {{ item.cityname }}
+                    </option>
+                </select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Company State</mat-label>
+            <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" formControlName="companystate">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">City Country</mat-label>
+            <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" formControlName="companycountry">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Company Pincode</mat-label>
+            <input matInput placeholder="Pincode" class="mat-input-element custom-placeholder" formControlName="companypincode">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Company Logo</mat-label>
+            <input matInput placeholder="Logo" class="mat-input-element custom-placeholder" formControlName="companylogo">
+        </mat-form-field>
+
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Designation</mat-label>
+            <input matInput placeholder="Designation" class="mat-input-element custom-placeholder" formControlName="digicarddesignation">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Contact Name</mat-label>
+            <input matInput placeholder="Designation" class="mat-input-element custom-placeholder" formControlName="digicarddesignation">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Mobile</mat-label>
+            <input matInput placeholder="Mobile" class="mat-input-element custom-placeholder" formControlName="digicardmobile1">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Alternate Mobile</mat-label>
+            <input matInput placeholder="Alternate Mobile" class="mat-input-element custom-placeholder" formControlName="digicardalternatemobile">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Email</mat-label>
+            <input matInput placeholder="Email" class="mat-input-element custom-placeholder" formControlName="digicardemail">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Whatsapp</mat-label>
+            <input matInput placeholder="Whatsapp" class="mat-input-element custom-placeholder" formControlName="digicardwhatsapp">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Website</mat-label>
+            <input matInput placeholder="Website" class="mat-input-element custom-placeholder" formControlName="digicardwebsite">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Linkedin</mat-label>
+            <input matInput placeholder="Linkedin" class="mat-input-element custom-placeholder" formControlName="digicardlinkedin">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Twitter</mat-label>
+            <input matInput placeholder="Twitter" class="mat-input-element custom-placeholder" formControlName="digicardtwitter">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">FaceBook</mat-label>
+            <input matInput placeholder="FaceBook" class="mat-input-element custom-placeholder" formControlName="digicardfacebook">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Instagram</mat-label>
+            <input matInput placeholder="Instagram" class="mat-input-element custom-placeholder" formControlName="digicardinstagram">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Business Type</mat-label>
+            <input matInput placeholder="Business Type" class="mat-input-element custom-placeholder" formControlName="digicardbusinesstype">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Business Service</mat-label>
+            <input matInput placeholder="Business Service" class="mat-input-element custom-placeholder" formControlName="digicardservice">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Business Timings</mat-label>
+            <input matInput placeholder="Business Timings" class="mat-input-element custom-placeholder" formControlName="digicardworkinghours">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">QR Code</mat-label>
+            <input matInput placeholder="QR Code" class="mat-input-element custom-placeholder" formControlName="digicardqrcode">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">QR Code</mat-label>
+            <input matInput placeholder="QR Code" class="mat-input-element custom-placeholder" formControlName="digicardqrcode">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Profile Image</mat-label>
+            <input matInput placeholder="Profile Image" class="mat-input-element custom-placeholder" formControlName="digicardprofileimage">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Active</mat-label>
+           <select matNativeControl formControlName="isactive">
+            <option  value="" disabled>Select</option>
+            <option  value="true">Active</option>
+            <option  value="false">Inactive</option>
+           </select>     
+        </mat-form-field>
+        <div class="form-submit">
+            <button mat-raised-button type="submit" class="btn-primary" (click)="createDigicard()">
+              Submit
+            </button>
+            </div>
+</form>
+    </div>
+    <div class="pos-relative">
+        <div class="btn-pos">
+          <button (click)="toggleForm()" class="add-btn" >
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+    
+        <p style="font-size: larger;">Digicard</p>
+    
+    <div class="example-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{totalDigicard}}</mat-card-title>
+          <mat-card-title>Digicard</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+    
+     <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{activeDigicard}}</mat-card-title>
+          <mat-card-title>Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{deactiveDigicard}}</mat-card-title>
+          <mat-card-title>In-Active</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      
+    </div>
+        <dx-data-grid 
+        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
+        [dataSource]="apiData"
+        [allowColumnReordering]="true" 
+        [allowColumnResizing]="true" 
+        [showBorders]="true"
+        [headerFilter]="{ visible: true }" 
+        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
+        title="Digicard" 
+        [columns]="['digicardid','companyname', 'digicardmobile1','createddate','Actions']"
+        [paging]="{ pageSize: 12 }" 
+        [showBorders]="true" (onExporting)="onExporting($event)">
+
+        <dxi-column dataField="digicardid" caption="Digicard ID"></dxi-column>
+        <dxi-column dataField="companyname" caption="Company Name"></dxi-column>
+        <dxi-column dataField="digicardmobile1" caption="Mobile"></dxi-column>
+        <dxi-column dataField="createddate" caption="Created Date"></dxi-column>
+       
+      
+        <!-- Actions Column -->
+        <dxi-column caption="Actions" [width]="150" [cellTemplate]="'actionTemplate'"></dxi-column>
+      
+        <!-- Action Template -->
+        <ng-template #actionTemplate let-data>
+          <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
+          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
+        </ng-template>
+    
+    
+          <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+        </dx-data-grid>
+    
+      </div>
+  </section>
+  

@@ -151,7 +151,7 @@ html, body {
   }
   /* Body*/
   .container-body{
-    height: 100%;
+    width: 100%;
     padding: 10px;
     overflow-y: auto;
     position: relative;
@@ -210,7 +210,7 @@ box-shadow: gray;
 .btn-primary{
   display: block;
   margin-top: 20px;
-  width: 10%;
+  /* width: 10%; */
   /* margin-left: 855px !important; */
   margin: 0 auto;
   box-shadow: none;
@@ -224,3 +224,6 @@ box-shadow: gray;
   position: relative;
   width: 100%;
 }
+.modal-backdrop {
+	z-index:-1 !important; /* Adjust if necessary */
+  }
