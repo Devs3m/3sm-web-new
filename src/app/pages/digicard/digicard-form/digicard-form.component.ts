@@ -119,7 +119,6 @@ export class DigicardFormComponent {
     this.digicardservice.getDigicardDetails().subscribe({
       next: (apidata: any) => {
         this.digicard = apidata.sort((a: any, b: any) => b.createddate - a.createddate);
-
         console.log('Sorted Digicard Details:', this.digicard);
         this.digicardservice.getDigicardDetails().subscribe((data) => {
           this.apiData = data;
@@ -188,5 +187,9 @@ export class DigicardFormComponent {
 
   routeToCard(id: number) {
     this.router.navigate(['/pages/digicard/card/'+id]);
+  }
+
+  getLink(id:number){
+    window.open('/card/'+id);
   }
 }

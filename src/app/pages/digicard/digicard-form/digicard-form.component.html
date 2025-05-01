@@ -204,7 +204,8 @@
         <!-- Action Template -->
         <div *dxTemplate="let data of 'actionTemplate'">
           <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
-          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
+          <!-- <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button> -->
+          <button mat-raised-button color="warn" (click)="getLink(data.data.digicardid)">link</button>
         </div>
     
         <div *dxTemplate="let data of 'digiTemplate'">

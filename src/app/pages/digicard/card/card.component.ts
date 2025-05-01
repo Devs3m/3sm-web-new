@@ -122,8 +122,8 @@ END:VCARD`;
 
   getUserDataById(id: number) {
     this.service.getUserDetailsById(id).subscribe((res: any) => {
-      if (res && res.length) {
-        this.userDetails = res[0];
+      if (res && res) {
+        this.userDetails = res;
       }
     })
   }

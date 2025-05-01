@@ -17,17 +17,17 @@ export class DigicardService {
 
   getDigicardDetails():Observable<any>{
     console.log('Fetching Digicard data from API');
-    return this.http.get("http://localhost:3002/digicard/list");
+    return this.http.get("http://49.50.112.46:3002/digicard/list");
   
   }
 
   addDigicard(digicardData :any):Observable<any>{
     console.log('Sending Digicard data to API', digicardData);
-    return this.http.post("http://localhost:3002/digicard/digicardsave",digicardData)
+    return this.http.post("http://49.50.112.46:3002/digicard/digicardsave",digicardData)
   }
 
   getDropdownItems(): Observable<any[]> {
-    return this.http.get<any[]>('http://localhost:3002/digicard/list');
+    return this.http.get<any[]>('http://49.50.112.46:3002/digicard/list');
   }
 }
 
