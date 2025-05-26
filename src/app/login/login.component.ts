@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
-
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { FormGroup } from '@angular/forms';
 import { AuthService } from '../pages/service/auth.service';
 
 @Component({
@@ -10,26 +9,37 @@ import { AuthService } from '../pages/service/auth.service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-onLogin() {
-throw new Error('Method not implemented.');
-}
-  email = '';
-  password = '';
+  loginForm!: FormGroup;
   errorMessage = '';
-loginForm!: FormGroup;
 
-  constructor(private authService: AuthService, private router: Router) {}
 
+  constructor(private authService: AuthService, private router: Router,private fb: FormBuilder,) {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required]
+    });
+  }
   login() {
-    this.authService.login({ email: this.email, password: this.password }).subscribe(
-      (success) => {
+    if (this.loginForm.invalid){
+      this.errorMessage = 'Form is invalid';
+      return;
+    }
+
+    const credentials = this.loginForm.value;
+
+    this.authService.login(credentials).subscribe({
+     next: (success) => {
         if (success) {
           this.router.navigate(['/pages/dashboard']);
         }
-      },
-      (error) => {
+      else {
         this.errorMessage = 'Invalid email or password';
       }
-    );
+     },
+    error: () => {
+      this.errorMessage = 'Login failed. Try again.';
+    }
+  });
+  console.log('Login button clicked', this.loginForm.value);
   }
 }

@@ -21,11 +21,10 @@ export class DigicardService {
   
   }
 
-  addDigicard(digicardData :any):Observable<any>{
+  addDigicard (digicardData :any):Observable<any>{
     console.log('Sending Digicard data to API', digicardData);
     return this.http.post("http://49.50.112.46:3002/digicard/digicardsave",digicardData)
   }
-
   getDropdownItems(): Observable<any[]> {
     return this.http.get<any[]>('http://49.50.112.46:3002/digicard/list');
   }

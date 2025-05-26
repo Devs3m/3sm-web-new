@@ -4,7 +4,9 @@
 
 export const environment = {
   production: false,
-  apiHost:'https://api-cards.soezy.in/'
+  apiHost:'http://49.50.112.46:3002/api'
+  //apiHost:'http://localhost:3002/api/'
+  
 };
 
 /*

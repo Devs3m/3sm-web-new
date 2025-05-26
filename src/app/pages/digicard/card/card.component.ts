@@ -44,8 +44,14 @@ export class CardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const id = this.route.snapshot.params['id'];
-    if (id) this.getUserDataById(id);
+    this.route.queryParams.subscribe(params => {
+      const { company, email, id, color } = params;
+      this.companyName = company;
+      this.email = email;
+      this.empid = id;
+      this.cardColor = color;
+    });
+    if (this.empid) this.getUserDataById(this.empid);
   }
 
   generateVCF(contact: any): string {
@@ -122,8 +128,8 @@ END:VCARD`;
 
   getUserDataById(id: number) {
     this.service.getUserDetailsById(id).subscribe((res: any) => {
-      if (res && res) {
-        this.userDetails = res;
+      if (res && res.length) {
+        this.userDetails = res[0];
       }
     })
   }

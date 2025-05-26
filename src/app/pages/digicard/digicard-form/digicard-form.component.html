@@ -192,7 +192,7 @@
         [paging]="{ pageSize: 12 }" 
         [showBorders]="true" (onExporting)="onExporting($event)">
 
-        <dxi-column dataField="digicardid" caption="Digicard ID" [cellTemplate]="'digiTemplate'"></dxi-column>
+        <dxi-column dataField="digicardid" caption="Digicard ID"></dxi-column>
         <dxi-column dataField="companyname" caption="Company Name"></dxi-column>
         <dxi-column dataField="digicardmobile1" caption="Mobile"></dxi-column>
         <dxi-column dataField="createddate" caption="Created Date"></dxi-column>
@@ -202,15 +202,11 @@
         <dxi-column caption="Actions" [width]="150" [cellTemplate]="'actionTemplate'"></dxi-column>
       
         <!-- Action Template -->
-        <div *dxTemplate="let data of 'actionTemplate'">
+        <ng-template #actionTemplate let-data>
           <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
-          <!-- <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button> -->
-          <button mat-raised-button color="warn" (click)="getLink(data.data.digicardid)">link</button>
-        </div>
+          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
+        </ng-template>
     
-        <div *dxTemplate="let data of 'digiTemplate'">
-           <a (click)="routeToCard(data.data.digicardid)"> {{data.data.digicardid}}</a> 
-        </div>
     
           <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
         </dx-data-grid>

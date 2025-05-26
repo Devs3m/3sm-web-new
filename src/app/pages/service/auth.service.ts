@@ -9,8 +9,8 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://49.50.112.46:3002';
-
+  private apiUrl = 'http://49.50.112.46:3002/auth';
+  //private apiUrl ='http://localhost:3002/auth';
   constructor(private http: HttpClient, private router: Router) {}
 
   // Login user

@@ -20,7 +20,7 @@ export class CardService {
   }
 
   getUserDetailsById(id: number) {
-    return this.httpClient.get(`http://localhost:3002/digicard/getcarddetailsbyid/${id}`);
+    return this.httpClient.get(`${environment.apiHost}digicard/getcarddetailsbyid?id=${id}`);
   }
 
   createUserDetails(data: any) {

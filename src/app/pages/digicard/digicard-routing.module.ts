@@ -20,10 +20,6 @@ const routes: Routes = [
       {
         path: 'card',
         component:CardComponent
-      },
-      {
-        path: 'card/:id',
-        component:CardComponent
       }
     ]
    }
