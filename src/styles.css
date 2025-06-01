@@ -20,6 +20,15 @@
 .mt-40{
   margin-top: 40px;
 }
+.ml-10{
+  margin-left: 10px;
+}
+.mr-10{
+  margin-right: 10px;
+}
+.mb-10{
+  margin-bottom: 10px;
+}
 html, body { height: 100%; margin:0 !important;padding: 0;}
 body { margin: 10; font-family: Roboto, "Helvetica Neue", sans-serif; padding: 0; }
 
@@ -250,3 +259,10 @@ box-shadow: gray;
 .modal-backdrop {
 	z-index:-1 !important; /* Adjust if necessary */
   }
+::ng-deep .dx-datagrid-headers {
+  background-color: #1976d2; /* Example: Material Blue 700 */
+  color: white;
+}
+.pb-20{
+  padding-bottom: 20px;
+}
