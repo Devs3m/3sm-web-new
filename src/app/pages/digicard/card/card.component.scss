@@ -17,22 +17,18 @@ $white : #fff;
 $border-color_1: transparent transparent transparent #eee;
 
 @import "https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap";
-
 /* back*/
 .container {
 	margin-top: 20px;
 }
-
 .card {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-
 .card-header {
 	background-color: $background-color_1;
 	border-bottom: 1px solid #dee2e6;
 	padding: 10px 15px;
 }
-
 .card-body {
 	padding: 20px;
 }
@@ -42,7 +38,6 @@ body {
 	font-family: $font-family_1;
 	position: relative;
 }
-
 .credit {
 	position: absolute;
 	top: 15px;
@@ -53,13 +48,11 @@ body {
 	cursor: pointer;
 	z-index: 2;
 	overflow: hidden;
-
 	a {
 		text-decoration: none;
 		color: $color_1;
 		padding: 10px;
 	}
-
 	&:after {
 		box-sizing: border-box;
 		content: "";
@@ -73,18 +66,15 @@ body {
 		transform: translateY(-50%);
 		transition: all 0.5s;
 	}
-
 	&:hover {
 		&::after {
 			right: -3px;
 		}
-
 		.test {
 			left: 0;
 		}
 	}
 }
-
 .test {
 	background-color: $background-color_3;
 	width: 100%;
@@ -95,16 +85,14 @@ body {
 	transition: .5s ease-in-out;
 	z-index: -1;
 }
-
 .business2 {
 	// display: flex;
 	// align-items: center;
 	// justify-content: center;
-	// height: 100%;
+	height: 100%;
 	width: 100%;
 	background-color: $background-color_4;
-	// padding: 15px;
-
+	padding: 15px;
 	.front {
 		background-color: $background-color_5;
 		width: 100%;
@@ -114,7 +102,6 @@ body {
 		position: relative;
 		margin-top: 35px;
 	}
-
 	.back {
 		background-color: $background-color_5;
 		width: 100%;
@@ -123,7 +110,6 @@ body {
 		overflow: hidden;
 		position: relative;
 		margin-top: 35px;
-
 		.top {
 			width: 100%;
 			box-sizing: border-box;
@@ -132,7 +118,6 @@ body {
 			filter: contrast(160%);
 			position: relative;
 			position: relative;
-
 			&::after {
 				content: "";
 				width: 100%;
@@ -141,13 +126,11 @@ body {
 				z-index: 10;
 				background: linear-gradient(rgba(71, 11, 11, 0.8), rgba(240, 8, 8, 0.5));
 			}
-
 			div {
 				img {
 					width: 40px;
 					margin: 10px;
 				}
-
 				position: absolute;
 				display: flex;
 				flex-direction: column;
@@ -159,134 +142,117 @@ body {
 				text-transform: uppercase;
 			}
 		}
-
-		>p {
+		p {
 			text-align: center;
 			margin-top: 30%;
 			color: $color_2;
 		}
 	}
-
 	svg {
 		width: 50px;
 	}
-
 	h1 {
 		margin: 0;
 		color: $color_1;
 	}
-
 	h2 {
 		margin: 0;
 		color: $color_1;
 	}
-
 	p {
 		margin: 0;
 		color: $color_1;
 	}
-
 	.red {
 		height: 45%;
 		background-color: $background-color_6;
-		transform: rotate(17deg);
-		margin-top: -44px;
-		width: 480px;
+    transform: rotate(17deg);
+    margin-top: -44px;
+    width: 480px;
 
-		&.violet {
-			background-color: $background-color_9;
-		}
-
-		&.blue {
-			background-color: $background-color_11;
-		}
+    &.violet{
+      background-color: $background-color_9;
+    }
+    &.blue{
+      background-color: $background-color_11;
+    }
 	}
-
 	.head {
 		display: flex;
 		justify-content: center;
 		padding: 25px 0;
-
 		img {
 			width: 40px;
 		}
-
-		>div {
+		div {
 			text-align: center;
 			margin: 0 10px;
 			text-transform: uppercase;
-
 			p {
 				font-size: 0.8rem;
 				font-weight: 600;
 			}
 		}
 	}
+  .download{
+    position: absolute;
+	top: 35px;
+    right: 40px;
 
-	.download {
-		position: absolute;
-		top: 35px;
-		right: 40px;
+    .btn{
+      background-color: #fff;
+      border-color: #fff;
+      border-radius: 50%;
+      height: 45px;
+      width: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+	  &:focus{
+		outline: none;
+	  }
+      svg{
+        fill: $background-color_2
+      }
 
-		.btn {
-			background-color: #fff;
-			border-color: #fff;
-			border-radius: 50%;
-			height: 45px;
-			width: 45px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 8px;
+      &.blue{
+        svg{
+          fill : $background-color_11
+        }
+      }
+      &.violet{
+        svg{
+          fill : $background-color_9
+        }
+      }
+    }
+  }
 
-			&:focus {
-				outline: none;
-			}
+  .download-mail{
+	position: absolute;
+	top: 40px;
+    left: 40px;
 
-			svg {
-				fill: $background-color_2
-			}
-
-			&.blue {
-				svg {
-					fill: $background-color_11
-				}
-			}
-
-			&.violet {
-				svg {
-					fill: $background-color_9
-				}
-			}
-		}
+	.btn{
+	  background-color: #fff;
+	  border-color: #fff;
+	  border-radius: 50%;
+	  height: 45px;
+	  width: 45px;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  padding: 8px;
+	  &:focus{
+		outline: none;
+	  }
+	  svg{
+		fill: $background-color_2
+	  }
 	}
-
-	.download-mail {
-		position: absolute;
-		top: 40px;
-		left: 40px;
-
-		.btn {
-			background-color: #fff;
-			border-color: #fff;
-			border-radius: 50%;
-			height: 45px;
-			width: 45px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 8px;
-
-			&:focus {
-				outline: none;
-			}
-
-			svg {
-				fill: $background-color_2
-			}
-		}
-	}
-
+  }
+  
 	.avatar {
 		position: absolute;
 		width: 100%;
@@ -298,7 +264,6 @@ body {
 		flex-direction: column;
 		justify-content: end;
 		align-items: center;
-
 		p {
 			&:nth-of-type(1) {
 				text-transform: uppercase;
@@ -306,7 +271,6 @@ body {
 			}
 		}
 	}
-
 	.img {
 		background-color: $background-color_8;
 		padding: 10px;
@@ -318,33 +282,27 @@ body {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-
 		img {
 			width: 80%;
 			padding: 10px 0;
 		}
-
-		&.violet {
-			background-color: $background-color_10;
-		}
-
-		&.blue {
-			background-color: $background-color_12;
-		}
+    &.violet{
+      background-color: $background-color_10;
+    }
+    &.blue{
+      background-color: $background-color_12;
+    }
 	}
-
 	.infos {
 		position: absolute;
 		bottom: auto;
-		top: 53%;
+    top: 53%;
 		left: 3%;
-		width: 50%;
-
-		.mainCard {
+    width: 50%;
+		div {
 			display: flex;
 			margin: 10px 5px;
 			align-items: center;
-
 			svg {
 				width: 30px;
 				height: 30px;
@@ -354,62 +312,57 @@ body {
 				border-radius: 7px;
 				fill: #fff;
 			}
-
 			p {
 				font-size: 12px;
 				margin: 5px 0;
 				font-weight: 500;
 				word-break: break-all;
 				word-wrap: break-word;
-
-				a {
+				a{
 					color: #fff;
-
 					&:hover,
 					&:active,
-					&:focus {
+					&:focus{
 						text-decoration: underline;
 					}
 				}
 			}
 		}
 
-		&.infos-sub {
-			right: 3%;
-			left: 53%;
-			width: 47%;
-		}
-
-		&.violet {
-			>div {
-				svg {
-					background-color: $background-color_9;
-				}
-			}
-		}
-
-		&.blue {
-			>div {
-				svg {
-					background-color: $background-color_11;
-				}
-			}
-		}
+    &.infos-sub{
+      right: 3%;
+      left:53%;
+      width: 47%;
+    }
+    
+    &.violet{
+      div{
+        svg{
+          background-color: $background-color_9;
+        }
+      }
+    }
+    &.blue{
+      div{
+        svg{
+          background-color: $background-color_11;
+        }
+      }
+    }
 	}
 
 	.surgical-card {
 		background-color: #fff;
-		width: 100%;
-		height: auto;
+		width: 90%;
+		height:auto;
 		border-radius: 25px;
 		margin: 20px auto 30px;
 		padding: 20px;
 
-		.center-align {
+		.center-align{
 			display: flex;
 			justify-content: center;
-
-			.source {
+			.source{
 				height: 150px;
 				width: 150px;
 				background: #fff;
@@ -418,26 +371,24 @@ body {
 				padding: 25px;
 				border: 1px solid #d7242a;
 				margin-top: -100px;
-
-				img {
+	
+				img{
 					height: 100%;
 					width: 100%;
 				}
 			}
 		}
 
-		.name-tag {
+		.name-tag{
 			text-align: center;
-
-			.sec-1 {
-				h5 {
+			.sec-1{
+				h5{
 					color: #d7242a;
 					font-size: 16px;
 					font-weight: 700;
 					margin-bottom: 5px;
 				}
-
-				p {
+				p{
 					font-size: 16px;
 					color: #333;
 				}
@@ -445,45 +396,41 @@ body {
 		}
 	}
 
-	.first-box {
+	.first-box{
 		background-color: #fff;
-		width: 100%;
-		height: auto;
+		width: 90%;
+		height: 240px;
 		border-radius: 25px;
 		overflow: hidden;
 		margin: 15px auto 0px;
 		padding: 0px;
-padding-bottom: 70px;
-		h3 {
+
+		h3{
 			text-align: center;
 			font-size: 20px;
-			font-weight: 800;
+    		font-weight: 800;
 			margin-top: 20px;
-
-			.col-red {
-				color: #d7242a;
+			.col-red{
+				color:#d7242a;
 				margin-right: 8px;
 			}
 
-			.blue {
+			.blue{
 				color: #1769ff;
 			}
 		}
-
-		p {
+		p{
 			text-align: center;
 			font-size: 15px;
 			color: #555;
 			margin-top: 15px;
 		}
-
-		h4 {
+		h4{
 			text-align: center;
 			font-size: 18px;
-			font-weight: 500;
+    		font-weight: 500;
 		}
-
-		.black {
+		.black{
 			height: 30px;
 			width: 70%;
 			background-color: #131417;
@@ -494,14 +441,12 @@ padding-bottom: 70px;
 		}
 	}
 
-	.box-bg {
+	.box-bg{
 		margin-top: 20px;
-
-		.media {
-			.media-left {
+		.media{
+			.media-left{
 				padding-right: 20px;
-
-				a {
+				a{
 					background: #d72429;
 					height: 30px;
 					width: 30px;
@@ -510,37 +455,32 @@ padding-bottom: 70px;
 					align-items: center;
 					justify-content: center;
 					padding: 10px;
-
-					i {
+					i{
 						font-size: 16px;
-						color: #fff;
+    					color: #fff;
 					}
 				}
 			}
-
-			.media-body {
-				.media-heading {
+			.media-body{
+				.media-heading{
 					font-size: 16px;
 					font-weight: 600;
 					color: #333;
-
-					span {
+					span{
 						font-size: 15px;
 						color: #333;
 						font-weight: 400;
 					}
 				}
-
-				p {
+				p{
 					font-size: 15px;
 					color: #333;
 					font-weight: 400;
 				}
 			}
-		}
+		}	
 	}
 }
-
 .webicon {
 	background-color: $background-color_5;
 	border-radius: 50%;
@@ -552,7 +492,6 @@ padding-bottom: 70px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-
 	div {
 		background-color: $background-color_6;
 		border-radius: 50%;
@@ -560,296 +499,256 @@ padding-bottom: 70px;
 	}
 }
 
-.flex-align {
+.flex-align{
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content:space-between;
 }
-
 @media (max-width: 768px) {
 	.container {
 		margin-top: 0;
 	}
-
 	.card {
 		margin: 10px;
 	}
 }
 
 
-@media (min-width: 320px) and (max-width:1400px) {
-	.business2 {
-		.red {
+@media  (min-width: 320px) and (max-width:1400px) {
+	.business2{
+		.red{
 			margin-top: -55px;
 		}
-
-		.infos {
+		.infos{
 			top: 48%;
 		}
 
-		.surgical-card {
+		.surgical-card{
 			width: 100%;
 		}
-
-		.first-box {
+		.first-box{
 			width: 100%;
 		}
-
-		.download {
+		.download{
 			top: 35px;
-			right: 20px;
+    		right: 20px;
 		}
-
-		.download-mail {
+		.download-mail{
 			top: 40px;
-			left: 20px;
+    		left: 20px;
 		}
 
-		.savepdf {
-			ul {
-				li {
+		.savepdf{
+			ul{
+				li{
 					margin-right: 35px;
-
-					a {
-						span {
+					a{
+						span{
 							font-size: 18px;
 						}
 					}
 				}
 			}
 		}
-	}
+	} 
 }
 
-@media (min-width: 320px) and (max-width:1199px) {
-	.business2 {
-		.infos {
+@media (min-width: 320px) and (max-width:1199px){
+	.business2{
+		.infos{
 			top: 50%;
 		}
-	}
+	} 
 }
 
-@media (min-width: 320px) and (max-width:992px) {
-	.business2 {
-		.img {
+@media (min-width: 320px) and (max-width:992px){
+	.business2{
+		.img{
 			width: 30%;
 		}
-
-		.red {
+		.red{
 			width: 550px;
 		}
-
-		.infos {
+		.infos{
 			top: 52%;
 		}
 
-		.surgical-card {
+		.surgical-card{
 			width: 93%;
 		}
-
-		.first-box {
+		.first-box{
 			width: 93%;
 		}
-
-		.download {
+		.download{
 			top: 35px;
-			right: 40px;
+    		right: 40px;
 		}
-
-		.download-mail {
+		.download-mail{
 			top: 40px;
-			left: 40px;
+        	left: 40px;
 		}
 	}
 }
 
-@media (min-width: 320px) and (max-width:767px) {
-	.business2 {
-		.img {
+@media (min-width: 320px) and (max-width:767px){
+	.business2{
+		.img{
 			width: 25%;
 		}
-
-		.red {
+		.red{
 			width: 600px;
 			margin-top: -65px;
 		}
-
-		.infos {
+		.infos{
 			top: 54%;
 		}
-
 		.col-xs-12 {
 			width: 75%;
 		}
 
-		.surgical-card {
+		.surgical-card{
+			width: 100%;
+		}
+		.first-box{
 			width: 100%;
 		}
 
-		.first-box {
-			width: 100%;
-		}
-
-		.mob-align {
+		.mob-align{
 			padding-left: 30px;
-			padding-right: 30px;
+            padding-right: 30px;
 		}
 
 		.media-body {
 			width: auto;
 		}
-
-		.savepdf {
-			ul {
+		.savepdf{
+			ul{
 				display: block;
-
-				li {
+				li{
 					margin-right: 0px;
 					margin-bottom: 20px;
-
-					a {
-						span {
+					a{
+						span{
 							font-size: 18px;
 						}
 					}
 				}
 			}
 		}
-
-		.download {
+		.download{
 			top: 35px;
-			right: 30px;
+        	right: 30px;
 		}
-
-		.download-mail {
+		.download-mail{
 			top: 40px;
-			left: 30px;
+        	left: 30px;
 		}
 	}
 }
 
-@media (min-width: 320px) and (max-width:567px) {
-	.business2 {
-		.first-box {
-			h3 {
+@media (min-width: 320px) and (max-width:567px){
+	.business2{
+		.first-box{
+			h3{
 				font-size: 27px;
 			}
-
-			p {
+			p{
 				margin-top: 2px;
 			}
 		}
-
-		.front {
+		.front{
 			height: 100vh;
 			margin-bottom: 35px;
 		}
-
-		.red {
+		.red{
 			margin-top: -90px;
 		}
-
-		.avatar {
-			top: 12%
+		.avatar{
+			top:12%
 		}
-
-		.img {
+		.img{
 			width: 35%;
 		}
-
-		.download {
+		.download{
 			top: 35px;
-			right: 20px;
+        	right: 20px;
 		}
-
-		.download-mail {
+		.download-mail{
 			top: 40px;
-			left: 20px;
+        	left: 20px;
 		}
-
-		.infos {
+		.infos{
 			position: unset;
 			width: 100%;
 			margin-top: 20%;
 			margin-left: 20px;
-
-			>div {
-				p {
+			div{
+				p{
 					font-size: 16px;
 				}
 			}
-
-			&.infos-sub {
+			&.infos-sub{
 				width: 100%;
 				margin-top: 10px;
 			}
 		}
-
-		.mob-align {
+		.mob-align{
 			padding-left: 0px;
-			padding-right: 0px;
+            padding-right: 0px;
 		}
-
-		.surgical-card {
-			.center-align {
+		
+		.surgical-card{
+			.center-align{
 				.source {
 					height: 120px;
 					width: 120px;
 				}
-			}
-		}
-
+			} 
+		} 
 		.col-xs-12 {
 			width: 100%;
 		}
 	}
-
-	.surgical-card {
+	.surgical-card{
 		margin: 0;
-		width: 100% !important;
-		;
+		width: 100%!important;;
 		padding: 10px !important;
-
-		.sec-1 {
-			width: 50%;
-			float: left;
-			text-align: left;
-			margin-bottom: 0;
-
-			&:last-child {
-				text-align: right !important;
-			}
+	.sec-1{
+		width: 50%;
+		float: left;
+		text-align: left;
+		margin-bottom: 0;
+		&:last-child{
+text-align: right!important;
 		}
 	}
+}
 
 }
 
-.hide {
+.hide{
 	display: none;
 }
-
-.mb-10 {
+.mb-10{
 	margin-bottom: 10px;
 }
-
-.mr-10 {
+.mr-10{
 	margin-right: 10px;
 }
 
-.savepdf {
-	ul {
+.savepdf{
+	ul{
 		list-style: none;
 		padding-left: 0px;
 		display: flex;
 		justify-content: center;
 
-		li {
+		li{
 			margin-right: 25px;
-
-			a {
-				span {
+			a{
+				span{
 					display: block;
-					font-size: 18px;
+    				font-size: 18px;
 				}
 			}
 		}
@@ -858,192 +757,6 @@ padding-bottom: 70px;
 
 
 
-.media {
+.media{
 	margin-top: 10px;
-}
-
-// card-2
-.business3 {
-	display: flex;
-	align-items: center;
-	min-height: 100vh;
-	justify-content: center;
-	background-color: #131417;
-
-	.front {
-		background-color: var(--dark);
-		width: 100%;
-		height: auto;
-		margin: 0px;
-		border-radius: 25px;
-		overflow: hidden;
-		position: relative;
-	}
-
-	svg {
-		width: 50px;
-	}
-
-	h1,
-	h2,
-	p {
-		margin: 0;
-		color: #eee;
-	}
-
-	.red {
-		height: 40%;
-		background-color: var(--red);
-		padding: 20px;
-		position: relative;
-
-		.download {
-			position: absolute;
-			left: 0;
-
-			.icon {
-				border: none;
-				box-shadow: none;
-				background-color: #fff;
-				width: 40px;
-				height: 40px;
-				text-align: center;
-
-				svg {
-					fill: red;
-					height: 27px;
-					width: 27px;
-				}
-			}
-		}
-
-		.download-mail {
-			position: absolute;
-			right: 0;
-
-			.icon {
-				border: none;
-				box-shadow: none;
-				background-color: #fff;
-				width: 40px;
-				height: 40px;
-				text-align: center;
-
-				svg {
-					fill: red;
-					height: 27px;
-					width: 27px;
-				}
-			}
-		}
-	}
-
-	.head {
-		display: flex;
-		justify-content: center;
-		padding: 15px 0;
-
-		img {
-			width: 40px;
-		}
-
-		div {
-			text-align: center;
-			margin: 0 10px;
-			text-transform: uppercase;
-
-			p {
-				font-size: 0.8rem;
-				font-weight: 600;
-			}
-		}
-	}
-
-	.avatar {
-		position: absolute;
-		width: 100px;
-		height: 100px;
-		left: 50%;
-		top: 140px;
-		transform: translate(-50%);
-		text-align: center;
-	}
-
-	.img {
-		background-color: #fff;
-		padding: 10px;
-		box-sizing: border-box;
-		border-radius: 50%;
-		border: 6px solid var(--dark);
-		height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-
-		img {
-			width: 80%;
-			padding: 10px 0;
-		}
-	}
-
-	.infos {
-		padding-top: 65px;
-		padding-left: 10px;
-		padding-right: 10px;
-		display: block;
-
-		.mainCard {
-			display: flex;
-			margin: 5px;
-			padding-bottom: 10px;
-
-			svg {
-				width: 30px;
-				height: 30px;
-				margin-right: 10px;
-				background-color: var(--red);
-				padding: 5px;
-				border-radius: 7px;
-			}
-
-			p {
-				font-size: 0.8rem;
-				margin: 5px 0;
-				font-weight: 500;
-			}
-
-			h4 {
-				color: #fff;
-			}
-		}
-	}
-}
-
-.business3 .avatar p:nth-of-type(1) {
-	text-transform: uppercase;
-	font-weight: 900;
-}
-&.color-1{
-	.first-box {
-		background-color: #f399fb;
-	}
-	.surgical-card {
-		background-color: #f399fb;
-	}
-}
-&.color-2{
-	.first-box {
-		background-color: #99fbbd;
-	}
-	.surgical-card {
-		background-color: #99fbbd;
-	}
-}
-&.color-3{
-	.first-box {
-		background-color: #ffe077;
-	}
-	.surgical-card {
-		background-color: #ffe077;
-	}
 }

@@ -192,7 +192,4 @@ export class DigicardFormComponent {
   getLink(id:number){
     window.open('/card/'+id);
   }
-  cancelDigicard(){
-      this.isFormOpen = false;
-  }
 }

@@ -1,11 +1,10 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AccountService } from '../service/account.service';
-import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
-import { catchError, map, Observable, of } from 'rxjs';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 
 
@@ -37,57 +36,42 @@ export class AccountComponent implements OnInit {
 
 
   constructor(private accountservice: AccountService,
-    private fromBuilder: FormBuilder,
+    private formBuilder: FormBuilder,
     private http: HttpClient) { }
 
   ngOnInit(): void {
-    this.accountForm = this.fromBuilder.group({
+  this.accountForm = this.formBuilder.group({
+    companyname: ["", [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
+    ownername: ["", [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
+    ownermobile: ["", Validators.required],
+    owneremail: [""],
+    companyaddress: [""],
+    companycity: [null, Validators.required],
+    companystate: [""],
+    companycountry: [""],
+    companypincode: [""],
+    licensecount: [""],
+    createddate: [new Date()],
+    updateddate: [new Date()],
+    isactive: [true, Validators.required],
+    createdby: [1],
+    updatedby: [1],
+    accountid: [0],
+    cityid: [1]
+  });
 
-      companyname: ["",
-      [ Validators.required,      // Field is required
-        Validators.minLength(3),  // Minimum 3 characters
-        Validators.maxLength(20), // Maximum 20 characters
-        Validators.pattern('^[a-zA-Z ]+$') // Only letters & spaces allowed
-      ],
-      [this.checkCompanyName] 
-    ],
-      ownername: ["",
-        Validators.required,      // Field is required
-        Validators.minLength(3),  // Minimum 3 characters
-        Validators.maxLength(20), // Maximum 20 characters
-        Validators.pattern('^[a-zA-Z ]+$') // Only letters & spaces allowed
-      ],
-      ownermobile: ["", Validators.compose([Validators.required, Validators.pattern('^((\\+91-?)|0)?[0-9]{10}$')])],
-      owneremail: [""],
-      companyaddress: [""],
-      companycity: [null, Validators.required],
-      companystate: [""],
-      companycountry: [""],
-      companypincode: [""],
-      licensecount: [""],
-      createddate: [new Date()],
-      updateddate: [new Date()],
-      isactive: [true, Validators.required],
-      createdby: [1],
-      updatedby: [1],
-      accountid: [0],
-      cityid  : [1]
-    })
-    this.getAccountDetails();
-    this.getDropDownValue();
-    {
-      // Fetch data from API
-      this.http.get<{ totalAccounts: number; activeAccounts: number; deactiveAccounts: number }>('http://49.50.112.46:3002/account/counts')
-        .subscribe(response => {
-          this.totalAccounts = response.totalAccounts; // Assign API response to totalAccounts
-          this.activeAccounts = response.activeAccounts; // Assign API response to totalAccounts
-          this.deactiveAccounts = response.deactiveAccounts; // Assign API response to totalAccounts
-          console.log(this.totalAccounts)
-        });
+  this.getAccountDetails();
+  this.getDropDownValue();
 
-    }
+  // Fetch API data
+  this.http.get<{ totalAccounts: number; activeAccounts: number; deactiveAccounts: number }>('http://49.50.112.46:3002/account/counts')
+    .subscribe(response => {
+      this.totalAccounts = response.totalAccounts;
+      this.activeAccounts = response.activeAccounts;
+      this.deactiveAccounts = response.deactiveAccounts;
+    });
+}
 
-  }
   get companyname() {
     return this.accountForm.get('companyname');
   }
@@ -231,16 +215,7 @@ export class AccountComponent implements OnInit {
 
       });
     });
-  }
-  checkCompanyName = (control: AbstractControl): Observable<ValidationErrors | null> => {
-    if (!control.value) return of(null);
-  
-    return this.accountservice.isCompanyNameTaken(control.value).pipe(
-      map((isTaken) => (isTaken ? { companyNameTaken: true } : null)),
-      catchError(() => of(null))
-    );
-  };
-  
+  }  
   
   renderActionButtons = (cellElement: { appendChild: (arg0: HTMLButtonElement) => void; }, cellInfo: { data: any; }) => {
     const editButton = document.createElement('button');
