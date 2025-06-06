@@ -1,35 +1,94 @@
-<div class="wrapper">
-  <div class="animanation-overlay"></div>
-  <div class="login-section">
-    <div class="login-container">
-      <h2>Login</h2>
 
-      <div [formGroup]="loginForm">
-        <!-- Email Field -->
-        <div class="form-group">
+
+<div class="login-container">
+  <div class="login-card">
+    <div class="logo">
+      <h1>Connect Site</h1>
+    </div>
+    <div class="project-name">
+      <h2>Connecting People</h2>
+    </div>
+    
+  	<form class="login-form" [formGroup]="loginForm" >
+
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" class="form-control" formControlName="email" placeholder="Enter your email"
+          required />
+        <small *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          Valid email is required
+        </small>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password:</label>
+          <input type="password" id="password" class="form-control" formControlName="password"
+            placeholder="Enter your password" required />
+          <small *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+            Password is required
+          </small>
+      </div>
+      
+      <!--Submit Button -->
+      <button type="submit" class="login-button" [disabled]="loginForm.invalid" (click)="login()">Login</button>
+    
+    </form>
+    
+    <div class="footer">
+      <p>Powered by connectsite.in</p>
+    </div>
+  </div>
+
+
+
+
+<!--<div class="wrapper">
+  <div class="animanation-overlay"></div>
+  <div class="login-section"> 
+    <div class="login-container">
+      <div class="login-card"></div>
+      <div class="logo">
+        <h1>Cardinality.ai</h1>
+      </div>
+      <div class="project-name">
+        <h2>Carey Project Management</h2>
+      </div>
+     
+      <form class="login-form" [formGroup]="loginForm">
+    
+         Email Field 
+         <div class ="form-group">
+     
           <label for="email">Email:</label>
           <input type="email" id="email" class="form-control" formControlName="email" placeholder="Enter your email"
             required />
           <small *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
             Valid email is required
           </small>
-        </div>
+          </div>
+       
 
-        <!-- Password Field -->
-        <div class="form-group">
+        Password Field 
+        <div class ="form-group">
           <label for="password">Password:</label>
           <input type="password" id="password" class="form-control" formControlName="password"
             placeholder="Enter your password" required />
           <small *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
             Password is required
           </small>
-        </div>
+         </div>
 
-        <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary w-100 mt-30" [disabled]="loginForm.invalid" (click)="login()">Login</button>
+        Submit Button 
+        <button type="submit" class="login-button" [disabled]="loginForm.invalid" (click)="login()">Login</button>
+      
+      </form>
+      <div class="footer">
+        <p>Powered by Cardinality.ai</p>
       </div>
+  
+
 
       <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
     </div>
   </div>
-</div>
+</div> -->

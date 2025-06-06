@@ -1,10 +1,12 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import{ AccountService} from'../service/account.service';
-import { FormBuilder,FormGroup,Validators } from '@angular/forms';
+import { AccountService } from '../service/account.service';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
+import { catchError, map, Observable, of } from 'rxjs';
+
 
 
 
@@ -13,105 +15,96 @@ import { Workbook } from 'exceljs';
   selector: 'app-account',
   templateUrl: './account.component.html',
   styleUrls: ['./account.component.css'],
-  
+
 })
 export class AccountComponent implements OnInit {
-onDelete(arg0: any,arg1: any) {
-throw new Error('Method not implemented.');
-}
-onEdit(arg0: any,arg1: any) {
-throw new Error('Method not implemented.');
-}
-onView(arg0: any) {
-throw new Error('Method not implemented.');
-}
-
-  
-
-@ViewChild('formSection') formSection!: ElementRef; // Reference to form
  
+
+  @ViewChild('formSection') formSection!: ElementRef; // Reference to form
+
   isFormOpen = false; // Controls the slider visibility
-  account!:any[];
+  account!: any[];
   accountForm!: FormGroup;
-  dropdownOptions:any[]=[];
+  dropdownOptions: any[] = [];
   selectedItem: any;
-  dropdownItems: any[] =[];  
-  data: { id: number; companyName: string; city: string; isActive: boolean }[] = [];
-  apiData:any[] =[];
+  dropdownItems: any[] = [];
+  apiData: any[] = [];
   longText: any;
   totalAccounts: number = 0;  // Variable to store API data
-  activeAccounts:number = 0;
+  activeAccounts: number = 0;
   deactiveAccounts: number = 0;
-  checkCompanyName: any;
 
- 
-  constructor(private accountservice:AccountService,
-              private fromBuilder:FormBuilder,
-              private http:HttpClient){}
+
+
+  constructor(private accountservice: AccountService,
+    private fromBuilder: FormBuilder,
+    private http: HttpClient) { }
 
   ngOnInit(): void {
-    this.accountForm=this.fromBuilder.group({
-    
-    "companyname":["",Validators.required,      // Field is required
-      [Validators.minLength(3)],  // Minimum 3 characters
-      [Validators.maxLength(20)], // Maximum 20 characters
-      [Validators.pattern('^[a-zA-Z ]+$')], // Only letters & spaces allowed
-      this.checkCompanyName 
+    this.accountForm = this.fromBuilder.group({
+
+      companyname: ["",
+      [ Validators.required,      // Field is required
+        Validators.minLength(3),  // Minimum 3 characters
+        Validators.maxLength(20), // Maximum 20 characters
+        Validators.pattern('^[a-zA-Z ]+$') // Only letters & spaces allowed
+      ],
+      [this.checkCompanyName] 
     ],
-    "ownername":["",
-      Validators.required,      // Field is required
-      Validators.minLength(3),  // Minimum 3 characters
-      Validators.maxLength(20), // Maximum 20 characters
-      Validators.pattern('^[a-zA-Z ]+$') // Only letters & spaces allowed
-    ],
-    "ownermobile":["",Validators.compose([Validators.required, Validators.pattern('^((\\+91-?)|0)?[0-9]{10}$')])],
-    "owneremail":[""],
-    "companyaddress":[""],
-    "companycity":[null,Validators.required],
-    "companystate":[""],
-    "companycountry":[""],
-    "companypincode":[""],
-    "licensecount":[""],
-    "createddate":[new Date()],
-    "updateddate":[new Date()],
-    "isactive":[true,Validators.required],
-    "createdby":[1],
-    "updatedby":[1],
-    "accountid": [0],
-    "cityid": [1]
+      ownername: ["",
+        Validators.required,      // Field is required
+        Validators.minLength(3),  // Minimum 3 characters
+        Validators.maxLength(20), // Maximum 20 characters
+        Validators.pattern('^[a-zA-Z ]+$') // Only letters & spaces allowed
+      ],
+      ownermobile: ["", Validators.compose([Validators.required, Validators.pattern('^((\\+91-?)|0)?[0-9]{10}$')])],
+      owneremail: [""],
+      companyaddress: [""],
+      companycity: [null, Validators.required],
+      companystate: [""],
+      companycountry: [""],
+      companypincode: [""],
+      licensecount: [""],
+      createddate: [new Date()],
+      updateddate: [new Date()],
+      isactive: [true, Validators.required],
+      createdby: [1],
+      updatedby: [1],
+      accountid: [0],
+      cityid  : [1]
     })
     this.getAccountDetails();
     this.getDropDownValue();
     {
       // Fetch data from API
-      this.http.get<{ totalAccounts: number;activeAccounts: number; deactiveAccounts: number}>('http://49.50.112.46:3002/account/counts')
+      this.http.get<{ totalAccounts: number; activeAccounts: number; deactiveAccounts: number }>('http://49.50.112.46:3002/account/counts')
         .subscribe(response => {
           this.totalAccounts = response.totalAccounts; // Assign API response to totalAccounts
           this.activeAccounts = response.activeAccounts; // Assign API response to totalAccounts
           this.deactiveAccounts = response.deactiveAccounts; // Assign API response to totalAccounts
           console.log(this.totalAccounts)
         });
-       
+
     }
 
   }
   get companyname() {
     return this.accountForm.get('companyname');
   }
-  onSubmit():void{
-    if(this.accountForm.valid){
-      console.log('Select Status:',this.accountForm.value.accountisactive);
+  onSubmit(): void {
+    if (this.accountForm.valid) {
+      console.log('Select Status:', this.accountForm.value.accountisactive);
       setTimeout(() => {
         window.location.reload(); // Reloads after 1 second
       }, 100);
-    }else{
+    } else {
       console.error('Form is Invalid');
     }
-    
+
   }
-  createAccount():void{
-    this.accountservice.addAccount(this.accountForm.value).subscribe(data=>{
-      if(data){
+  createAccount(): void {
+    this.accountservice.addAccount(this.accountForm.value).subscribe(data => {
+      if (data) {
         this.getAccountDetails();
         this.accountForm.reset();
       }
@@ -120,75 +113,77 @@ throw new Error('Method not implemented.');
       this.restaccountForm()
     });
   }
-  getAccountDetails():void {
+  getAccountDetails(): void {
     this.accountservice.getAccountDetails().subscribe({
-      next:(apidata:any) => {
-        this.account=apidata.sort((a: any, b: any) => b.createddate - a.createddate);
-        
+      next: (apidata: any) => {
+        this.account = apidata.sort((a: any, b: any) => b.createddate - a.createddate);
+
         console.log('Sorted Account Details:', this.account);
-        this.accountservice.getAccountDetails().subscribe((data) =>{
-          this.apiData=data;
-        });}
-     
+        this.accountservice.getAccountDetails().subscribe((data) => {
+          this.apiData = data;
+        });
+      }
+
     });
   }
 
-  getAccountOrderby():void {
+  getAccountOrderby(): void {
     this.accountservice.getAccountOrderby().subscribe({
-      next:(apidata:any) => {
-        this.account=apidata.sort((a: any, b: any) => b.createddate - a.createddate);
-        
+      next: (apidata: any) => {
+        this.account = apidata.sort((a: any, b: any) => b.createddate - a.createddate);
+
         console.log('Sorted Account Orderby Details:', this.account);
-        this.accountservice.getAccountOrderby().subscribe((data) =>{
-        
-        });}
-     
+        this.accountservice.getAccountOrderby().subscribe((data) => {
+
+        });
+      }
+
     });
   }
 
 
 
- getDropDownValue (){
-  this.accountservice.getDropdownItems().subscribe({
-    next: (items) => (this.dropdownItems = items),
-    error: (err) => console.error('Error fetching dropdown items', err),
-  });
- }
-  onSelectionChange(event:Event):void{
-    const selectedValue=  (event.target  as HTMLSelectElement).value;
-    console.log('Selected City Name:',selectedValue)
+  getDropDownValue() {
+    this.accountservice.getDropdownItems().subscribe({
+      next: (items) => (this.dropdownItems = items),
+      error: (err) => console.error('Error fetching dropdown items', err),
+    });
+  }
+  onSelectionChange(event: Event): void {
+    const selectedValue = (event.target as HTMLSelectElement).value;
+    console.log('Selected City Name:', selectedValue)
     const selectedItem = this.dropdownItems.find((item) => item.cityname === selectedValue);
-    console.log('Selected City',selectedValue)
+    console.log('Selected City', selectedValue)
     if (selectedItem) {
-      this.accountForm.patchValue({ 
-        cityid: selectedItem.cityId ,
-      companystate:selectedItem.citystate,
-    companycountry:selectedItem.citycountry}); // Update cityId in the form
+      this.accountForm.patchValue({
+        cityid: selectedItem.cityId,
+        companystate: selectedItem.citystate,
+        companycountry: selectedItem.citycountry
+      }); // Update cityId in the form
       console.log('Selected City ID:', selectedItem.cityId);
     }
   }
   editItem(item: any): void {
-    console.log("Editing:", item);
-    this.isFormOpen = true; // Open the form for editing
-    this.accountForm.patchValue(item); // Load item into form for editing
+    this.isFormOpen = true;
+    this.accountForm.patchValue(item);
   }
-  
+
   deleteItem(item: any): void {
     if (confirm(`Are you sure you want to delete ${item.companyname}?`)) {
       this.accountservice.deleteAccount(item.accountid).subscribe({
-        next:() => {
-        console.log("Deleted:", item);
-        this.getAccountDetails(); // Refresh grid after delete
-      },
+        next: () => {
+          console.log("Deleted:", item);
+          this.getAccountDetails(); // Refresh grid after delete
+        },
 
-      error: (err: any) => console.error('Error deleting account', err),
-    });
+        error: (err: any) => console.error('Error deleting account', err),
+      });
+    }
   }
-}
   onExporting(e: any) {
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet('Accounts Data');
-  
+
     exportDataGrid({
       component: e.component,
       worksheet: worksheet,
@@ -199,28 +194,28 @@ throw new Error('Method not implemented.');
         saveAs(blob, "AccountsData.xlsx");
       });
     });
-  
+
     e.cancel = true; // Prevents default export
   }
   toggleForm(): void {
     this.isFormOpen = true;
-    
+
   }
   restaccountForm(): void {
-   this.isFormOpen=false;
-   this.accountForm.reset();
-   this.accountForm.patchValue({
-    companycity: '',  // Reset dropdown
-    companystate: '',
-    companycountry: '',
-    isactive: true,      // Set default value
-    createddate: new Date(),
-    updateddate: new Date(),
-  });
-  setTimeout(() => {
-    window.location.reload(); // Reloads after 1 second
-  }, 100);
-}
+    this.isFormOpen = false;
+    this.accountForm.reset();
+    this.accountForm.patchValue({
+      companycity: '',  // Reset dropdown
+      companystate: '',
+      companycountry: '',
+      isactive: true,      // Set default value
+      createddate: new Date(),
+      updateddate: new Date(),
+    });
+    setTimeout(() => {
+      window.location.reload(); // Reloads after 1 second
+    }, 100);
+  }
   getDropDownValues(): void {
     this.http.get<any[]>('http://49.50.112.46:3002/city/list').subscribe(data => {
       this.dropdownItems = data;
@@ -230,14 +225,24 @@ throw new Error('Method not implemented.');
     const selectedCityId = event.target.value;
     this.http.get<any>(`http://49.50.112.46:3002/account/${selectedCityId}`).subscribe(data => {
       this.accountForm.patchValue({
-        cityid:data.cityid,
+        cityid: data.cityid,
         companystate: data.citystate,
         companycountry: data.citycountry,
-       
-      }); 
+
+      });
     });
   }
-    renderActionButtons = (cellElement: { appendChild: (arg0: HTMLButtonElement) => void; }, cellInfo: { data: any; }) => {
+  checkCompanyName = (control: AbstractControl): Observable<ValidationErrors | null> => {
+    if (!control.value) return of(null);
+  
+    return this.accountservice.isCompanyNameTaken(control.value).pipe(
+      map((isTaken) => (isTaken ? { companyNameTaken: true } : null)),
+      catchError(() => of(null))
+    );
+  };
+  
+  
+  renderActionButtons = (cellElement: { appendChild: (arg0: HTMLButtonElement) => void; }, cellInfo: { data: any; }) => {
     const editButton = document.createElement('button');
     editButton.innerText = 'Edit';
     editButton.classList.add('btn', 'btn-primary', 'action-button');
@@ -257,8 +262,8 @@ throw new Error('Method not implemented.');
 
 
 
-  export class InputPrefixSuffixExample {}
-  
+export class InputPrefixSuffixExample { }
+
 
 
 

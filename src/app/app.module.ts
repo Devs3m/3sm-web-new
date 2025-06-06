@@ -14,7 +14,8 @@ import { LoginModule } from './login/login.module';
 import { InstanceService } from './pages/service/instance.service';
 import { FormMaterialModule } from './core/form-material.module';
 import { CommonModule } from '@angular/common';
-
+import { DxTemplateModule } from 'devextreme-angular/core';
+import { MatIconModule } from '@angular/material/icon';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -32,6 +33,7 @@ const routes: Routes = [
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
+    DxTemplateModule,
     DxDataGridModule,
     DxButtonModule,
     DxChartModule,
@@ -39,6 +41,7 @@ const routes: Routes = [
     LoginModule,
     FormMaterialModule,
     CommonModule,
+    MatIconModule,
     RouterModule.forRoot(routes)
   ],
   providers: [InstanceService],

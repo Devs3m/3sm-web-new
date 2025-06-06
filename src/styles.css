@@ -259,6 +259,7 @@ box-shadow: gray;
 .modal-backdrop {
 	z-index:-1 !important; /* Adjust if necessary */
   }
+<<<<<<< Updated upstream
 ::ng-deep .dx-datagrid-headers {
   background-color: #1976d2; /* Example: Material Blue 700 */
   color: white;
@@ -266,3 +267,7 @@ box-shadow: gray;
 .pb-20{
   padding-bottom: 20px;
 }
+=======
+
+  
+>>>>>>> Stashed changes

@@ -132,10 +132,9 @@
     [showBorders]="true"
     [headerFilter]="{ visible: true }" 
     [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
-    title="Account" 
-  
     [paging]="{ pageSize: 12 }" 
-    [showBorders]="true" (onExporting)="onExporting($event)">
+    [showBorders]="true" (onExporting)="onExporting($event)"
+    title="Account">
    
     <dxi-column dataField="accountid" [allowSorting]="true" [sortOrder]="'asc'"caption="Company ID"></dxi-column>
     <dxi-column dataField="companyname" caption="Company Name"></dxi-column>
@@ -143,36 +142,30 @@
     <dxi-column dataField="ownermobile" caption="Owner Mobile"></dxi-column>
     <dxi-column dataField="owneremail" caption="Owner Email"></dxi-column>
     <dxi-column dataField="isactive" caption="Active"></dxi-column>
-  
-    <div *dxTemplate="let data of 'actionTemplate'">
-      <div class="clsTableActionIcons">
-          <button class="clsActionBtn" (click)="onView(data.data)">
-              <span matTooltip="View" matTooltipPosition="below">
-                  <span class="material-symbols-outlined">
-                      visibility
-                  </span>
-              </span>
+    
+    <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate"></dxi-column>
+
+ 
+       <!-- <div class="clsTableActionIcons">
+          <button mat-icon-button color="primary" m atTooltip="View" (click)="onView(data)">
+            <mat-icon>visibility</mat-icon>
           </button>
-          <button class="clsActionBtn" (click)="onEdit(data.data, data.rowIndex)">
+          <button mat-icon-button color="primary" matTooltip="View" (click)="editItem(data)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="primary" matTooltip="View" (click)="deleteItem(data.id)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>-->
+        <div class="clsTableActionIcons" *dxTemplate="let data of 'actionTemplate'">
+          <button class="clsActionBtn" (click)="editItem(data.data)">
               <span matTooltip="Edit" matTooltipPosition="below">
-                  <span class="material-symbols-outlined">
-                      edit_square
-                  </span>
+                  <i class="fa fa-pencil"></i>
               </span>
+              
           </button>
-          <button class="clsActionBtn clsActionBtnDelete" (click)="onDelete(data.data.id, data.rowIndex)">
-              <span matTooltip="Delete" matTooltipPosition="below">
-                  <span class="material-symbols-outlined">
-                      delete
-                  </span>
-              </span>
-          </button>
-      </div>
-  </div>
-
-     
-    </dx-data-grid>
-
-  </div>
-
-</section>
+         </div>
+  
+    
+    <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+  </dx-data-grid>

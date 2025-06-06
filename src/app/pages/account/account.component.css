@@ -17,3 +17,13 @@
     margin-top: 50px;
     text-align: center;
   }
+
+  mat-icon {
+    color: black !important;
+    font-size: 24px !important;
+  }
+
+  html,
+body {
+    height: 100%;
+}
