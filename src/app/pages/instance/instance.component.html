@@ -177,33 +177,30 @@
       
     </div>
         <dx-data-grid 
-        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
         [dataSource]="apiData"
         [allowColumnReordering]="true" 
         [allowColumnResizing]="true" 
         [showBorders]="true"
         [headerFilter]="{ visible: true }" 
         [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
-        title="Instance" 
-        [columns]="['instancename', 'ownername', 'ownermobile', 'owneremail','isactive','Actions']"
         [paging]="{ pageSize: 12 }" 
-        [showBorders]="true" (onExporting)="onExporting($event)">
-    
+        [showBorders]="true" (onExporting)="onExporting($event)"
+        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
+        title="Instance" >
+
+        <dxi-column dataField="instanceid" [allowSorting]="true" [sortOrder]="'asc'"caption="Instance ID"></dxi-column>
         <dxi-column dataField="instancename" caption="Instance Name"></dxi-column>
         <dxi-column dataField="ownername" caption="Owner Name"></dxi-column>
         <dxi-column dataField="ownermobile" caption="Owner Mobile"></dxi-column>
         <dxi-column dataField="owneremail" caption="Owner Email"></dxi-column>
         <dxi-column dataField="isactive" caption="Active"></dxi-column>
-      
-        <!-- Actions Column -->
-        <dxi-column caption="Actions" [width]="50" [cellTemplate]="'actionTemplate'"></dxi-column>
-      
-        <!-- Action Template -->
-        <ng-template #actionTemplate let-data>
-          <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
-          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
-        </ng-template>
+        <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate"></dxi-column>
     
+      
+        <button mat-icon-button color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
+          <mat-icon> border_color</mat-icon>
+        </button>
+  
     
           <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
         </dx-data-grid>

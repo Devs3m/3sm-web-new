@@ -7,9 +7,6 @@ import { Workbook } from 'exceljs';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 
-
-
-
 @Component({
   selector: 'app-account',
   templateUrl: './account.component.html',
@@ -17,11 +14,11 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 })
 export class AccountComponent implements OnInit {
- 
-
+  
   @ViewChild('formSection') formSection!: ElementRef; // Reference to form
 
   isFormOpen = false; // Controls the slider visibility
+  isEditMode = false; 
   account!: any[];
   accountForm!: FormGroup;
   dropdownOptions: any[] = [];
@@ -77,6 +74,20 @@ export class AccountComponent implements OnInit {
   }
   onSubmit(): void {
     if (this.accountForm.valid) {
+      if (this.isEditMode) {
+        this.accountservice.updateAccount(this.accountForm.value).subscribe({
+          next: (response: any) => {
+            console.log('Account updated:', response);
+            this.getAccountDetails();
+            this.restaccountForm();
+          },
+          error: (error: any) => {
+            console.error('Error updating account:', error);
+          }
+        });
+      } else {
+        this.createAccount();
+      }
       console.log('Select Status:', this.accountForm.value.accountisactive);
       setTimeout(() => {
         window.location.reload(); // Reloads after 1 second
@@ -149,7 +160,9 @@ export class AccountComponent implements OnInit {
   }
   editItem(item: any): void {
     this.isFormOpen = true;
+    this.isEditMode = true;
     this.accountForm.patchValue(item);
+    
   }
 
   deleteItem(item: any): void {
@@ -187,6 +200,7 @@ export class AccountComponent implements OnInit {
   }
   restaccountForm(): void {
     this.isFormOpen = false;
+    this.isEditMode = false;
     this.accountForm.reset();
     this.accountForm.patchValue({
       companycity: '',  // Reset dropdown

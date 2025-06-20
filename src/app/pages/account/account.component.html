@@ -142,29 +142,13 @@
     <dxi-column dataField="ownermobile" caption="Owner Mobile"></dxi-column>
     <dxi-column dataField="owneremail" caption="Owner Email"></dxi-column>
     <dxi-column dataField="isactive" caption="Active"></dxi-column>
-    
     <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate"></dxi-column>
 
- 
-       <!-- <div class="clsTableActionIcons">
-          <button mat-icon-button color="primary" m atTooltip="View" (click)="onView(data)">
-            <mat-icon>visibility</mat-icon>
-          </button>
-          <button mat-icon-button color="primary" matTooltip="View" (click)="editItem(data)">
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button mat-icon-button color="primary" matTooltip="View" (click)="deleteItem(data.id)">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </div>-->
-        <div class="clsTableActionIcons" *dxTemplate="let data of 'actionTemplate'">
-          <button class="clsActionBtn" (click)="editItem(data.data)">
-              <span matTooltip="Edit" matTooltipPosition="below">
-                  <i class="fa fa-pencil"></i>
-              </span>
-              
-          </button>
-         </div>
+
+
+         <button mat-icon-button color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
+          <mat-icon> border_color</mat-icon>
+        </button>
   
     
     <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>

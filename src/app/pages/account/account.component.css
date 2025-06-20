@@ -11,17 +11,15 @@
     height: 400px !important;
   width: 1237px !important;
   }
-
+.mat-icon{
+  color: black;
+}
   
   .form-submit{
-    margin-top: 50px;
+    margin-top: 20px;
     text-align: center;
   }
 
-  mat-icon {
-    color: black !important;
-    font-size: 24px !important;
-  }
 
   html,
 body {
