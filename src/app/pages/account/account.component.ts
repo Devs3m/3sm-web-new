@@ -30,8 +30,6 @@ export class AccountComponent implements OnInit {
   activeAccounts: number = 0;
   deactiveAccounts: number = 0;
 
-
-
   constructor(private accountservice: AccountService,
     private formBuilder: FormBuilder,
     private http: HttpClient) { }
@@ -43,7 +41,7 @@ export class AccountComponent implements OnInit {
     ownermobile: ["", Validators.required],
     owneremail: [""],
     companyaddress: [""],
-    companycity: [null, Validators.required],
+    companycity: ["", Validators.required],
     companystate: [""],
     companycountry: [""],
     companypincode: [""],
@@ -69,9 +67,12 @@ export class AccountComponent implements OnInit {
     });
 }
 
+
   get companyname() {
     return this.accountForm.get('companyname');
   }
+
+  
   onSubmit(): void {
     if (this.accountForm.valid) {
       if (this.isEditMode) {

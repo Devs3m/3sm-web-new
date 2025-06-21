@@ -12,15 +12,15 @@ export class AccountService {
   private apiUrl = 'http://49.50.112.46:3002'; 
   accountservice: any;
   
-  
-
   getAccountById(accountId: any) {
     throw new Error('Method not implemented.');
   }
+
   getAccountOrderby() {
     console.log('Fetching data from API');
     return this.http.get("http://49.50.112.46:3002/account/accountorderby");
   }
+  
   deleteAccount(accountid :any):Observable<any>{
     console.log('Fetching data from API');
     return this.http.get("http://49.50.112.46:3002/account/accountdelete",accountid);

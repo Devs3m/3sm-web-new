@@ -16,3 +16,11 @@ width: 1237px !important;
   margin-top: 50px;
   text-align: center;
 }
+.mat-icon{
+  color: black;
+  
+}
+html,
+body {
+    height: 100%;
+}

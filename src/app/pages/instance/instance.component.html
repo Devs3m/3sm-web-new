@@ -185,15 +185,15 @@
         [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
         [paging]="{ pageSize: 12 }" 
         [showBorders]="true" (onExporting)="onExporting($event)"
-        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
         title="Instance" >
 
         <dxi-column dataField="instanceid" [allowSorting]="true" [sortOrder]="'asc'"caption="Instance ID"></dxi-column>
         <dxi-column dataField="instancename" caption="Instance Name"></dxi-column>
+        <dxi-column dataField="accountid" caption="Company Name"></dxi-column>
         <dxi-column dataField="ownername" caption="Owner Name"></dxi-column>
         <dxi-column dataField="ownermobile" caption="Owner Mobile"></dxi-column>
         <dxi-column dataField="owneremail" caption="Owner Email"></dxi-column>
-        <dxi-column dataField="isactive" caption="Active"></dxi-column>
+        <dxi-column dataField="instanceisactive" caption="Active"></dxi-column>
         <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate"></dxi-column>
     
       
