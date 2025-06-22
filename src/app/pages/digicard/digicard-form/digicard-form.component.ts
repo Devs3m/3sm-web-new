@@ -16,7 +16,14 @@ export class DigicardFormComponent {
   onSelectionChange($event: Event) {
     throw new Error('Method not implemented.');
   }
-
+  // card-selection
+cardThemes = [
+  { class: 'whiteCard', image: 'assets/images/digicard/white-card.png' },
+  { class: 'greenCard', image: 'assets/images/digicard/green-card.png' },
+  { class: 'blueCard', image: 'assets/images/digicard/blue-card.png' },
+  { class: 'pinkCard', image: 'assets/images/digicard/pink-card.png' }
+];
+// card-selection
   @ViewChild('formSection') formSection!: ElementRef; // Reference to form
 
   isFormOpen = false; // Controls the slider visibility
@@ -74,6 +81,7 @@ export class DigicardFormComponent {
       "digicardisactive": [""],
       "createdby": [1],
       "updatedby": [1],
+      cardTheme: ['whiteCard']
     })
     this.getDigicardDetails()
     {
@@ -106,6 +114,8 @@ export class DigicardFormComponent {
   }
 
   createDigicard(): void {
+     const selectedTheme = this.digicardForm.value.cardTheme;
+  localStorage.setItem('selectedCardTheme', selectedTheme);
     this.digicardservice.addDigicard(this.digicardForm.value).subscribe((data: any) => {
       if (data) {
         this.getDigicardDetails();

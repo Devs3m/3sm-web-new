@@ -18,7 +18,9 @@ export class CardComponent implements OnInit {
   cardColor: any;
   contactSaveForm: FormGroup;
   empid: any;
-
+  // card-selection
+  selectedTheme = 'whiteCard';
+// card-selection
   constructor(
     private formBuilder: FormBuilder,
     private service: CardService,
@@ -52,6 +54,12 @@ export class CardComponent implements OnInit {
       this.cardColor = color;
     });
     if (this.empid) this.getUserDataById(this.empid);
+    // card-selection
+     const storedTheme = localStorage.getItem('selectedCardTheme');
+    if (storedTheme) {
+      this.selectedTheme = storedTheme;
+    }
+    // card-selection
   }
 
   generateVCF(contact: any): string {

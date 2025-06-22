@@ -395,7 +395,53 @@ body {
 			}
 		}
 	}
-
+.greenCard {
+  .first-box{
+		background-color: #4caf50;
+		width: 90%;
+		height: 240px;
+		border-radius: 25px;
+		overflow: hidden;
+		margin: 15px auto 0px;
+		padding: 0px;
+	}
+	.surgical-card{
+	background-color: #4caf50;
+	}
+}
+.blueCard {
+  .first-box{
+		background-color: #37a9f4;
+	}
+	.surgical-card{
+	background-color: #37a9f4;
+	}
+}
+.pinkCard{
+	.first-box{
+		background-color: #f88df3;
+		width: 90%;
+		height: 240px;
+		border-radius: 25px;
+		overflow: hidden;
+		margin: 15px auto 0px;
+		padding: 0px;
+	}
+	.surgical-card{
+	background-color: #f88df3;
+	}
+}
+.whiteCard {
+  .first-box{
+		background-color: #fff;
+		width: 90%;
+		height: 240px;
+		border-radius: 25px;
+		overflow: hidden;
+		margin: 15px auto 0px;
+		padding: 0px;
+	}
+}
 	.first-box{
 		background-color: #fff;
 		width: 90%;

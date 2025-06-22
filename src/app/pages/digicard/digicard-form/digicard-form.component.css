@@ -1,0 +1,26 @@
+.multi-theme {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+
+}
+
+.loginDesign {
+    width: 25%;
+    height: 200px;
+}
+
+.loginDesign img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.loginDesign img.selected {
+    border: 3px solid #000;
+    border-radius: 8px;
+}
+.form-container{
+    overflow-y: auto;
+}
