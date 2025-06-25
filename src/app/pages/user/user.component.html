@@ -117,18 +117,17 @@
       
     </div>
         <dx-data-grid 
-        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
         [dataSource]="apiData"
         [allowColumnReordering]="true" 
         [allowColumnResizing]="true" 
         [showBorders]="true"
         [headerFilter]="{ visible: true }" 
         [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
-        title="User" 
-        [columns]="['username', 'usermobile', 'useremail', 'usercity','isactive','Actions']"
         [paging]="{ pageSize: 12 }" 
-        [showBorders]="true" (onExporting)="onExporting($event)">
-    
+        [showBorders]="true" (onExporting)="onExporting($event)"
+        title="User" >
+
+        <dxi-column dataField="userid" caption="User ID"></dxi-column>
         <dxi-column dataField="username" caption="User Name"></dxi-column>
         <dxi-column dataField="usermobile" caption="User Mobile"></dxi-column>
         <dxi-column dataField="useremail" caption="User Email"></dxi-column>
