@@ -44,40 +44,34 @@
             </div>
 </form>
     </div>
-    <div class="pos-relative">
-        <div class="btn-pos">
+    
+        <div class="example-card">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>GST %&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalGst}}</mat-card-title>
+          </mat-card-header>
+        </mat-card>
+       <mat-card>
+          <mat-card-header>
+            <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeGst}}</mat-card-title>
+          </mat-card-header>
+        </mat-card>
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveGst}}</mat-card-title>
+          </mat-card-header>
+        </mat-card>
+      </div>
+
+      <div class="pos-relative">
+        <div class="btn-pos-list">
           <button (click)="toggleForm()" class="add-btn" >
             <mat-icon>add_circle</mat-icon>
           </button>
         </div>
     
-        <p style="font-size: larger;">GST %</p>
     
-    <div class="example-card">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>{{totalGst}}</mat-card-title>
-          <mat-card-title>GST</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-    
-     <mat-card>
-        <mat-card-header>
-          <mat-card-title>{{activeGst}}</mat-card-title>
-          <mat-card-title>Active</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-      
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>{{deactiveGst}}</mat-card-title>
-          <mat-card-title>In-Active</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-      
-    </div>
         <dx-data-grid 
-        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
         [dataSource]="apiData"
         [allowColumnReordering]="true" 
         [allowColumnResizing]="true" 
@@ -85,26 +79,24 @@
         [headerFilter]="{ visible: true }" 
         [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
         title="GST %" 
-        [columns]="['totalgstpercent', 'igstpercent', 'updateddate', 'userroleisactive','Actions']"
         [paging]="{ pageSize: 12 }" 
         [showBorders]="true" (onExporting)="onExporting($event)">
+
     
-        <dxi-column dataField="totalgstpercent" caption="Total GST%"></dxi-column>
-        <dxi-column dataField="igstpercent" caption="IGST %"></dxi-column>
-        <dxi-column dataField="cgstpercent" caption="CGST %"></dxi-column>
-        <dxi-column dataField="sgstpercent" caption="SGST %"></dxi-column>
-        <dxi-column dataField="ugstpercent" caption="UGST %"></dxi-column>
-        <dxi-column dataField="chesspercent" caption="CHESS %"></dxi-column>
+      <dxi-column dataField="gstid"[allowSorting]="true" [sortOrder]="'asc'"caption="GST ID" [width]="130"></dxi-column>
+        <dxi-column dataField="totalgstpercent" caption="Total GST%" [width]="150"></dxi-column>
+        <dxi-column dataField="igstpercent" caption="IGST %"[width]="150" ></dxi-column>
+        <dxi-column dataField="cgstpercent" caption="CGST %" [width]="150"></dxi-column>
+        <dxi-column dataField="sgstpercent" caption="SGST %" [width]="150"></dxi-column>
+        <dxi-column dataField="ugstpercent" caption="UGST %" [width]="150"></dxi-column>
+        <dxi-column dataField="chesspercent" caption="CHESS %" [width]="150"></dxi-column>
+        <dxi-column dataField="gstisactive" caption="Active" [width]="130"></dxi-column>
+        <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="150"></dxi-column>
     
       
-        <!-- Actions Column -->
-        <dxi-column caption="Actions" [width]="150" [cellTemplate]="'actionTemplate'"></dxi-column>
-      
-        <!-- Action Template -->
-        <ng-template #actionTemplate let-data>
-          <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
-          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
-        </ng-template>
+        <a color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
+          <span class="material-symbols-outlined edit-btn">edit</span>   
+        </a>
     
     
           <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>

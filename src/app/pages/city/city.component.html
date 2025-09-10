@@ -31,64 +31,54 @@
             </div>
 </form>
     </div>
-    <div class="pos-relative">
-        <div class="btn-pos">
-          <button (click)="toggleForm()" class="add-btn" >
-            <mat-icon>add_circle</mat-icon>
-          </button>
+
+        <div class="example-card">
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>City&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalCity}}</mat-card-title>
+            </mat-card-header>
+          </mat-card>
+         <mat-card>
+            <mat-card-header>
+              <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeCity}}</mat-card-title>
+            </mat-card-header>
+          </mat-card>
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveCity}}</mat-card-title>
+            </mat-card-header>
+          </mat-card>
         </div>
-    
-        <p style="font-size: larger;">City</p>
-    
-    <div class="example-card">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>{{totalCity}}</mat-card-title>
-          <mat-card-title>City</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-    
-     <mat-card>
-        <mat-card-header>
-          <mat-card-title>{{activeCity}}</mat-card-title>
-          <mat-card-title>Active</mat-card-title>
-        </mat-card-header>
-      </mat-card>
+
+        <div class="pos-relative">
+          <div class="btn-pos-list">
+            <button (click)="toggleForm()" class="add-btn" >
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
       
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>{{deactiveCity}}</mat-card-title>
-          <mat-card-title>In-Active</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-      
-    </div>
+
         <dx-data-grid 
-        [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
         [dataSource]="apiData"
         [allowColumnReordering]="true" 
         [allowColumnResizing]="true" 
         [showBorders]="true"
         [headerFilter]="{ visible: true }" 
         [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
-        title="City" 
-        [columns]="['cityname', 'createddate', 'updateddate', 'userroleisactive','Actions']"
         [paging]="{ pageSize: 12 }" 
+        title="City" 
         [showBorders]="true" (onExporting)="onExporting($event)">
     
-        <dxi-column dataField="cityname" caption="City Name"></dxi-column>
-        <dxi-column dataField="createddate" caption="Created Date"></dxi-column>
-        <dxi-column dataField="updateddate" caption="Updated Date"></dxi-column>
-        <dxi-column dataField="userroleisactive" caption="Active"></dxi-column>
+        <dxi-column dataField="cityid"[allowSorting]="true" [sortOrder]="'asc'"caption="City ID" [width]="130"></dxi-column>
+        <dxi-column dataField="cityname" caption="City Name" [width]="250"></dxi-column>>
+        <dxi-column dataField="createddate" caption="Created Date" [width]="250"></dxi-column>>
+        <dxi-column dataField="updateddate" caption="Updated Date" [width]="250"></dxi-column>>
+        <dxi-column dataField="isactive" caption="Active" [width]="200"></dxi-column>
+        <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
       
-        <!-- Actions Column -->
-        <dxi-column caption="Actions" [width]="150" [cellTemplate]="'actionTemplate'"></dxi-column>
-      
-        <!-- Action Template -->
-        <ng-template #actionTemplate let-data>
-          <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
-          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
-        </ng-template>
+        <a color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
+          <span class="material-symbols-outlined edit-btn">edit</span>   
+        </a>
     
     
           <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>

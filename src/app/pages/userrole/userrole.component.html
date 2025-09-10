@@ -8,14 +8,7 @@
             <mat-label style="color:black">User Role</mat-label>
             <input matInput placeholder="Instance" class="mat-input-element custom-placeholder" formControlName="userrolename">
         </mat-form-field >
-        <mat-form-field appearance="outline" class="form-field">
-            <mat-label style="color:black">Active</mat-label>
-           <select matNativeControl formControlName="userroleisactive">
-            <option  value="" disabled>Select</option>
-            <option  value="true">Active</option>x
-            <option  value="false">Inactive</option>
-           </select>     
-        </mat-form-field>
+  
        
         <div class="form-submit">
           <button mat-raised-button type="submit" class="btn-primary" (click)="createUserrole()">
@@ -25,66 +18,54 @@
   
       </form>
     </div>
+
+    <div class="example-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Userrole&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalUserrole}}</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+     <mat-card>
+        <mat-card-header>
+          <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeUserrole}}</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveUserrole}}</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+    </div>
+
     <div class="pos-relative">
-      <div class="btn-pos">
+      <div class="btn-pos-list">
         <button (click)="toggleForm()" class="add-btn" >
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
+
   
-      <p style="font-size: larger;">User Role</p>
-  
-  <div class="example-card">
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>{{totalUserrole}}</mat-card-title>
-        <mat-card-title>User Role</mat-card-title>
-      </mat-card-header>
-    </mat-card>
-  
-   <mat-card>
-      <mat-card-header>
-        <mat-card-title>{{activeUserrole}}</mat-card-title>
-        <mat-card-title>Active</mat-card-title>
-      </mat-card-header>
-    </mat-card>
-    
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>{{deactiveUserrole}}</mat-card-title>
-        <mat-card-title>In-Active</mat-card-title>
-      </mat-card-header>
-    </mat-card>
-    
-  </div>
       <dx-data-grid 
-      [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" 
       [dataSource]="apiData"
       [allowColumnReordering]="true" 
       [allowColumnResizing]="true" 
       [showBorders]="true"
       [headerFilter]="{ visible: true }" 
       [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
-      title="User Role" 
-      [columns]="['userrolename', 'createddate', 'updateddate', 'userroleisactive','Actions']"
       [paging]="{ pageSize: 12 }" 
+      title="User Role"  
       [showBorders]="true" (onExporting)="onExporting($event)">
   
-      <dxi-column dataField="userrolename" caption="Userrole Name"></dxi-column>
-      <dxi-column dataField="createddate" caption="Created Date"></dxi-column>
-      <dxi-column dataField="updateddate" caption="Updated Date"></dxi-column>
-      <dxi-column dataField="userroleisactive" caption="Active"></dxi-column>
+      <dxi-column dataField="userroleid"[allowSorting]="true" [sortOrder]="'asc'"caption="Userrole ID" [width]="130"></dxi-column>
+      <dxi-column dataField="userrolename" caption="Userrole Name" [width]="250"></dxi-column>
+      <dxi-column dataField="createddate" caption="Created Date" [width]="250"></dxi-column>
+      <dxi-column dataField="updateddate" caption="Updated Date" [width]="250"></dxi-column>
+      <dxi-column dataField="userroleisactive" caption="Active" [width]="200"></dxi-column>
+      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
     
-      <!-- Actions Column -->
-      <dxi-column caption="Actions" [width]="150" [cellTemplate]="'actionTemplate'"></dxi-column>
-    
-      <!-- Action Template -->
-      <ng-template #actionTemplate let-data>
-        <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
-        <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
-      </ng-template>
-  
-  
+      <a color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
+        <span class="material-symbols-outlined edit-btn">edit</span>   
+      </a>
         <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
       </dx-data-grid>
   

@@ -16,3 +16,39 @@
     margin-top: 50px;
     text-align: center;
   }
+  .mat-icon{
+    color: black;
+    height: 10px;
+  }
+  
+  html,
+  body {
+      height: 100%;
+  }
+  
+  .btn-pos-list{
+    position: absolute;
+    top: 0px;
+    right: 355px;
+    width: 40px;
+    z-index: 1;
+  }
+  
+  .edit-btn{
+    font-size: 18px;
+    color:#337ab7;
+  }
+  ::ng-deep .dx-datagrid .dx-row > td {
+   vertical-align: middle !important;
+  }
+  .close-btn {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    font-size: 30px;
+    color: black;
+    font-weight: 700px;
+    margin-left: 1134px;
+    margin-top: -14px;
+  }
+  

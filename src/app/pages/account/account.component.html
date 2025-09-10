@@ -93,38 +93,36 @@
     </form>
   </div>
 
-  <div class="pos-relative">
-    <div class="btn-pos">
-      <button (click)="toggleForm()" class="add-btn" >
-        <mat-icon>add_circle</mat-icon>
-      </button>
-    </div>
 
-    <p style="font-size: larger;">Account</p>
+
 
 <div class="example-card">
   <mat-card>
     <mat-card-header>
-      <mat-card-title>{{totalAccounts}}</mat-card-title>
-      <mat-card-title>Accounts</mat-card-title>
+      <mat-card-title>Account&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalAccounts}}</mat-card-title>
     </mat-card-header>
   </mat-card>
 
  <mat-card>
     <mat-card-header>
-      <mat-card-title>{{activeAccounts}}</mat-card-title>
-      <mat-card-title>Active</mat-card-title>
+      <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeAccounts}}</mat-card-title>
     </mat-card-header>
   </mat-card>
   
   <mat-card>
     <mat-card-header>
-      <mat-card-title>{{deactiveAccounts}}</mat-card-title>
-      <mat-card-title>In-Active</mat-card-title>
+      <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveAccounts}}</mat-card-title>
+      
     </mat-card-header>
   </mat-card>
   
 </div>
+<div class="pos-relative">
+  <div class="btn-pos-list">
+    <button (click)="toggleForm()" class="add-btn" >
+      <mat-icon>add_circle</mat-icon>
+    </button>
+  </div>
     <dx-data-grid 
     [dataSource]="apiData"
     [allowColumnReordering]="true" 
@@ -132,24 +130,21 @@
     [showBorders]="true"
     [headerFilter]="{ visible: true }" 
     [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
-    [paging]="{ pageSize: 12 }" 
+    [paging]="{ pageSize: 7 }" 
     [showBorders]="true" (onExporting)="onExporting($event)"
     title="Account">
    
-    <dxi-column dataField="accountid" [allowSorting]="true" [sortOrder]="'asc'"caption="Company ID"></dxi-column>
+    <dxi-column dataField="accountid" [allowSorting]="true" [sortOrder]="'asc'"caption="Company ID" [width]="130"></dxi-column>
     <dxi-column dataField="companyname" caption="Company Name"></dxi-column>
     <dxi-column dataField="ownername" caption="Owner Name"></dxi-column>
-    <dxi-column dataField="ownermobile" caption="Owner Mobile"></dxi-column>
-    <dxi-column dataField="owneremail" caption="Owner Email"></dxi-column>
-    <dxi-column dataField="isactive" caption="Active"></dxi-column>
-    <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate"></dxi-column>
+    <dxi-column dataField="ownermobile" caption="Owner Mobile" [width]="150"></dxi-column>
+    <dxi-column dataField="owneremail" caption="Owner Email"[width]="300"></dxi-column>
+    <dxi-column dataField="isactive" caption="Active" alignment="center" [width]="150"></dxi-column>
+    <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="150"></dxi-column>
 
-
-
-         <button mat-icon-button color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
-          <mat-icon> border_color</mat-icon>
-        </button>
+     <a  color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
+      <span class="material-symbols-outlined edit-btn">edit</span>   
+     </a>
   
-    
     <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
   </dx-data-grid>

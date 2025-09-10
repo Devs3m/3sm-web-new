@@ -151,56 +151,57 @@
     </form>
   </div>
 
-  <div class="pos-relative">
-    <div class="btn-pos">
-      <button (click)="toggleForm()" class="add-btn">
-        <mat-icon>add_circle</mat-icon>
-      </button>
-    </div>
-    <p style="font-size: larger;">Product</p>
+
+
     <div class="example-card">
       <mat-card>
         <mat-card-header>
-          <mat-card-title>{{totalProduct}}</mat-card-title>
-          <mat-card-title>Product</mat-card-title>
+          <mat-card-title>Product&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalProduct}}</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+     <mat-card>
+        <mat-card-header>
+          <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeProduct}}</mat-card-title>
         </mat-card-header>
       </mat-card>
       <mat-card>
         <mat-card-header>
-          <mat-card-title>{{activeProduct}}</mat-card-title>
-          <mat-card-title>Active</mat-card-title>
+          <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveProduct}}</mat-card-title>
         </mat-card-header>
       </mat-card>
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>{{deactiveProduct}}</mat-card-title>
-          <mat-card-title>In-Active</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-
     </div>
-    <dx-data-grid [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" [dataSource]="apiData"
-      [allowColumnReordering]="true" [allowColumnResizing]="true" [showBorders]="true"
-      [headerFilter]="{ visible: true }" [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }"
-      title="Product"
-      [columns]="['productname', 'productmanufacturer', 'productpackqty', 'productcategory','isactive','Actions']"
-      [paging]="{ pageSize: 12 }" [showBorders]="true" (onExporting)="onExporting($event)">
 
-      <dxi-column dataField="productname" caption="Product Name"></dxi-column>
-      <dxi-column dataField="productmanufacturer" caption="Manufacturer"></dxi-column>
-      <dxi-column dataField="productpackqty" caption="Packing"></dxi-column>
-      <dxi-column dataField="productcategory" caption="Category"></dxi-column>
-      <dxi-column dataField="isactive" caption="Active"></dxi-column>
+    <div class="pos-relative">
+      <div class="btn-pos-list">
+        <button (click)="toggleForm()" class="add-btn">
+          <mat-icon>add_circle</mat-icon>
+        </button>
+      </div>
 
-      <!-- Actions Column -->
-      <dxi-column caption="Actions" [width]="50" [cellTemplate]="'actionTemplate'"></dxi-column>
+   
+    <dx-data-grid 
+    [dataSource]="apiData"
+    [allowColumnReordering]="true" 
+    [allowColumnResizing]="true" 
+    [showBorders]="true"
+    [headerFilter]="{ visible: true }" 
+    [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }"
+    [paging]="{ pageSize: 12 }" 
+    title="Product"
+    [showBorders]="true" (onExporting)="onExporting($event)">
 
-      <!-- Action Template -->
-      <ng-template #actionTemplate let-data>
-        <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
-        <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
-      </ng-template>
+      <dxi-column dataField="productid"[allowSorting]="true" [sortOrder]="'asc'"caption="Product ID" [width]="130"></dxi-column>
+      <dxi-column dataField="productname" caption="Product Name" [width]="200"></dxi-column>
+      <dxi-column dataField="productmanufacturer" caption="Manufacturer" [width]="200"></dxi-column>
+      <dxi-column dataField="productpackqty" caption="Packing" [width]="150"></dxi-column>
+      <dxi-column dataField="productcategory" caption="Category" [width]="200"></dxi-column>  
+      <dxi-column dataField="productisactive" caption="Active" [width]="200"></dxi-column>
+      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
 
+    
+      <a color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
+        <span class="material-symbols-outlined edit-btn">edit</span>   
+      </a>
 
       <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
     </dx-data-grid>

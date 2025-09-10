@@ -1,9 +1,7 @@
 <section>
     <div class="form-container"[class.open]="isFormOpen">
         <p style="font-size: larger;">Add User</p>
-
         <button (click)="restuserForm()" class="close-btn">&times;</button>
-
         <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
@@ -16,8 +14,7 @@
             <mat-label style="color:black">User Mobile</mat-label>
             <span style="color:black" matTextPrefix>+91 &nbsp;</span>
             <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
-            formControlName="usermobile">
-           
+            formControlName="usermobile">     
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
@@ -83,39 +80,36 @@
             Submit
           </button>
           </div>
-
-
         </form>  
     </div>
 
-    <div class="pos-relative">
-        <div class="btn-pos">
-          <button (click)="toggleForm()" class="add-btn" >
-            <mat-icon>add_circle</mat-icon>
-          </button>
-        </div>
-        <p style="font-size: larger;">User</p>
+
     <div class="example-card">
       <mat-card>
         <mat-card-header>
-          <mat-card-title>{{totalUser}}</mat-card-title>
-          <mat-card-title>User</mat-card-title>
+          <mat-card-title>User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalUser}}</mat-card-title>
         </mat-card-header>
       </mat-card>
      <mat-card>
         <mat-card-header>
-          <mat-card-title>{{activeUser}}</mat-card-title>
-          <mat-card-title>Active</mat-card-title>
+          <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeUser}}</mat-card-title>
         </mat-card-header>
       </mat-card>
       <mat-card>
         <mat-card-header>
-          <mat-card-title>{{deactiveUser}}</mat-card-title>
-          <mat-card-title>In-Active</mat-card-title>
+          <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveUser}}</mat-card-title>
         </mat-card-header>
       </mat-card>
-      
     </div>
+
+    <div class="pos-relative">
+        <div class="btn-pos-list">
+          <button (click)="toggleForm()" class="add-btn" >
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+       
+ 
         <dx-data-grid 
         [dataSource]="apiData"
         [allowColumnReordering]="true" 
@@ -127,23 +121,19 @@
         [showBorders]="true" (onExporting)="onExporting($event)"
         title="User" >
 
-        <dxi-column dataField="userid" caption="User ID"></dxi-column>
+        <dxi-column dataField="userid"[allowSorting]="true" [sortOrder]="'asc'"caption="User ID" [width]="130"></dxi-column>
         <dxi-column dataField="username" caption="User Name"></dxi-column>
-        <dxi-column dataField="usermobile" caption="User Mobile"></dxi-column>
-        <dxi-column dataField="useremail" caption="User Email"></dxi-column>
+        <dxi-column dataField="usermobile" caption="User Mobile" [width]="150"></dxi-column>
+        <dxi-column dataField="useremail" caption="User Email" [width]="250"></dxi-column>
         <dxi-column dataField="usercity" caption="User City"></dxi-column>
-        <dxi-column dataField="isactive" caption="Active"></dxi-column>
+        <dxi-column dataField="userisactive" caption="Active" [width]="125"></dxi-column>
+        <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="125"></dxi-column>
       
-        <!-- Actions Column -->
-        <dxi-column caption="Actions" [width]="50" [cellTemplate]="'actionTemplate'"></dxi-column>
+        
+        <a color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
+          <span class="material-symbols-outlined edit-btn">edit</span>   
+        </a>
       
-        <!-- Action Template -->
-        <ng-template #actionTemplate let-data>
-          <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
-          <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button>
-        </ng-template>
-    
-    
           <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
         </dx-data-grid>
     </div>

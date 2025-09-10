@@ -14,6 +14,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 })
 export class AccountComponent implements OnInit {
+data: any;
+toggleActive(arg0: any) {
+throw new Error('Method not implemented.');
+}
   
   @ViewChild('formSection') formSection!: ElementRef; // Reference to form
 

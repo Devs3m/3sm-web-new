@@ -2,25 +2,26 @@
   <!-- <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
        <mat-icon>menu</mat-icon>
      </button>-->
-  <span>My App</span>
+  <span>Connectsite</span>
   <span class="example-spacer"></span>
 
+  <button mat-icon-button>
+    <mat-icon class="example-icon" aria-label="Example">share</mat-icon>
+  </button>
 
+  <button mat-icon-button>
+    <mat-icon class="example-icon" aria-label="Example">shopping_cart_checkout_24</mat-icon>
+  </button>
 
-  <button mat-icon-button><mat-icon class="example-icon" aria-label="Example">
-    share</mat-icon></button>
-
-  <button mat-icon-button><mat-icon class="example-icon" aria-label="Example">
-    shopping_cart_checkout_24</mat-icon></button>
-
-    <a href="https://wa.me/919042041321" target="_blank">
-    <button mat-icon-button><mat-icon class="example-icon" aria-label="Example">
-      forum_24"</mat-icon></button>
+  <a href="https://wa.me/919042041321" target="_blank">
+    <button mat-icon-button>
+      <mat-icon class="example-icon" aria-label="Example">forum_24"</mat-icon>
+    </button>
    </a>
 
-
-  <button mat-icon-button *ngIf="authService.isAuthenticated()" (click)="authService.logout()"><mat-icon class="example-icon" aria-label="Example">
-      logout_24</mat-icon></button>
+   <button mat-icon-button *ngIf="authService.isAuthenticated()" (click)="authService.logout()">
+    <mat-icon class="example-icon" aria-label="Example">logout_24</mat-icon>
+  </button>  
 
 
   </mat-toolbar>
