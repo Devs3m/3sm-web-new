@@ -16,6 +16,7 @@ import { FormMaterialModule } from './core/form-material.module';
 import { CommonModule } from '@angular/common';
 import { DxTemplateModule } from 'devextreme-angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { UniqueMobileValidatorComponent } from './pages/unique-mobile.validator/unique-mobile.validator.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -24,7 +25,8 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    UniqueMobileValidatorComponent
   ],
   imports: [
     BrowserModule,

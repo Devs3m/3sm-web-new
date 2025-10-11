@@ -20,13 +20,22 @@
         <input matInput placeholder="Owner" class="mat-input-element custom-placeholder" 
         formControlName="ownername">
       </mat-form-field>
-      <mat-form-field appearance="outline" class="form-field">
-        <mat-label style="color:black">Owner Mobile</mat-label>
-        <span style="color:black"></span>
-        <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
-          formControlName="ownermobile">
-        
-      </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label style="color:black">Owner Mobile</mat-label>
+          <span style="color:black"></span>
+          <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
+            formControlName="ownermobile">
+            <mat-error *ngIf="form.get('ownermobile')?.hasError('required')">
+              Mobile number is required
+            </mat-error>
+            <mat-error *ngIf="form.get('ownermobile')?.hasError('pattern')">
+              Enter a valid mobile number
+            </mat-error>
+            <mat-error *ngIf="form.get('ownermobile')?.hasError('duplicateMobile')">
+              This mobile number is already registered
+            </mat-error>
+        </mat-form-field>
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black !important">Owner Email</mat-label>
         <input matInput placeholder="Owner Email" class="mat-input-element custom-placeholder"
@@ -134,7 +143,7 @@
     [showBorders]="true" (onExporting)="onExporting($event)"
     title="Account">
    
-    <dxi-column dataField="accountid" [allowSorting]="true" [sortOrder]="'asc'"caption="Company ID" [width]="130"></dxi-column>
+    <dxi-column dataField="accountid" [allowSorting]="true" [sortOrder]="'dsc'"caption="Company ID" [width]="130"></dxi-column>
     <dxi-column dataField="companyname" caption="Company Name"></dxi-column>
     <dxi-column dataField="ownername" caption="Owner Name"></dxi-column>
     <dxi-column dataField="ownermobile" caption="Owner Mobile" [width]="150"></dxi-column>

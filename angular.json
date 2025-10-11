@@ -18,7 +18,8 @@
                 "devextreme-quill",
                 "jszip",
                 "devexpress-diagram",
-                "devexpress-gantt"
+                "devexpress-gantt",
+                "exceljs"
             ],
             "outputPath": "dist/3sm-web",
             "index": "src/index.html",

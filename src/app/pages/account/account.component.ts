@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UniqueMobileValidatorComponent} from '../unique-mobile.validator/unique-mobile.validator.component';
 
 
 @Component({
@@ -15,6 +16,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 })
 export class AccountComponent implements OnInit {
 data: any;
+form: any;
 toggleActive(arg0: any) {
 throw new Error('Method not implemented.');
 }
@@ -33,6 +35,7 @@ throw new Error('Method not implemented.');
   totalAccounts: number = 0;  // Variable to store API data
   activeAccounts: number = 0;
   deactiveAccounts: number = 0;
+  existingNumbers = ['1234567890', '9876543210'];
 
   constructor(private accountservice: AccountService,
     private formBuilder: FormBuilder,
@@ -42,11 +45,11 @@ throw new Error('Method not implemented.');
   this.accountForm = this.formBuilder.group({
     companyname: ["", [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
     ownername: ["", [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
-    ownermobile: ["", Validators.required],
+  
     owneremail: [""],
     companyaddress: [""],
     companycity: ["", Validators.required],
-    companystate: [""],
+    companystate: [""], 
     companycountry: [""],
     companypincode: [""],
     licensecount: [""],
