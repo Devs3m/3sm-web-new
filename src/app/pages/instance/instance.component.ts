@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-instance,input-prefix-suffix-example',
@@ -27,6 +28,7 @@ export class InstanceComponent implements OnInit {
   totalInstance: number = 0;
   activeInstance: number = 0;
   deactiveInstance: number = 0;
+  dropdownAccountItems: any[]=[];
 
   constructor(private instanceservice: InstanceService,
     private fromBuilder: FormBuilder,
@@ -64,17 +66,16 @@ export class InstanceComponent implements OnInit {
     })
     this.getInstanceDetails();
     this.getDropDownValue();
-    {
-      // Fetch data from API
-      this.http.get<{ totalInstance: number; activeInstance: number; deactiveInstance: number }>('http://49.50.112.46:3002/instance/counts')
-        .subscribe(response => {
-          this.totalInstance = response.totalInstance; // Assign API response to totalAccounts
-          this.activeInstance = response.activeInstance; // Assign API response to totalAccounts
-          this.deactiveInstance = response.deactiveInstance; // Assign API response to totalAccounts
-          console.log(this.totalInstance)
-        });
-
-    }
+    this.getDropdownAccountValue(); // Load account dropdown data
+    
+    // Fetch data from API
+    this.http.get<{ totalInstance: number; activeInstance: number; deactiveInstance: number }>(`${environment.apiUrl}/instance/counts`)
+      .subscribe(response => {
+        this.totalInstance = response.totalInstance;
+        this.activeInstance = response.activeInstance;
+        this.deactiveInstance = response.deactiveInstance;
+        console.log(this.totalInstance)
+      });
 
   }
 
@@ -150,43 +151,104 @@ export class InstanceComponent implements OnInit {
   }
 
   getDropDownValue() {
+    console.log('Loading city dropdown...');
     this.instanceservice.getDropdownItems().subscribe({
-      next: (items) => (this.dropdownItems = items),
+      next: (cityitems) => {
+        console.log('City dropdown items received:', cityitems);
+        // Filter only active cities if the API returns inactive ones
+        if (cityitems && Array.isArray(cityitems)) {
+          this.dropdownItems = cityitems.filter((item: any) => 
+            item.cityisactive === true || 
+            item.cityisactive === 'true' || 
+            item.cityisactive === 1 ||
+            item.cityisactive === undefined // Include if field doesn't exist
+          );
+          console.log('Filtered city dropdown items:', this.dropdownItems.length);
+        } else {
+          console.warn('City dropdown items is not an array:', cityitems);
+          this.dropdownItems = [];
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching city dropdown items:', err);
+        console.error('Error details:', err.error || err.message);
+        this.dropdownItems = [];
+        // Try alternative method as fallback
+        this.getDropDownValues();
+      },
+    });
+  }
+  getDropdownAccountValue() {
+    this.instanceservice.getDropdownAccountItems().subscribe({
+      next: (items) => (this.dropdownAccountItems = items),
       error: (err) => console.error('Error fetching dropdown items', err),
     });
   }
 
-  onSelectionChange(event: Event): void {
+  onSelectionAccountChange(event: Event): void {
     const selectedValue = (event.target as HTMLSelectElement).value;
-    console.log('Selected City Name:', selectedValue)
-    const selectedItem = this.dropdownItems.find((item) => item.cityname === selectedValue);
-    console.log('Selected City', selectedValue)
+    console.log('Selected Account ID:', selectedValue);
+    
+    // Find the selected account by accountid (since the dropdown uses accountid as value)
+    const selectedItem = this.dropdownAccountItems.find((item) => item.accountid == selectedValue);
+    console.log('Selected Account Item:', selectedItem);
+    
     if (selectedItem) {
       this.instanceForm.patchValue({
-        cityid: selectedItem.cityId,
-        companystate: selectedItem.citystate,
-        companycountry: selectedItem.citycountry
-      }); // Update cityId in the form
-      console.log('Selected City ID:', selectedItem.cityId);
+        accountid: selectedItem.accountid,
+        ownername: selectedItem.ownername || '',
+        ownermobile: selectedItem.ownermobile || '',
+        owneremail: selectedItem.owneremail || '',
+      });
+      console.log('Auto-filled Owner Name:', selectedItem.ownername);
+      console.log('Auto-filled Owner Mobile:', selectedItem.ownermobile);
+      console.log('Auto-filled Owner Email:', selectedItem.owneremail);
+    }
+  }
+
+  onSelectionChange(event: Event): void {
+    const selectedValue = (event.target as HTMLSelectElement).value;
+    console.log('Selected City Name:', selectedValue);
+    const selectedItem = this.dropdownItems.find((item) => item.cityname === selectedValue);
+    console.log('Selected City Item:', selectedItem);
+    
+    if (selectedItem) {
+      this.instanceForm.patchValue({
+        cityid: selectedItem.cityId || selectedItem.cityid,
+        instancestate: selectedItem.citystate || '',
+        instancecountry: selectedItem.citycountry || ''
+      });
+      console.log('Auto-filled State:', selectedItem.citystate);
+      console.log('Auto-filled Country:', selectedItem.citycountry);
+      console.log('Selected City ID:', selectedItem.cityId || selectedItem.cityid);
     }
   }
   editItem(item: any): void {
     this.isFormOpen = true;
     this.isEditMode = true;
-    this.instanceForm.patchValue(item);
+    this.instanceForm.patchValue({
+      ...item,
+      instanceisactive: item.instanceisactive === true || item.instanceisactive === 'true' || item.instanceisactive === 1 ? 'true' : 'false'
+    });
     console.log('Edit Item:', item);
-
   }
 
   deleteItem(item: any): void {
     if (confirm(`Are you sure you want to delete ${item.instancename}?`)) {
+      console.log('Deleting instance:', item);
+      console.log('Instance ID:', item.instanceid);
+      
       this.instanceservice.deleteInstance(item.instanceid).subscribe({
-        next: () => {
-          console.log("Deleted:", item);
+        next: (response: any) => {
+          console.log("Instance deleted successfully:", response);
           this.getInstanceDetails(); // Refresh grid after delete
+          this.getDropDownValue(); // Refresh dropdowns if needed
         },
-
-        error: (err: any) => console.error('Error deleting account', err),
+        error: (err: any) => {
+          console.error('Error deleting instance:', err);
+          console.error('Error details:', err.error || err.message);
+          alert(`Error deleting instance: ${err.error?.message || err.message || 'Unknown error'}. Please check the console for details.`);
+        }
       });
     }
   }
@@ -209,28 +271,60 @@ export class InstanceComponent implements OnInit {
   }
   toggleForm(): void {
     this.isFormOpen = true;
-
+    // Reload dropdowns when opening form to ensure fresh data
+    this.getDropDownValue();
+    this.getDropdownAccountValue();
   }
   restinstanceForm(): void {
     this.isFormOpen = false;
+    this.isEditMode = false;
     this.instanceForm.reset();
+    
+    // Reload dropdowns when form is reset to ensure fresh data
+    this.getDropDownValue();
+    this.getDropdownAccountValue();
+    
     this.instanceForm.patchValue({
-      companycity: null,  // Reset dropdown
-      companystate: '',
-      companycountry: '',
-      isactive: true,      // Set default value
+      accountid: '',
+      instancecity: '',
+      instancestate: '',
+      instancecountry: '',
+      instanceisactive: '',
       createddate: new Date(),
       updateddate: new Date(),
+      instanceid: 0,
+      cityid: 1
     });
   }
   getDropDownValues(): void {
-    this.http.get<any[]>('http://49.50.112.46:3002/city/list').subscribe(data => {
-      this.dropdownItems = data;
+    console.log('Loading city dropdown (fallback method)...');
+    this.http.get<any[]>(`${environment.apiUrl}/city/list`).subscribe({
+      next: (data) => {
+        console.log('City dropdown items received (fallback):', data);
+        if (data && Array.isArray(data)) {
+          // Filter only active cities if the API returns inactive ones
+          this.dropdownItems = data.filter((item: any) => 
+            item.cityisactive === true || 
+            item.cityisactive === 'true' || 
+            item.cityisactive === 1 ||
+            item.cityisactive === undefined // Include if field doesn't exist
+          );
+          console.log('Filtered city dropdown items (fallback):', this.dropdownItems.length);
+        } else {
+          console.warn('City dropdown data is not an array:', data);
+          this.dropdownItems = [];
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching city dropdown (fallback):', err);
+        console.error('Error details:', err.error || err.message);
+        this.dropdownItems = [];
+      }
     });
   }
   onCityChange(event: any): void {
     const selectedCityId = event.target.value;
-    this.http.get<any>(`http://49.50.112.46:3002/instance/${selectedCityId}`).subscribe(data => {
+    this.http.get<any>(`${environment.apiUrl}/instance/${selectedCityId}`).subscribe(data => {
       this.instanceForm.patchValue({
         cityid: data.cityid,
         instancestate: data.citystate,

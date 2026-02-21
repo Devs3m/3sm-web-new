@@ -19,6 +19,7 @@ export class LoginComponent {
       password: ['', Validators.required]
     });
   }
+  
   login() {
     if (this.loginForm.invalid){
       this.errorMessage = 'Form is invalid';
@@ -26,18 +27,22 @@ export class LoginComponent {
     }
 
     const credentials = this.loginForm.value;
+    this.errorMessage = ''; // Clear previous errors
 
     this.authService.login(credentials).subscribe({
-     next: (success: any) => {
-        if (success) {
+     next: (response: any) => {
+        if (response && response.success !== false) {
+          // Login successful - permissions are already loaded by AuthService
+          console.log('✅ Login successful, navigating to dashboard');
+          console.log('Permissions loaded:', response.permissions?.length || 0);
           this.router.navigate(['/pages/dashboard']);
+        } else {
+          this.errorMessage = 'Invalid email or password';
         }
-      else {
-        this.errorMessage = 'Invalid email or password';
-      }
      },
-    error: () => {
-      this.errorMessage = 'Login failed. Try again.';
+    error: (error) => {
+      console.error('Login error:', error);
+      this.errorMessage = error.error?.message || 'Login failed. Try again.';
     }
   });
   console.log('Login button clicked', this.loginForm.value);

@@ -179,37 +179,31 @@
             </div>
         </form>
     </div>
+    <div class="example-card">
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>Digicard&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalDigicard}}</mat-card-title>
+            </mat-card-header>
+        </mat-card>
+
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeDigicard}}</mat-card-title>
+            </mat-card-header>
+        </mat-card>
+
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveDigicard}}</mat-card-title>
+            </mat-card-header>
+        </mat-card>
+    </div>
+
     <div class="pos-relative">
-        <div class="btn-pos">
+        <div class="btn-pos-list">
             <button (click)="toggleForm()" class="add-btn">
                 <mat-icon>add_circle</mat-icon>
             </button>
-        </div>
-
-        <p style="font-size: larger;">Digicard</p>
-
-        <div class="example-card">
-            <mat-card>
-                <mat-card-header>
-                    <mat-card-title>{{totalDigicard}}</mat-card-title>
-                    <mat-card-title>Digicard</mat-card-title>
-                </mat-card-header>
-            </mat-card>
-
-            <mat-card>
-                <mat-card-header>
-                    <mat-card-title>{{activeDigicard}}</mat-card-title>
-                    <mat-card-title>Active</mat-card-title>
-                </mat-card-header>
-            </mat-card>
-
-            <mat-card>
-                <mat-card-header>
-                    <mat-card-title>{{deactiveDigicard}}</mat-card-title>
-                    <mat-card-title>In-Active</mat-card-title>
-                </mat-card-header>
-            </mat-card>
-
         </div>
         <dx-data-grid [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" [dataSource]="apiData"
             [allowColumnReordering]="true" [allowColumnResizing]="true" [showBorders]="true"
@@ -227,10 +221,16 @@
             <dxi-column caption="Actions" [width]="150" [cellTemplate]="'actionTemplate'"></dxi-column>
 
             <!-- Action Template -->
-            <div *dxTemplate="let data of 'actionTemplate'">
-                <button mat-raised-button color="primary" (click)="editItem(data.data)">Edit</button>
-                <!-- <button mat-raised-button color="warn" (click)="deleteItem(data.data)">Delete</button> -->
-                <button mat-raised-button color="warn" (click)="getLink(data.data.digicardid)">link</button>
+            <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
+                <a (click)="editItem(data.data)" style="cursor: pointer;">
+                  <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
+                </a>
+                <a (click)="deleteItem(data.data)" style="cursor: pointer;">
+                  <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
+                </a>
+                <a (click)="getLink(data.data.digicardid)" style="cursor: pointer;">
+                  <span class="material-symbols-outlined action-icon" style="color: #2196F3;" title="Get Link">link</span>
+                </a>
             </div>
 
             <div *dxTemplate="let data of 'digiTemplate'">

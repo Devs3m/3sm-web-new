@@ -8,9 +8,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DxButtonModule, DxChartModule, DxDataGridModule } from 'devextreme-angular';
 import { InstanceService } from '../service/instance.service';
 import { AccountComponent } from './account.component';
-import { DxIntegrationModule, } from 'devextreme-angular';
-import { DevExtremeModule } from 'devextreme-angular';
-import { DxTemplateModule  } from 'devextreme-angular/core';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -24,16 +22,11 @@ import { DxTemplateModule  } from 'devextreme-angular/core';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    DevExtremeModule,
-    DxTemplateModule,
     DxDataGridModule,
     DxButtonModule,
     DxChartModule,
-   DxIntegrationModule,
-   
-   
+    SharedModule
   ],
-    providers: [InstanceService],
-    bootstrap: [AccountComponent]
+    providers: [InstanceService]
 })
 export class AccountModule { }

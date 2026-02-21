@@ -8,6 +8,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DxButtonModule, DxChartModule, DxDataGridModule } from 'devextreme-angular';
 import { InstanceService } from '../service/instance.service';
 import { UserroleComponent } from './userrole.component';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -23,9 +24,9 @@ import { UserroleComponent } from './userrole.component';
     DxDataGridModule,
     DxButtonModule,
     DxChartModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    SharedModule
   ],
-    providers: [InstanceService],
-    bootstrap: [UserroleComponent]
+    providers: [InstanceService]
 })
 export class UserroleModule { }

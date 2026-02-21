@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { Workbook } from 'exceljs';
 import { exportDataGrid } from 'devextreme/excel_exporter';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-userrole',
@@ -25,6 +26,7 @@ export class VatComponent implements OnInit {
   totalVat:number=0;
   activeVat:number=0;
   deactiveVat:number=0;
+  private apiUrl = environment.apiUrl;
   
  
   constructor(private vatservice:VatService,
@@ -47,7 +49,7 @@ export class VatComponent implements OnInit {
     this.getDropDownValue();
     {
       // Fetch data from API
-      this.http.get<{ totalVat: number;activeVat: number; deactiveVat: number}>('http://49.50.112.46:3002/vat/counts')
+      this.http.get<{ totalVat: number;activeVat: number; deactiveVat: number}>(`${this.apiUrl}/vat/counts`)
         .subscribe(response => {
           this.totalVat = response.totalVat; // Assign API response to totalAccounts
           this.activeVat = response.activeVat; // Assign API response to totalAccounts
@@ -149,7 +151,7 @@ export class VatComponent implements OnInit {
   });
   }
   getDropDownValues(): void {
-    this.http.get<any[]>('http://49.50.112.46:3002/vat/list').subscribe(data => {
+    this.http.get<any[]>(`${this.apiUrl}/vat/list`).subscribe(data => {
       this.dropdownItems = data;
     });
   }

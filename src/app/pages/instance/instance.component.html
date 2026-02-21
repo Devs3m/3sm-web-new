@@ -4,12 +4,19 @@
         <button (click)="restinstanceForm()" class="close-btn">&times;</button>
         <form [formGroup]="instanceForm" (ngSubmit)="onSubmit()">
  
-        <mat-form-field appearance="outline" class="form-field">
-            <mat-label style="color:black">Instance Name</mat-label>
-                <input matInput placeholder="Instance" class="mat-input-element custom-placeholder" 
-                formControlName="instancename">
-        </mat-form-field >
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Account</mat-label>
+                <select matNativeControl 
+                formControlName="accountid"
+                (change)="onSelectionAccountChange($event)">   
+                    <option value="" disabled>Select Account</option>
+                     <option *ngFor="let item of dropdownAccountItems" [value]="item.accountid">
+                          {{ item.companyname }}
+                    </option>
+                </select>
+        </mat-form-field>
 
+        
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">Owner Name</mat-label>
                  <input matInput placeholder="Owner" class="mat-input-element custom-placeholder" 
@@ -29,6 +36,13 @@
                 <input matInput placeholder="Owner Email" class="mat-input-element custom-placeholder" 
                 formControlName="owneremail">
         </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label style="color:black">Instance Name</mat-label>
+              <input matInput placeholder="Instance" class="mat-input-element custom-placeholder" 
+              formControlName="instancename">
+      </mat-form-field >
+
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">Manager Name</mat-label>
@@ -60,8 +74,8 @@
                 <select matNativeControl 
                 formControlName="instancecity"
                 (change)="onSelectionChange($event)">   
-                    <option value="" disabled>Select</option>
-                     <option *ngFor="let item of dropdownItems" value={{item.cityname}}>
+                    <option value="" disabled>Select City</option>
+                     <option *ngFor="let item of dropdownItems" [value]="item.cityname">
                           {{ item.cityname }}
                     </option>
                 </select>
@@ -130,7 +144,7 @@
 
         <mat-form-field appearance="outline" class="form-field">
           <mat-label style="color:black">Active</mat-label>
-          <select matNativeControl formControlName="isactive">
+          <select matNativeControl formControlName="instanceisactive">
             <option value="" disabled>Select</option>
             <option value="true">Active</option>
             <option value="false">Inactive</option>
@@ -139,9 +153,16 @@
 
           
          <div class="form-submit">
-          <button mat-raised-button type="submit" (click)="createInstance()">
-            Submit
-          </button>
+          <ng-container *appHasPermission="'instance:create'">
+            <button *ngIf="!isEditMode" mat-raised-button type="submit" (click)="createInstance()">
+              Submit
+            </button>
+          </ng-container>
+          <ng-container *appHasPermission="'instance:update'">
+            <button *ngIf="isEditMode" mat-raised-button type="submit" (click)="createInstance()">
+              Update
+            </button>
+          </ng-container>
           </div>
     </form>
     </div>
@@ -168,7 +189,7 @@
     </div>
     <div class="pos-relative">
       <div class="btn-pos-list">
-        <button (click)="toggleForm()" class="add-btn" >
+        <button *appHasPermission="'instance:create'" (click)="toggleForm()" class="add-btn" >
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
@@ -181,7 +202,7 @@
         [showBorders]="true"
         [headerFilter]="{ visible: true }" 
         [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
-        [paging]="{ pageSize: 12 }" 
+        [paging]="{ pageSize: 15 }" 
         [showBorders]="true" (onExporting)="onExporting($event)"
         title="Instance" >
 
@@ -195,9 +216,14 @@
         <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="125"></dxi-column>
     
       
-        <a color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
-          <span class="material-symbols-outlined edit-btn">edit</span>   
-        </a>
+        <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
+          <a *appHasPermission="'instance:update'" (click)="editItem(data.data)" style="cursor: pointer;">
+            <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
+          </a>
+          <a *appHasPermission="'instance:delete'" (click)="deleteItem(data.data)" style="cursor: pointer;">
+            <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
+          </a>
+        </div>
        
           <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
         </dx-data-grid>

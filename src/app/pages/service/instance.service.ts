@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, map, Observable, of } from 'rxjs';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 
 
 @Injectable({
@@ -9,7 +10,7 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
 })
 export class InstanceService {
 
-  private apiUrl = 'http://49.50.112.46:3002'; 
+  private apiUrl = environment.apiUrl; 
   instanceservice: any;
 
   getInstanceById(instanceId: any) {
@@ -18,33 +19,35 @@ export class InstanceService {
 
   getInstanceOrderby() {
     console.log('Fetching data from API');
-    return this.http.get("http://49.50.112.46:3002/instance/instanceorderby");
+    return this.http.get(`${this.apiUrl}/instance/instanceorderby`);
   }
 
   deleteInstance(instanceid :any):Observable<any>{
-    console.log('Fetching data from API');
-    return this.http.get("http://49.50.112.46:3002/instance/instancedelete",instanceid);
-  
+    console.log('Deleting instance from API, ID:', instanceid);
+    return this.http.delete(`${this.apiUrl}/instance/instancedelete/${instanceid}`);
   }
 
   constructor(private http:HttpClient) { }
 
   getInstanceDetails():Observable<any>{
     console.log('Fetching data from API');
-    return this.http.get("http://49.50.112.46:3002/instance/list");
+    return this.http.get(`${this.apiUrl}/instance/list`);
   
   }
  
   addInstance (instanceData :any):Observable<any>{
     console.log('Sending data to API', instanceData);
-    return this.http.post("http://49.50.112.46:3002/instance/instancesave",instanceData)
+    return this.http.post(`${this.apiUrl}/instance/instancesave`,instanceData)
   }
   getDropdownItems(): Observable<any[]> {
-    return this.http.get<any[]>('http://49.50.112.46:3002/city/list');
+    return this.http.get<any[]>(`${this.apiUrl}/city/list`);
   }
 
+  getDropdownAccountItems(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/account/list`);
+  }
   updateInstance(instance: any) {
-    return this.http.put(`http://49.50.112.46:3002/instance/instanceupdate`, instance);
+    return this.http.put(`${this.apiUrl}/instance/instanceupdate`, instance);
   }
   isInstanceNameTaken(instanceName: string): Observable<boolean> {
     return this.http.get<boolean>(`${this.apiUrl}/instance/check-company-name?name=${instanceName}`);

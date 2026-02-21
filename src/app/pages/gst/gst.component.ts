@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-gst',
@@ -25,6 +26,7 @@ export class GstComponent implements OnInit {
   totalGst:number=0;
   activeGst:number=0;
   deactiveGst:number=0;
+  private apiUrl = environment.apiUrl;
   
  
   constructor(private gstservice:GstService,
@@ -54,7 +56,7 @@ export class GstComponent implements OnInit {
     this.getDropDownValue();
     {
       // Fetch data from API
-      this.http.get<{ totalGst: number;activeGst: number; deactiveGst: number}>('http://49.50.112.46:3002/gst/counts')
+      this.http.get<{ totalGst: number;activeGst: number; deactiveGst: number}>(`${this.apiUrl}/gst/counts`)
         .subscribe(response => {
           this.totalGst = response.totalGst; // Assign API response to totalAccounts
           this.activeGst = response.activeGst; // Assign API response to totalAccounts
@@ -161,7 +163,7 @@ export class GstComponent implements OnInit {
   });
   }
   getDropDownValues(): void {
-    this.http.get<any[]>('http://49.50.112.46:3002/gst/list').subscribe(data => {
+    this.http.get<any[]>(`${this.apiUrl}/gst/list`).subscribe(data => {
       this.dropdownItems = data;
     });
   }

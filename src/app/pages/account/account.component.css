@@ -1,28 +1,27 @@
 
+.form-container {          /*Form Container with form fields inside*/
+  max-width: 100%;
+  margin: 15px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
+  background-color: #ffff;
+  margin-top: 1% !important;
+  height: 400px !important;
+width: 1237px !important;
+}
 
-  .form-container {          /*Form Container with form fields inside*/
-    max-width: 100%;
-    margin: 15px auto;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
-    background-color: #ffff;
-    margin-top: 1% !important;
-    height: 400px !important;
-  width: 1237px !important;
-  }
+
+.form-submit{
+  margin-top: 50px;
+  text-align: center;
+}
 .mat-icon{
   color: black;
   height: 10px;
 }
-  
-  .form-submit{
-    margin-top: 20px;
-    text-align: center;
-  }
 
-
-  html,
+html,
 body {
     height: 100%;
 }
@@ -34,6 +33,7 @@ body {
   width: 40px;
   z-index: 1;
 }
+
 .edit-btn{
   font-size: 18px;
   color:#337ab7;
@@ -50,4 +50,107 @@ body {
   font-weight: 700px;
   margin-left: 1134px;
   margin-top: -14px;
+}
+
+/* Change form field focus/selected border color from red to dark grey */
+/* Override Material's default accent color (red/pink) with dark grey */
+
+/* Override Material theme CSS variables */
+::ng-deep app-account {
+  --mdc-outlined-text-field-focus-outline-color: #f7f5f5  !important;
+  --mdc-outlined-text-field-outline-color: #f7f5f5  !important;
+}
+
+/* Global override for all form fields - highest specificity */
+::ng-deep app-account .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-account .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+/* For all form fields in the account component */
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+/* When field is focused/selected */
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+/* Override Material's accent color for focused state */
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+/* For all outline states */
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline-start,
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline-gap,
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline-end {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+/* When focused */
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-start,
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-gap,
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-end {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+/* Target SVG elements for outline (Material uses SVG for outlines) */
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+/* Target the path elements inside SVG */
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline svg path {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg path {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+/* Keep error states red for validation feedback */
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick {
+  color: #f44336 !important;
+  border-color: #f44336 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline {
+  color: #f44336 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline svg,
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick svg {
+  fill: #f44336 !important;
+  stroke: #f44336 !important;
 }

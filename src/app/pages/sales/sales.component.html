@@ -1,0 +1,380 @@
+<section class="sales-container" [class.form-mode]="isFormOpen">
+
+  <!-- Invoice Form -->
+  <div class="invoice-form-container" [class.active]="isFormOpen">
+    <div class="invoice-form">
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <form [formGroup]="salesForm" (ngSubmit)="onSubmit()">
+        <!-- Customer Details Section: 3 columns -->
+        <div class="form-section-card customer-section-card">
+
+          <!-- Col 1: Title -->
+          <div class="col-title">
+            <mat-icon class="title-icon-sm">description</mat-icon>
+            <h2 class="invoice-title-text">GST Invoice</h2>
+            <p class="invoice-subtitle-text">Create and manage invoices</p>
+          </div>
+
+          <!-- Divider -->
+          <div class="customer-divider"></div>
+
+          <!-- Col 2: Customer -->
+          <div class="col-customer">
+            <div class="section-title">
+              <mat-icon>person</mat-icon>
+              <h3>Customer Details</h3>
+            </div>
+
+            <!-- Dropdown: shown only when no customer selected -->
+            <ng-container *ngIf="!salesForm.get('customername')?.value">
+              <mat-form-field appearance="outline" class="customer-select-field">
+                <mat-label>Select Customer <span class="f-key-hint">F1</span></mat-label>
+                <select matNativeControl formControlName="customerid" #customerSelect (change)="onCustomerChange($event)">
+                  <option value="" disabled>Select Customer</option>
+                  <option *ngFor="let customer of customerOptions" [value]="customer.customerid">
+                    {{ customer.customername }}
+                  </option>
+                </select>
+                <mat-error *ngIf="salesForm.get('customerid')?.hasError('required') && salesForm.get('customerid')?.touched">
+                  Customer is required
+                </mat-error>
+              </mat-form-field>
+            </ng-container>
+
+            <!-- Info card: shown after customer is selected -->
+            <div class="customer-info-panel" *ngIf="salesForm.get('customername')?.value">
+              <div class="customer-card-header">
+                <span class="customer-card-title">
+                  <mat-icon>account_circle</mat-icon>
+                  {{ salesForm.get('customername')?.value }}
+                </span>
+                <div class="customer-card-actions">
+                  <button type="button" mat-icon-button class="card-action-btn edit-btn-card" title="Change Customer" (click)="clearCustomer()">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button type="button" mat-icon-button class="card-action-btn close-btn-card" title="Remove Customer" (click)="clearCustomer()">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="customer-info-row" *ngIf="salesForm.get('customermobile')?.value">
+                <mat-icon class="info-icon">phone</mat-icon>
+                <span class="info-value">{{ salesForm.get('customermobile')?.value }}</span>
+              </div>
+              <div class="customer-info-row" *ngIf="salesForm.get('customeremail')?.value">
+                <mat-icon class="info-icon">email</mat-icon>
+                <span class="info-value">{{ salesForm.get('customeremail')?.value }}</span>
+              </div>
+              <div class="customer-info-row" *ngIf="salesForm.get('customeraddress')?.value">
+                <mat-icon class="info-icon">location_on</mat-icon>
+                <span class="info-value">{{ salesForm.get('customeraddress')?.value }}<span *ngIf="salesForm.get('customercity')?.value">, {{ salesForm.get('customercity')?.value }}</span><span *ngIf="salesForm.get('customerstate')?.value">, {{ salesForm.get('customerstate')?.value }}</span><span *ngIf="salesForm.get('customerpincode')?.value"> - {{ salesForm.get('customerpincode')?.value }}</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="customer-divider"></div>
+
+          <!-- Col 3: Invoice Info -->
+          <div class="col-invoice">
+            <div class="section-title">
+              <mat-icon>receipt</mat-icon>
+              <h3>Invoice Info</h3>
+            </div>
+            <div class="invoice-meta-fields">
+              <mat-form-field appearance="outline" class="invoice-meta-field">
+                <mat-label>Invoice No.</mat-label>
+                <input matInput formControlName="invoiceno" placeholder="INV-2026-001">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="invoice-meta-field">
+                <mat-label>Date</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="saledate" placeholder="Select date">
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="invoice-meta-field">
+                <mat-label>Payment Method</mat-label>
+                <select matNativeControl formControlName="paymentmethod">
+                  <option value="" disabled>Select payment method</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Credit Card">Credit Card</option>
+                  <option value="Debit Card">Debit Card</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="UPI">UPI</option>
+                  <option value="Cheque">Cheque</option>
+                  <option value="Other">Other</option>
+                </select>
+                <mat-error *ngIf="salesForm.get('paymentmethod')?.hasError('required') && salesForm.get('paymentmethod')?.touched">
+                  Payment method is required
+                </mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="invoice-meta-field">
+                <mat-label>Payment Status</mat-label>
+                <select matNativeControl formControlName="paymentstatus">
+                  <option value="" disabled>Select payment status</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Partial">Partial</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <mat-error *ngIf="salesForm.get('paymentstatus')?.hasError('required') && salesForm.get('paymentstatus')?.touched">
+                  Payment status is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Add New Item Section -->
+        <div class="form-section-card">
+          <div class="section-title">
+            <mat-icon>inventory_2</mat-icon>
+            <h3>Add New Item</h3>
+          </div>
+
+          <!-- Items Table -->
+          <div class="items-table-container">
+            <table class="items-table">
+              <colgroup>
+                <col class="col-desc">
+                <col class="col-hsn">
+                <col class="col-qty">
+                <col class="col-rate">
+                <col class="col-disc">
+                <col class="col-gst">
+                <col class="col-amount">
+                <col class="col-action">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>DESCRIPTION</th>
+                  <th>HSN/SAC</th>
+                  <th>QTY</th>
+                  <th>RATE (₹)</th>
+                  <th>DISC %</th>
+                  <th>GST %</th>
+                  <th class="th-right">AMOUNT (₹)</th>
+                  <th class="th-center">ACTION</th>
+                </tr>
+              </thead>
+              <tbody formArrayName="items">
+                <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
+                  <td>
+                    <mat-form-field appearance="outline" class="table-field">
+                      <input matInput formControlName="description"
+                             #descInput
+                             placeholder="Enter description"
+                             [matAutocomplete]="auto">
+                      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onProductSelect(i, $event)">
+                        <mat-option *ngFor="let product of productOptions" [value]="product.productname">
+                          {{ product.productname }}
+                        </mat-option>
+                      </mat-autocomplete>
+                      <mat-error *ngIf="item.get('description')?.hasError('required') && item.get('description')?.touched">
+                        Required
+                      </mat-error>
+                    </mat-form-field>
+                  </td>
+                  <td class="readonly-cell">
+                    {{ item.get('hsnSac')?.value || '—' }}
+                  </td>
+                  <td>
+                    <mat-form-field appearance="outline" class="table-field table-field-qty">
+                      <input matInput type="number" formControlName="quantity"
+                             #qtyInput
+                             (input)="calculateItemAmount(i)" min="1" placeholder="Qty"
+                             (keydown.enter)="$event.preventDefault(); focusDiscount(i)">
+                      <mat-error *ngIf="item.get('quantity')?.hasError('required') && item.get('quantity')?.touched">
+                        Required
+                      </mat-error>
+                    </mat-form-field>
+                  </td>
+                  <td class="readonly-cell">
+                    ₹{{ item.get('rate')?.value || 0 | number:'1.2-2' }}
+                  </td>
+                  <td>
+                    <mat-form-field appearance="outline" class="table-field table-field-disc">
+                      <input matInput type="number" formControlName="discountPct"
+                             #discInput
+                             (input)="calculateItemAmount(i)" min="0" max="100" placeholder="0"
+                             (keydown.enter)="$event.preventDefault(); addItemAndFocusNext(i)">
+                      <span matSuffix>%</span>
+                    </mat-form-field>
+                  </td>
+                  <td class="readonly-cell gst-cell">
+                    {{ item.get('gstPercent')?.value || 0 }}%
+                  </td>
+                  <td class="amount-cell">
+                    ₹{{ item.get('amount')?.value || 0 | number:'1.2-2' }}
+                  </td>
+                  <td class="action-cell">
+                    <button type="button" (click)="removeItem(i)" class="delete-btn-icon" mat-icon-button 
+                            [disabled]="items.length === 1">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="form-section-card summary-section">
+          <div class="section-title">
+            <mat-icon>summarize</mat-icon>
+            <h3>Summary</h3>
+          </div>
+          <div class="summary-content">
+            <div class="summary-left">
+              <div class="summary-row">
+                <span class="summary-label">Gross Amount:</span>
+                <span class="summary-value">₹{{ getGrossSubtotal() | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-row discount-row">
+                <span class="summary-label">Total Discount:</span>
+                <span class="summary-value discount-text">- ₹{{ getTotalDiscount() | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-row subtotal-row">
+                <span class="summary-label">Subtotal (after discount):</span>
+                <span class="summary-value">₹{{ getSubtotal() | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">CGST:</span>
+                <span class="summary-value">₹{{ getCgst() | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">SGST:</span>
+                <span class="summary-value">₹{{ getSgst() | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-row gst-total">
+                <span class="summary-label">Total GST (info only):</span>
+                <span class="summary-value green-text">₹{{ getTotalGst() | number:'1.2-2' }}</span>
+              </div>
+            </div>
+            <div class="summary-right">
+              <div class="grand-total-box">
+                <div class="grand-total-header">
+                  <mat-icon>attach_money</mat-icon>
+                  <span>Grand Total (excl. GST)</span>
+                </div>
+                <div class="grand-total-value">₹{{ getGrandTotal() | number:'1.2-2' }}</div>
+                <div *ngIf="getTotalDiscount() > 0" class="discount-saved">
+                  You saved ₹{{ getTotalDiscount() | number:'1.2-2' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="button" (click)="resetSalesForm()" class="cancel-btn" mat-stroked-button>
+              Cancel
+            </button>
+            <ng-container *appHasPermission="'sales:create'">
+              <button *ngIf="!isEditMode" type="submit" class="generate-btn" mat-raised-button color="primary"
+                      [disabled]="salesForm.invalid">
+                <mat-icon>download</mat-icon>
+                Generate Invoice
+              </button>
+            </ng-container>
+            <ng-container *appHasPermission="'sales:update'">
+              <button *ngIf="isEditMode" type="submit" class="generate-btn" mat-raised-button color="primary"
+                      [disabled]="salesForm.invalid">
+                <mat-icon>update</mat-icon>
+                Update Invoice
+              </button>
+            </ng-container>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Listing Page: Cards + Add Button + Grid -->
+  <div *ngIf="!isFormOpen">
+
+    <!-- Statistics Cards and Action Bar -->
+    <div class="top-section">
+      <div class="example-card">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Sales&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalSales}}</mat-card-title>
+          </mat-card-header>
+        </mat-card>
+
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeSales}}</mat-card-title>
+          </mat-card-header>
+        </mat-card>
+
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveSales}}</mat-card-title>
+          </mat-card-header>
+        </mat-card>
+
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Total Amount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹{{totalAmount | number:'1.2-2'}}</mat-card-title>
+          </mat-card-header>
+        </mat-card>
+      </div>
+
+      <div class="action-bar">
+        <button *appHasPermission="'sales:create'"
+                (click)="toggleForm()"
+                class="add-sales-btn"
+                mat-raised-button
+                color="primary">
+          <mat-icon>add</mat-icon>
+          <span>Add New Sale</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sales Data Grid -->
+    <div class="data-grid-container">
+    <dx-data-grid 
+      [dataSource]="apiData"
+      [allowColumnReordering]="true" 
+      [allowColumnResizing]="true" 
+      [showBorders]="true"
+      [headerFilter]="{ visible: true }" 
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search sales...' }" 
+      [paging]="{ pageSize: 15 }" 
+      (onExporting)="onExporting($event)"
+      title="Sales Records">
+   
+      <dxi-column dataField="salesid" [allowSorting]="true" [sortOrder]="'dsc'" caption="Sales ID" [width]="130"></dxi-column>
+      <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150"></dxi-column>
+      <dxi-column dataField="customername" caption="Customer Name"></dxi-column>
+      <dxi-column dataField="grandtotal" caption="Grand Total" alignment="right" [width]="130" 
+        [format]="{ type: 'currency', currency: 'INR', precision: 2 }"></dxi-column>
+      <dxi-column dataField="saledate" caption="Sale Date" dataType="date" [format]="'shortDate'" [width]="120"></dxi-column>
+      <dxi-column dataField="paymentmethod" caption="Payment Method" [width]="150"></dxi-column>
+      <dxi-column dataField="paymentstatus" caption="Payment Status" [width]="130"></dxi-column>
+      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
+
+      <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
+        <a *appHasPermission="'sales:update'" (click)="editItem(data.data)" style="cursor: pointer;">
+          <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
+        </a>
+        <a *appHasPermission="'sales:delete'" (click)="deleteItem(data.data)" style="cursor: pointer;">
+          <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
+        </a>
+      </div>
+  
+      <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+    </dx-data-grid>
+    </div>
+
+  </div>
+</section>

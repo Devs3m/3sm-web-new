@@ -1,55 +1,259 @@
 
-
 .form-container {          /*Form Container with form fields inside*/
-    max-width: 100%;
-    margin: 15px auto;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
-    background-color: #ffff;
-    margin-top: 1% !important;
-    height: 250px !important;
-  width: 1237px !important;
-  }
+  max-width: 100%;
+  margin: 15px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
+  background-color: #ffff;
+  margin-top: 1% !important;
+  height: 400px !important;
+width: 1237px !important;
+}
 
-  
-  .form-submit{
-    margin-top: 50px;
-    text-align: center;
-  }
-  .mat-icon{
-    color: black;
-    height: 10px;
-  }
-  
-  html,
-  body {
-      height: 100%;
-  }
-  
-  .btn-pos-list{
-    position: absolute;
-    top: 0px;
-    right: 355px;
-    width: 40px;
-    z-index: 1;
-  }
-  
-  .edit-btn{
-    font-size: 18px;
-    color:#337ab7;
-  }
-  ::ng-deep .dx-datagrid .dx-row > td {
-   vertical-align: middle !important;
-  }
-  .close-btn {
-    background: transparent;
-    box-shadow: none;
-    border: none;
-    font-size: 30px;
-    color: black;
-    font-weight: 700px;
-    margin-left: 1134px;
-    margin-top: -14px;
-  }
-  
+
+.form-submit{
+  margin-top: 50px;
+  text-align: center;
+}
+.mat-icon{
+  color: black;
+  height: 10px;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+.btn-pos-list{
+  position: absolute;
+  top: 0px;
+  right: 355px;
+  width: 40px;
+  z-index: 1;
+}
+
+.edit-btn{
+  font-size: 18px;
+  color:#337ab7;
+}
+::ng-deep .dx-datagrid .dx-row > td {
+ vertical-align: middle !important;
+}
+.close-btn {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  font-size: 30px;
+  color: black;
+  font-weight: 700px;
+  margin-left: 1134px;
+  margin-top: -14px;
+}
+
+/* Change form field focus/selected border color from red to dark grey */
+/* Override Material's default accent color (red/pink) with dark grey */
+
+/* Override Material theme CSS variables */
+::ng-deep app-account {
+  --mdc-outlined-text-field-focus-outline-color: #f7f5f5  !important;
+  --mdc-outlined-text-field-outline-color: #f7f5f5  !important;
+}
+
+/* Global override for all form fields - highest specificity */
+::ng-deep app-account .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-account .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+/* For all form fields in the account component */
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+/* When field is focused/selected */
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+/* Override Material's accent color for focused state */
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+/* For all outline states */
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline-start,
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline-gap,
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline-end {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+/* When focused */
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-start,
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-gap,
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-end {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+/* Target SVG elements for outline (Material uses SVG for outlines) */
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+/* Target the path elements inside SVG */
+::ng-deep .form-container .mat-form-field-appearance-outline .mat-form-field-outline svg path {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg path {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+/* Keep error states red for validation feedback */
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick {
+  color: #f44336 !important;
+  border-color: #f44336 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline {
+  color: #f44336 !important;
+}
+
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline svg,
+::ng-deep .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick svg {
+  fill: #f44336 !important;
+  stroke: #f44336 !important;
+}
+
+/* Permission Configuration Panel Styles */
+.permission-config-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 500px;
+  height: 100vh;
+  background: white;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 10000;
+  transition: right 0.3s ease-in-out;
+  overflow-y: auto;
+}
+
+.permission-config-panel.open {
+  right: 0 !important;
+}
+
+.permission-config-content {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.permission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.permission-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.permission-body {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.permission-resource-group {
+  margin-bottom: 25px;
+}
+
+.resource-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.resource-header h4 {
+  margin: 0;
+  color: #2196F3;
+  font-weight: 600;
+}
+
+.permission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.permission-item:hover {
+  background-color: #f5f5f5;
+}
+
+.permission-item.selected {
+  background-color: #e3f2fd;
+  border-color: #2196F3;
+}
+
+.permission-item input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.permission-footer {
+  display: flex;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.permission-footer button {
+  flex: 1;
+}

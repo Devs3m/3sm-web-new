@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import * as Highcharts from 'highcharts';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-highchart',
@@ -16,6 +17,8 @@ export class HighchartComponent implements OnInit{
     yAxis:{title:{text:'Sales Amount'}},
     series:[{name:'Sales',type:'line',data:[]}]
   };
+  private apiUrl = environment.apiUrl;
+  
   constructor(private http: HttpClient) {} 
   
   ngOnInit(): void {
@@ -23,7 +26,7 @@ export class HighchartComponent implements OnInit{
 
   }
   fetchChartData(): void{
-    this.http.get<any[]>('http://49.50.112.46:3002/account/list')
+    this.http.get<any[]>(`${this.apiUrl}/account/list`)
     .subscribe((data: any[]) =>{
       const accounts = data.map(item => item.accountid);
       const salesData = data.map(item => item.accountcity);

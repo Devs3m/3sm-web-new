@@ -1,24 +1,86 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { PagesComponent } from './pages.component';
-import { HighchartComponent } from './highchart/highchart.component';
+import { RoleGuard } from './gaurds/role.guard';
+// import { HighchartComponent } from './highchart/highchart.component';
 
 const routes: Routes = [
   { path: '', component:PagesComponent,
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard'},
-      { path: 'dashboard', loadChildren: () => import(`./dashboard/dashboard.module`).then(m => m.DashboardModule) },
-      { path: 'account', loadChildren: () => import(`./account/account.module`).then(m => m.AccountModule) },
-      { path: 'instance', loadChildren: () => import(`./instance/instance.module`).then(m => m.InstanceModule) },
-      { path: 'user', loadChildren: () => import(`./user/user.module`).then(m => m.UserModule) },
-      { path: 'userrole', loadChildren: () => import(`./userrole/userrole.module`).then(m => m.UserroleModule) },
-      { path: 'city', loadChildren: () => import(`./city/city.module`).then(m => m.CityModule) },
-      { path: 'gst', loadChildren: () => import(`./gst/gst.module`).then(m => m.GstModule) },
-      { path: 'vat', loadChildren: () => import(`./vat/vat.module`).then(m => m.VatModule) },
-      { path: 'gdigicardst', loadChildren: () => import(`./digicard/digicard.module`).then(m => m.DigicardModule) },
-      { path: 'product', loadChildren: () => import(`./product/product.module`).then(m => m.ProductModule) },
-      {path:'highchart',component:HighchartComponent},
-      { path: 'digicard', loadChildren: () => import(`./digicard/digicard.module`).then(m => m.DigicardModule) },
+      { 
+        path: 'dashboard', 
+        loadChildren: () => import(`./dashboard/dashboard.module`).then(m => m.DashboardModule),
+        canActivate: [RoleGuard]
+        // Dashboard accessible without specific permission check (handled in guard)
+      },
+      { 
+        path: 'account', 
+        loadChildren: () => import(`./account/account.module`).then(m => m.AccountModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'account', action: 'view' } }
+      },
+      { 
+        path: 'instance', 
+        loadChildren: () => import(`./instance/instance.module`).then(m => m.InstanceModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'instance', action: 'view' } }
+      },
+      { 
+        path: 'user', 
+        loadChildren: () => import(`./user/user.module`).then(m => m.UserModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'user', action: 'view' } }
+      },
+      { 
+        path: 'userrole', 
+        loadChildren: () => import(`./userrole/userrole.module`).then(m => m.UserroleModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'userrole', action: 'view' } }
+      },
+      { 
+        path: 'city', 
+        loadChildren: () => import(`./city/city.module`).then(m => m.CityModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'city', action: 'view' } }
+      },
+      { 
+        path: 'gst', 
+        loadChildren: () => import(`./gst/gst.module`).then(m => m.GstModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'gst', action: 'view' } }
+      },
+      { 
+        path: 'vat', 
+        loadChildren: () => import(`./vat/vat.module`).then(m => m.VatModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'vat', action: 'view' } }
+      },
+      { 
+        path: 'product', 
+        loadChildren: () => import(`./product/product.module`).then(m => m.ProductModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'product', action: 'view' } }
+      },
+      { 
+        path: 'digicard', 
+        loadChildren: () => import(`./digicard/digicard.module`).then(m => m.DigicardModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'digicard', action: 'view' } }
+      },
+      { 
+        path: 'sales', 
+        loadChildren: () => import(`./sales/sales.module`).then(m => m.SalesModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'sales', action: 'view' } }
+      },
+      { 
+        path: 'customer', 
+        loadChildren: () => import(`./customer/customer.module`).then(m => m.CustomerModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'customer', action: 'view' } }
+      },
+      // {path:'highchart',component:HighchartComponent},
     ]
   }
  

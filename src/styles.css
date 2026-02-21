@@ -257,3 +257,35 @@ box-shadow: gray;
 .pb-20{
   padding-bottom: 20px;
 }
+
+/* Action icons for data grid - shared across all listing pages */
+.action-icon {
+  font-size: 18px;
+  cursor: pointer;
+}
+.edit-icon {
+  color: #337ab7;
+}
+.delete-icon {
+  color: #f44336;
+}
+
+/* Mat Autocomplete panel - white background, black text */
+.mat-mdc-autocomplete-panel {
+  background-color: #ffffff !important;
+}
+
+.mat-mdc-autocomplete-panel .mat-mdc-option {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.mat-mdc-autocomplete-panel .mat-mdc-option:hover,
+.mat-mdc-autocomplete-panel .mat-mdc-option.mat-mdc-option-active {
+  background-color: #f0f4ff !important;
+  color: #000000 !important;
+}
+
+.mat-mdc-autocomplete-panel .mat-mdc-option .mdc-list-item__primary-text {
+  color: #000000 !important;
+}

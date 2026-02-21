@@ -1,18 +1,33 @@
 <section>
   <div class="form-container"[class.open]="isFormOpen">
-      <p style="font-size: larger;">Add User Role</p>
+      <p style="font-size: larger;">{{ isEditMode ? 'Edit User Role' : 'Add User Role' }}</p>
     <button (click)="restuserroleForm()" class="close-btn">&times;</button>
       <form [formGroup]="userroleForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
-            <mat-label style="color:black">User Role</mat-label>
-            <input matInput placeholder="Instance" class="mat-input-element custom-placeholder" formControlName="userrolename">
-        </mat-form-field >
+            <mat-label style="color:black">User Role Name</mat-label>
+            <input matInput placeholder="Enter Role Name" class="mat-input-element custom-placeholder" formControlName="userrolename">
+            <mat-error *ngIf="userroleForm.get('userrolename')?.hasError('required') && userroleForm.get('userrolename')?.touched">
+              User role name is required
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Active</mat-label>
+            <select matNativeControl formControlName="userroleisactive">
+              <option value="" disabled>Select</option>
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+            <mat-error *ngIf="userroleForm.get('userroleisactive')?.hasError('required') && userroleForm.get('userroleisactive')?.touched">
+              Active status is required
+            </mat-error>
+        </mat-form-field>
   
        
         <div class="form-submit">
           <button mat-raised-button type="submit" class="btn-primary" (click)="createUserrole()">
-            Submit
+            {{ isEditMode ? 'Update' : 'Submit' }}
           </button>
           </div>
   
@@ -39,7 +54,7 @@
 
     <div class="pos-relative">
       <div class="btn-pos-list">
-        <button (click)="toggleForm()" class="add-btn" >
+        <button *appHasPermission="'userrole:create'" (click)="toggleForm()" class="add-btn" >
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
@@ -61,14 +76,69 @@
       <dxi-column dataField="createddate" caption="Created Date" [width]="250"></dxi-column>
       <dxi-column dataField="updateddate" caption="Updated Date" [width]="250"></dxi-column>
       <dxi-column dataField="userroleisactive" caption="Active" [width]="200"></dxi-column>
-      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
+      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="250"></dxi-column>
     
-      <a color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
-        <span class="material-symbols-outlined edit-btn">edit</span>   
-      </a>
+      <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
+        <a *appHasPermission="'userrole:update'" (click)="editItem(data.data)" style="cursor: pointer;">
+          <span class="material-symbols-outlined action-icon edit-icon" title="Edit Role">edit</span>
+        </a>
+        <a *ngIf="canShowConfigureButton()" (click)="configurePermissions(data.data)" style="cursor: pointer;" title="Configure Permissions (Super Admin Only)">
+          <span class="material-symbols-outlined action-icon" style="color: #2196F3;">settings</span>
+        </a>
+        <a *appHasPermission="'userrole:delete'" (click)="deleteItem(data.data)" style="cursor: pointer;">
+          <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
+        </a>
+      </div>
         <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
       </dx-data-grid>
   
+    </div>
+
+    <!-- Permission Configuration Panel -->
+    <div class="permission-config-panel" 
+         [class.open]="isPermissionConfigOpen"
+         [style.display]="isPermissionConfigOpen ? 'block' : 'none'"
+         [style.right]="isPermissionConfigOpen ? '0' : '-100%'"
+         [style.z-index]="isPermissionConfigOpen ? '10000' : 'auto'">
+      <div class="permission-config-content">
+        <div class="permission-header">
+          <h3>Configure Permissions - {{ selectedRoleName }}</h3>
+          <button (click)="closePermissionConfig()" class="close-btn">&times;</button>
+        </div>
+        
+        <div class="permission-body">
+          <div *ngIf="permissionResourceKeys.length === 0" style="padding: 20px; text-align: center; color: #666;">
+            <p>Loading permissions...</p>
+          </div>
+          <div *ngFor="let resource of permissionResourceKeys" class="permission-resource-group">
+            <div class="resource-header">
+              <h4 style="text-transform: capitalize; margin: 10px 0;">{{ resource }}</h4>
+              <div>
+                <button mat-button (click)="selectAllPermissions(resource)" style="margin-right: 10px; font-size: 12px;">Select All</button>
+                <button mat-button (click)="deselectAllPermissions(resource)" style="font-size: 12px;">Deselect All</button>
+              </div>
+            </div>
+            <div class="permission-list">
+              <label *ngFor="let permission of permissionTemplates[resource]" 
+                     class="permission-item"
+                     [class.selected]="hasPermission(permission)">
+                <input type="checkbox" 
+                       [checked]="hasPermission(permission)"
+                       (change)="togglePermission(permission)">
+                <span>{{ permission.name || permission.resource + ' ' + permission.action }}</span>
+              </label>
+            </div>
+          </div>
+          <div *ngIf="rolePermissions.length > 0" style="margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+            <small>Selected: {{ rolePermissions.length }} permission(s)</small>
+          </div>
+        </div>
+        
+        <div class="permission-footer">
+          <button mat-raised-button color="primary" (click)="saveRolePermissions()">Save Permissions</button>
+          <button mat-button (click)="closePermissionConfig()">Cancel</button>
+        </div>
+      </div>
     </div>
   </section>
   

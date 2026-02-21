@@ -1,0 +1,172 @@
+<section>
+
+  <!-- Add / Edit Form -->
+  <div class="form-container" [class.open]="isFormOpen">
+    <p style="font-size: larger;">{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</p>
+    <button (click)="resetForm()" class="close-btn">&times;</button>
+
+    <div *ngIf="errorMessage" class="error-message" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
+      {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Customer Name</mat-label>
+        <input matInput placeholder="Customer Name" class="mat-input-element custom-placeholder"
+          formControlName="customername">
+        <mat-error *ngIf="customerForm.get('customername')?.hasError('required') && customerForm.get('customername')?.touched">
+          Customer name is required
+        </mat-error>
+        <mat-error *ngIf="customerForm.get('customername')?.hasError('minlength') && customerForm.get('customername')?.touched">
+          Customer name must be at least 3 characters
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Mobile Number</mat-label>
+        <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
+          formControlName="customermobile" type="tel">
+        <mat-error *ngIf="customerForm.get('customermobile')?.hasError('required') && customerForm.get('customermobile')?.touched">
+          Mobile number is required
+        </mat-error>
+        <mat-error *ngIf="customerForm.get('customermobile')?.hasError('pattern') && customerForm.get('customermobile')?.touched">
+          Please enter a valid mobile number (10-12 digits)
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black !important">Email</mat-label>
+        <input matInput placeholder="Email" class="mat-input-element custom-placeholder"
+          formControlName="customeremail" type="email">
+        <mat-error *ngIf="customerForm.get('customeremail')?.hasError('email') && customerForm.get('customeremail')?.touched">
+          Enter a valid email
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Address</mat-label>
+        <input matInput placeholder="Address" class="mat-input-element custom-placeholder"
+          formControlName="customeraddress">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">City</mat-label>
+        <select matNativeControl formControlName="customercity" (change)="onCityChange($event)">
+          <option value="" disabled>Select</option>
+          <option *ngFor="let city of cityDropdown" [value]="city.cityname">{{ city.cityname }}</option>
+        </select>
+        <mat-error *ngIf="customerForm.get('customercity')?.hasError('required') && customerForm.get('customercity')?.touched">
+          City is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">State</mat-label>
+        <input matInput placeholder="State" class="mat-input-element custom-placeholder" formControlName="customerstate">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Country</mat-label>
+        <input matInput placeholder="Country" class="mat-input-element custom-placeholder"
+          formControlName="customercountry">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Pincode</mat-label>
+        <input matInput placeholder="Pincode" class="mat-input-element custom-placeholder"
+          formControlName="customerpincode">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Active</mat-label>
+        <select matNativeControl formControlName="isactive">
+          <option value="" disabled>Select</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+        <mat-error *ngIf="customerForm.get('isactive')?.hasError('required') && customerForm.get('isactive')?.touched">
+          Active status is required
+        </mat-error>
+      </mat-form-field>
+
+      <div class="form-submit">
+        <ng-container *appHasPermission="'customer:create'">
+          <button *ngIf="!isEditMode" mat-raised-button type="submit" class="btn-primary"
+            [disabled]="customerForm.invalid || customerForm.pending">
+            Submit
+          </button>
+        </ng-container>
+        <ng-container *appHasPermission="'customer:update'">
+          <button *ngIf="isEditMode" mat-raised-button type="submit" class="btn-primary"
+            [disabled]="customerForm.invalid || customerForm.pending">
+            Update
+          </button>
+        </ng-container>
+      </div>
+    </form>
+  </div>
+
+  <!-- Stats Cards + Add Button -->
+  <div class="example-card">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Customer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalCustomers}}</mat-card-title>
+      </mat-card-header>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeCustomers}}</mat-card-title>
+      </mat-card-header>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveCustomers}}</mat-card-title>
+      </mat-card-header>
+    </mat-card>
+  </div>
+
+  <div class="pos-relative">
+    <div class="btn-pos-list">
+      <button *appHasPermission="'customer:create'" (click)="toggleForm()" class="add-btn">
+        <mat-icon>add_circle</mat-icon>
+      </button>
+    </div>
+
+    <dx-data-grid
+      [dataSource]="customers"
+      [allowColumnReordering]="true"
+      [allowColumnResizing]="true"
+      [showBorders]="true"
+      [headerFilter]="{ visible: true }"
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }"
+      [paging]="{ pageSize: 15 }"
+      (onExporting)="onExporting($event)"
+      title="Customers">
+
+      <dxi-column dataField="customerid" caption="ID" [width]="80" [allowSorting]="true" sortOrder="desc"></dxi-column>
+      <dxi-column dataField="customername" caption="Customer Name"></dxi-column>
+      <dxi-column dataField="customermobile" caption="Mobile" [width]="150"></dxi-column>
+      <dxi-column dataField="customeremail" caption="Email" [width]="220"></dxi-column>
+      <dxi-column dataField="customercity" caption="City" [width]="130"></dxi-column>
+      <dxi-column dataField="customerstate" caption="State" [width]="130"></dxi-column>
+      <dxi-column dataField="customerpincode" caption="Pincode" [width]="110"></dxi-column>
+      <dxi-column dataField="isactive" caption="Status" alignment="center" [width]="100"></dxi-column>
+      <dxi-column caption="Actions" alignment="center" cellTemplate="actionTemplate" [width]="120"></dxi-column>
+
+      <div *dxTemplate="let data of 'actionTemplate'" style="display:flex; gap:10px; justify-content:center;">
+        <a *appHasPermission="'customer:update'" (click)="editItem(data.data)" style="cursor:pointer;">
+          <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
+        </a>
+        <a *appHasPermission="'customer:delete'" (click)="deleteItem(data.data)" style="cursor:pointer;">
+          <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
+        </a>
+      </div>
+
+      <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+    </dx-data-grid>
+  </div>
+
+</section>

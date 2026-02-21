@@ -24,3 +24,17 @@
 .form-container{
     overflow-y: auto;
 }
+
+.btn-pos-list {
+  position: absolute;
+  top: 0px;
+  right: 355px;
+  width: 40px;
+  z-index: 1;
+}
+
+::ng-deep app-digicard-form .example-card {
+  max-width: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}

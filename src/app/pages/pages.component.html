@@ -5,6 +5,26 @@
   <span>Connectsite</span>
   <span class="example-spacer"></span>
 
+  <!-- Display logged-in user -->
+  <span *ngIf="authService.isAuthenticated()" style="display: flex; align-items: center; margin-right: 15px; color: white;">
+    <mat-icon style="margin-right: 8px; font-size: 20px; width: 20px; height: 20px;">account_circle</mat-icon>
+    <div style="display: flex; flex-direction: column; line-height: 1.2;">
+      <span *ngIf="userName && userName.trim() !== ''" style="font-size: 14px; font-weight: 500;">{{ userName }}</span>
+      <span *ngIf="userEmail && userEmail.trim() !== ''" style="font-size: 12px; opacity: 0.9;">{{ userEmail }}</span>
+      <span *ngIf="!userName && !userEmail" style="font-size: 14px; font-weight: 500;">User</span>
+      <span *ngIf="userRole && userRole.trim() !== ''" 
+            style="font-size: 11px; opacity: 0.9; margin-top: 2px; color: #ffd700; font-weight: 500; display: flex; align-items: center;">
+        <mat-icon style="font-size: 14px; width: 14px; height: 14px; margin-right: 4px;">badge</mat-icon>
+        <span>{{ userRole }}</span>
+      </span>
+      <!-- Debug: Show if role is empty -->
+      <span *ngIf="!userRole || userRole.trim() === ''" 
+            style="font-size: 10px; opacity: 0.6; margin-top: 2px; color: #ccc; font-style: italic;">
+        (Role loading...)
+      </span>
+    </div>
+  </span>
+
   <button mat-icon-button>
     <mat-icon class="example-icon" aria-label="Example">share</mat-icon>
   </button>
@@ -29,29 +49,81 @@
 <mat-sidenav-container>
   <mat-sidenav mode="side" opened>
     <mat-nav-list style="width: 2ovh;">
+      <!-- Dashboard - always visible if authenticated -->
       <a mat-list-item routerLink='dashboard' href="#" class="aligned-list-item"><mat-icon
           class="aligned-icon">dashboard</mat-icon>Dashboard</a>
-      <a mat-list-item routerLink='account' href="#" class="aligned-list-item"><mat-icon
-          class="aligned-icon">perm_identity</mat-icon>Account</a>
-      <a mat-list-item routerLink='instance' href="#" class="aligned-list-item"><mat-icon class="aligned-icon">
-          business</mat-icon>Instance</a>
-      <a mat-list-item routerLink='user' href="#" class="aligned-list-item"><mat-icon
-          class="aligned-icon">person_add</mat-icon>User</a>
-      <a mat-list-item routerLink='userrole' href="#" class="aligned-list-item"><mat-icon
-          class="aligned-icon">settings_applications</mat-icon>User Role</a>
-      <a mat-list-item routerLink='digicard' href="#" class="aligned-list-item"><mat-icon
-          class="aligned-icon">local_activity</mat-icon>Digicard</a>
-      <a mat-list-item routerLink='product' href="#" class="aligned-list-item"><mat-icon
-          class="aligned-icon">fastfood</mat-icon>Product</a>
-      <a mat-list-item routerLink='city' href="#" class="aligned-list-item"><mat-icon
-          class="aligned-icon">location_on</mat-icon>City</a>
-      <a mat-list-item routerLink='gst' href="#" class="aligned-list-item"><mat-icon
-          class="aligned-icon">money</mat-icon>Gst</a>
-      <a mat-list-item routerLink='vat' href="#" class="aligned-list-item"><mat-icon
-          class="aligned-icon">money</mat-icon>Vat</a>
-      <a mat-list-item routerLink='highchart' href="#" class="aligned-list-item"><mat-icon class="aligned-icon">High
-          Chart</mat-icon>Highcharts</a>
-
+      
+      <!-- Account - show if user has ANY account permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('account')" 
+         mat-list-item routerLink='account' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">perm_identity</mat-icon>Account
+      </a>
+      
+      <!-- Instance - show if user has ANY instance permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('instance')" 
+         mat-list-item routerLink='instance' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">business</mat-icon>Instance
+      </a>
+      
+      <!-- User - show if user has ANY user permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('user')" 
+         mat-list-item routerLink='user' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">person_add</mat-icon>User
+      </a>
+      
+      <!-- User Role - show if user has ANY userrole permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('userrole')" 
+         mat-list-item routerLink='userrole' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">settings_applications</mat-icon>User Role
+      </a>
+      
+      <!-- Digicard - show if user has ANY digicard permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('digicard')" 
+         mat-list-item routerLink='digicard' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">local_activity</mat-icon>Digicard
+      </a>
+      
+      <!-- Product - show if user has ANY product permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('product')" 
+         mat-list-item routerLink='product' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">fastfood</mat-icon>Product
+      </a>
+      
+      <!-- Sales - show if user has ANY sales permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('sales')" 
+         mat-list-item routerLink='sales' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">point_of_sale</mat-icon>Sales
+      </a>
+      
+      <!-- Customer - show if user has ANY customer permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('customer')" 
+         mat-list-item routerLink='customer' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">contacts</mat-icon>Customer
+      </a>
+      
+      <!-- City - show if user has ANY city permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('city')" 
+         mat-list-item routerLink='city' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">location_on</mat-icon>City
+      </a>
+      
+      <!-- GST - show if user has ANY gst permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('gst')" 
+         mat-list-item routerLink='gst' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">money</mat-icon>Gst
+      </a>
+      
+      <!-- VAT - show if user has ANY vat permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('vat')" 
+         mat-list-item routerLink='vat' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">money</mat-icon>Vat
+      </a>
+      
+      <!-- Highchart - show if user has ANY dashboard/highchart permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('dashboard') || permissionService.hasAnyPermissionForResource('highchart')" 
+         mat-list-item routerLink='highchart' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">High Chart</mat-icon>Highcharts
+      </a>
 
     </mat-nav-list>
   </mat-sidenav>

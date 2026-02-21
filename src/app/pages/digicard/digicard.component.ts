@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-digicard',
@@ -31,6 +32,7 @@ throw new Error('Method not implemented.');
   totalDigicard:number=0;
   activeDigicard:number=0;
   deactiveDigicard:number =0;
+  private apiUrl = environment.apiUrl;
  
   constructor(private digicardservice:DigicardService,
               private fromBuilder:FormBuilder,
@@ -76,7 +78,7 @@ throw new Error('Method not implemented.');
     this.getDropDownValue();
     {
       // Fetch data from API
-      this.http.get<{ totalDigicard: number;activeDigicard: number; deactiveDigicard: number}>('http://49.50.112.46:3002/digicard/counts')
+      this.http.get<{ totalDigicard: number;activeDigicard: number; deactiveDigicard: number}>(`${this.apiUrl}/digicard/counts`)
         .subscribe(response => {
           this.totalDigicard = response.totalDigicard; // Assign API response to totalAccounts
           this.activeDigicard = response.activeDigicard; // Assign API response to totalAccounts
@@ -178,7 +180,7 @@ throw new Error('Method not implemented.');
   });
   }
   getDropDownValues(): void {
-    this.http.get<any[]>('http://49.50.112.46:3002/city/list').subscribe(data => {
+    this.http.get<any[]>(`${this.apiUrl}/city/list`).subscribe(data => {
       this.dropdownItems = data;
     });
   }

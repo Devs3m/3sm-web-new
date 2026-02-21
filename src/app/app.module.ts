@@ -5,7 +5,7 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { DxDataGridModule, DxButtonModule } from 'devextreme-angular';
 import { DxChartModule } from 'devextreme-angular';
 import { HighchartsChartModule } from 'highcharts-angular';
@@ -17,6 +17,7 @@ import { CommonModule } from '@angular/common';
 import { DxTemplateModule } from 'devextreme-angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { UniqueMobileValidatorComponent } from './pages/unique-mobile.validator/unique-mobile.validator.component';
+import { AuthInterceptor } from './core/auth.interceptor';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -46,7 +47,14 @@ const routes: Routes = [
     MatIconModule,
     RouterModule.forRoot(routes)
   ],
-  providers: [InstanceService],
+  providers: [
+    InstanceService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

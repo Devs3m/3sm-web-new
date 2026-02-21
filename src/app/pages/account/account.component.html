@@ -1,52 +1,80 @@
 <section>
-  <div class="form-container"[class.open]="isFormOpen">
-    <p style="font-size: larger;">Add Account</p>
+  <div class="form-container" [class.open]="isFormOpen">
+    <p style="font-size: larger;">{{ isEditMode ? 'Edit Account' : 'Add Account' }}</p>
     <button (click)="restaccountForm()" class="close-btn">&times;</button>
+    
+    <!-- Error message display -->
+    <div *ngIf="errorMessage" class="error-message" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
+      {{ errorMessage }}
+    </div>
+
     <form [formGroup]="accountForm" (ngSubmit)="onSubmit()">
       
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Company Name</mat-label>
         <input matInput placeholder="Company" class="mat-input-element custom-placeholder"
           formControlName="companyname">
-          <mat-error *ngIf="companyname?.invalid && (companyname?.dirty || companyname?.touched)">
-            <span *ngIf="companyname?.errors?.['required']">Company Name is required</span>
-            <span *ngIf="companyname?.errors?.['3']">Minimum 3 characters required</span>
-            <span *ngIf="companyname?.errors?.['8']">Maximum 20 characters allowed</span>
-            <span *ngIf="companyname?.errors?.['pattern']">Only alphabets and spaces are allowed</span>
-          </mat-error>
+        <mat-error *ngIf="companyname?.hasError('required') && companyname?.touched">
+          Company name is required
+        </mat-error>
+        <mat-error *ngIf="companyname?.hasError('minlength') && companyname?.touched">
+          Company name must be at least 3 characters
+        </mat-error>
+        <mat-error *ngIf="companyname?.hasError('maxlength') && companyname?.touched">
+          Company name must not exceed 20 characters
+        </mat-error>
+        <mat-error *ngIf="companyname?.hasError('companyNameExists') && companyname?.touched">
+          Company already exists...
+        </mat-error>
+        <mat-hint *ngIf="companyname?.pending" style="color: #666;">
+          Checking company name...
+        </mat-hint>
       </mat-form-field>
+      
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Owner Name</mat-label>
         <input matInput placeholder="Owner" class="mat-input-element custom-placeholder" 
         formControlName="ownername">
+        <mat-error *ngIf="accountForm.get('ownername')?.hasError('required') && accountForm.get('ownername')?.touched">
+          Owner name is required
+        </mat-error>
+        <mat-error *ngIf="accountForm.get('ownername')?.hasError('minlength') && accountForm.get('ownername')?.touched">
+          Owner name must be at least 3 characters
+        </mat-error>
       </mat-form-field>
 
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label style="color:black">Owner Mobile</mat-label>
-          <span style="color:black"></span>
-          <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
-            formControlName="ownermobile">
-            <mat-error *ngIf="form.get('ownermobile')?.hasError('required')">
-              Mobile number is required
-            </mat-error>
-            <mat-error *ngIf="form.get('ownermobile')?.hasError('pattern')">
-              Enter a valid mobile number
-            </mat-error>
-            <mat-error *ngIf="form.get('ownermobile')?.hasError('duplicateMobile')">
-              This mobile number is already registered
-            </mat-error>
-        </mat-form-field>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Owner Mobile</mat-label>
+        <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
+          formControlName="ownermobile" type="tel">
+        <mat-error *ngIf="ownermobile?.hasError('required') && ownermobile?.touched">
+          Mobile number is required
+        </mat-error>
+        <mat-error *ngIf="ownermobile?.hasError('pattern') && ownermobile?.touched">
+          Please enter a valid mobile number (10-12 digits)
+        </mat-error>
+        <mat-error *ngIf="ownermobile?.hasError('mobileNumberExists') && ownermobile?.touched">
+          Mobile No exists
+        </mat-error>
+        <mat-hint *ngIf="ownermobile?.pending" style="color: #666;">
+          Checking mobile number...
+        </mat-hint>
+      </mat-form-field>
+
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black !important">Owner Email</mat-label>
         <input matInput placeholder="Owner Email" class="mat-input-element custom-placeholder"
-          formControlName="owneremail">
+          formControlName="owneremail" type="email">
+        <mat-error *ngIf="owneremail?.hasError('email') && owneremail?.touched">
+          Enter a valid email
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Address</mat-label>
         <input matInput placeholder="Address" class="mat-input-element custom-placeholder"
           formControlName="companyaddress">
-        </mat-form-field>  
+      </mat-form-field>  
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">City</mat-label>
@@ -54,10 +82,13 @@
         formControlName="companycity"
         (change)="onSelectionChange($event)">   
         <option value="" disabled>Select</option>
-            <option *ngFor="let item of dropdownItems" value={{item.cityname}}>
+            <option *ngFor="let item of dropdownItems" [value]="item.cityname">
               {{ item.cityname }}
             </option>
           </select>
+        <mat-error *ngIf="accountForm.get('companycity')?.hasError('required') && accountForm.get('companycity')?.touched">
+          City is required
+        </mat-error>
     </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field">
@@ -77,10 +108,11 @@
           formControlName="companypincode">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <!-- Example: Field-level permission control using directive -->
+      <mat-form-field *appHasPermission="'account:read:licensecount'" appearance="outline" class="form-field">
         <mat-label style="color:black">License Count</mat-label>
-        <input matInput placeholder="Sales Amount" class="mat-input-element custom-placeholder"
-          formControlName="licensecount">
+        <input matInput placeholder="License Count" class="mat-input-element custom-placeholder"
+          formControlName="licensecount" type="number">
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field">
@@ -90,70 +122,87 @@
           <option value="true">Active</option>
           <option value="false">Inactive</option>
         </select>
-        
+        <mat-error *ngIf="accountForm.get('isactive')?.hasError('required') && accountForm.get('isactive')?.touched">
+          Active status is required
+        </mat-error>
       </mat-form-field>
 
       <div class="form-submit">
-        <button mat-raised-button type="submit" class="btn-primary" (click)="createAccount()"(disabled)="accountForm.invalid">
-          Submit
-        </button>
-        </div>
+        <!-- Example: Button-level permission control -->
+        <ng-container *appHasPermission="'account:create'">
+          <button *ngIf="!isEditMode"
+                  mat-raised-button type="submit" class="btn-primary" 
+                  [disabled]="accountForm.invalid || accountForm.pending || hasPendingValidators()">
+            Submit
+          </button>
+        </ng-container>
+        <ng-container *appHasPermission="'account:update'">
+          <button *ngIf="isEditMode"
+                  mat-raised-button type="submit" class="btn-primary" 
+                  [disabled]="accountForm.invalid || accountForm.pending || hasPendingValidators()">
+            Update
+          </button>
+        </ng-container>
+      </div>
 
     </form>
   </div>
 
+  <div class="example-card">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Account&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalAccounts}}</mat-card-title>
+      </mat-card-header>
+    </mat-card>
 
-
-
-<div class="example-card">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Account&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalAccounts}}</mat-card-title>
-    </mat-card-header>
-  </mat-card>
-
- <mat-card>
-    <mat-card-header>
-      <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeAccounts}}</mat-card-title>
-    </mat-card-header>
-  </mat-card>
-  
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveAccounts}}</mat-card-title>
-      
-    </mat-card-header>
-  </mat-card>
-  
-</div>
-<div class="pos-relative">
-  <div class="btn-pos-list">
-    <button (click)="toggleForm()" class="add-btn" >
-      <mat-icon>add_circle</mat-icon>
-    </button>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeAccounts}}</mat-card-title>
+      </mat-card-header>
+    </mat-card>
+    
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveAccounts}}</mat-card-title>
+      </mat-card-header>
+    </mat-card>
   </div>
-    <dx-data-grid 
-    [dataSource]="apiData"
-    [allowColumnReordering]="true" 
-    [allowColumnResizing]="true" 
-    [showBorders]="true"
-    [headerFilter]="{ visible: true }" 
-    [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
-    [paging]="{ pageSize: 7 }" 
-    [showBorders]="true" (onExporting)="onExporting($event)"
-    title="Account">
-   
-    <dxi-column dataField="accountid" [allowSorting]="true" [sortOrder]="'dsc'"caption="Company ID" [width]="130"></dxi-column>
-    <dxi-column dataField="companyname" caption="Company Name"></dxi-column>
-    <dxi-column dataField="ownername" caption="Owner Name"></dxi-column>
-    <dxi-column dataField="ownermobile" caption="Owner Mobile" [width]="150"></dxi-column>
-    <dxi-column dataField="owneremail" caption="Owner Email"[width]="300"></dxi-column>
-    <dxi-column dataField="isactive" caption="Active" alignment="center" [width]="150"></dxi-column>
-    <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="150"></dxi-column>
 
-     <a  color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
-      <span class="material-symbols-outlined edit-btn">edit</span>   
-     </a>
+  <div class="pos-relative">
+    <div class="btn-pos-list">
+      <button *appHasPermission="'account:create'" (click)="toggleForm()" class="add-btn">
+        <mat-icon>add_circle</mat-icon>
+      </button>
+    </div>
+    <dx-data-grid 
+      [dataSource]="apiData"
+      [allowColumnReordering]="true" 
+      [allowColumnResizing]="true" 
+      [showBorders]="true"
+      [headerFilter]="{ visible: true }" 
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
+      [paging]="{ pageSize: 15 }" 
+      (onExporting)="onExporting($event)"
+      title="Account">
+   
+      <dxi-column dataField="accountid" [allowSorting]="true" [sortOrder]="'dsc'" caption="Company ID" [width]="130"></dxi-column>
+      <dxi-column dataField="companyname" caption="Company Name"></dxi-column>
+      <dxi-column dataField="ownername" caption="Owner Name"></dxi-column>
+      <dxi-column dataField="ownermobile" caption="Owner Mobile" [width]="150"></dxi-column>
+      <dxi-column dataField="owneremail" caption="Owner Email" [width]="300"></dxi-column>
+      <dxi-column dataField="isactive" caption="Active" alignment="center" [width]="150"></dxi-column>
+      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
+
+      <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
+        <a *appHasPermission="'account:update'" (click)="editItem(data.data)" style="cursor: pointer;">
+          <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
+        </a>
+        <a *appHasPermission="'account:delete'" (click)="deleteItem(data.data)" style="cursor: pointer;">
+          <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
+        </a>
+      </div>
   
-    <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
-  </dx-data-grid>
+      <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+    </dx-data-grid>
+  </div>
+</section>

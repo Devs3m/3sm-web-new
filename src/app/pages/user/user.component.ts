@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
+import { environment } from '../../../environments/environment';
 
 
 @Component({
@@ -16,10 +17,11 @@ import { Workbook } from 'exceljs';
 export class UserComponent implements OnInit {
 
 
-  restuserForm() {
+    restuserForm() {
     throw new Error('Method not implemented.');
     }
     isFormOpen = false; // Controls the slider visibility
+    isEditMode = false; // Controls edit mode
     user!:any[];
     userForm!: FormGroup;
     dropdownOptions:any[]=[];
@@ -31,6 +33,7 @@ export class UserComponent implements OnInit {
     totalUser:number=0;
     activeUser:number=0;
     deactiveUser:number=0;
+    private apiUrl = environment.apiUrl;
 
     constructor(private userservice:UserService,
       private fromBuilder:FormBuilder,
@@ -68,7 +71,7 @@ export class UserComponent implements OnInit {
     this.getDropDownValue();
     {
       // Fetch data from API
-      this.http.get<{ totalUser: number;activeUser: number; deactiveUser: number}>('http://49.50.112.46:3002/user/counts')
+      this.http.get<{ totalUser: number;activeUser: number; deactiveUser: number}>(`${this.apiUrl}/user/counts`)
         .subscribe(response => {
           this.totalUser = response.totalUser; // Assign API response to totalAccounts
           this.activeUser = response.activeUser; // Assign API response to totalAccounts
@@ -138,6 +141,7 @@ export class UserComponent implements OnInit {
   editItem(item: any): void {
     console.log("Editing:", item);
     this.isFormOpen = true; // Open the form for editing
+    this.isEditMode = true; // Set edit mode
     this.userForm.patchValue(item); // Load item into form for editing
   }
   
@@ -178,14 +182,14 @@ export class UserComponent implements OnInit {
 
 
   getDropDownValues(): void {
-    this.http.get<any[]>('http://49.50.112.46:3002/user/list').subscribe(data => {
+    this.http.get<any[]>(`${this.apiUrl}/user/list`).subscribe(data => {
       this.dropdownItems = data;
     });
   }
 
   onCityChange(event: any): void {
     const selectedCityId = event.target.value;
-    this.http.get<any>(`http://49.50.112.46:3002/user/${selectedCityId}`).subscribe(data => {
+    this.http.get<any>(`${this.apiUrl}/user/${selectedCityId}`).subscribe(data => {
       this.userForm.patchValue({
         cityid:data.cityid,
         userstate: data.citystate,

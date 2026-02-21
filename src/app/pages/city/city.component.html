@@ -76,9 +76,14 @@
         <dxi-column dataField="isactive" caption="Active" [width]="200"></dxi-column>
         <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
       
-        <a color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
-          <span class="material-symbols-outlined edit-btn">edit</span>   
-        </a>
+        <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
+          <a (click)="editItem(data.data)" style="cursor: pointer;">
+            <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
+          </a>
+          <a (click)="deleteItem(data.data)" style="cursor: pointer;">
+            <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
+          </a>
+        </div>
     
     
           <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>

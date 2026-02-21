@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-userrole',
@@ -27,6 +28,7 @@ export class CityComponent implements OnInit {
   totalCity:number=0;
   activeCity:number=0;
   deactiveCity:number =0;
+  private apiUrl = environment.apiUrl;
  
   constructor(private cityservice:CityService,
               private fromBuilder:FormBuilder,
@@ -50,7 +52,7 @@ export class CityComponent implements OnInit {
     this.getDropDownValue();
     {
       // Fetch data from API
-      this.http.get<{ totalCity: number;activeCity: number; deactiveCity: number}>('http://49.50.112.46:3002/city/counts')
+      this.http.get<{ totalCity: number;activeCity: number; deactiveCity: number}>(`${this.apiUrl}/city/counts`)
         .subscribe(response => {
           this.totalCity = response.totalCity; // Assign API response to totalAccounts
           this.activeCity = response.activeCity; // Assign API response to totalAccounts
@@ -152,7 +154,7 @@ export class CityComponent implements OnInit {
   });
   }
   getDropDownValues(): void {
-    this.http.get<any[]>('http://49.50.112.46:3002/city/list').subscribe(data => {
+    this.http.get<any[]>(`${this.apiUrl}/city/list`).subscribe(data => {
       this.dropdownItems = data;
     });
   }

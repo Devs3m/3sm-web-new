@@ -1,6 +1,6 @@
 <section>
     <div class="form-container"[class.open]="isFormOpen">
-        <p style="font-size: larger;">Add User</p>
+        <p style="font-size: larger;">{{ isEditMode ? 'Edit User' : 'Add User' }}</p>
         <button (click)="restuserForm()" class="close-btn">&times;</button>
         <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
 
@@ -76,9 +76,16 @@
           
         </mat-form-field>
         <div class="form-submit">
-          <button mat-raised-button type="submit" (click)="createUser()">
-            Submit
-          </button>
+          <ng-container *appHasPermission="'user:create'">
+            <button mat-raised-button type="submit" (click)="createUser()">
+              Submit
+            </button>
+          </ng-container>
+          <ng-container *appHasPermission="'user:update'">
+            <button *ngIf="isEditMode" mat-raised-button type="submit" (click)="createUser()">
+              Update
+            </button>
+          </ng-container>
           </div>
         </form>  
     </div>
@@ -104,7 +111,7 @@
 
     <div class="pos-relative">
         <div class="btn-pos-list">
-          <button (click)="toggleForm()" class="add-btn" >
+          <button *appHasPermission="'user:create'" (click)="toggleForm()" class="add-btn" >
             <mat-icon>add_circle</mat-icon>
           </button>
         </div>
@@ -130,9 +137,14 @@
         <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="125"></dxi-column>
       
         
-        <a color="primary" *dxTemplate="let data of 'actionTemplate'" (click)="editItem(data.data)">
-          <span class="material-symbols-outlined edit-btn">edit</span>   
-        </a>
+        <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
+          <a *appHasPermission="'user:update'" (click)="editItem(data.data)" style="cursor: pointer;">
+            <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
+          </a>
+          <a *appHasPermission="'user:delete'" (click)="deleteItem(data.data)" style="cursor: pointer;">
+            <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
+          </a>
+        </div>
       
           <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
         </dx-data-grid>

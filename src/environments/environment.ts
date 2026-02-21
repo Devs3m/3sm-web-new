@@ -4,9 +4,8 @@
 
 export const environment = {
   production: false,
-  apiHost:'http://49.50.112.46:3002/api'
-  //apiHost:'http://localhost:3002/api/'
-  
+  apiUrl: 'http://localhost:3002',
+  apiHost: 'https://connectsite.in/'
 };
 
 /*
