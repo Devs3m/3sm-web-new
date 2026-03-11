@@ -1,5 +1,5 @@
 <section>
-
+  <div class="form-backdrop" [class.open]="isFormOpen" (click)="resetForm()"></div>
   <!-- Add / Edit Form -->
   <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</p>

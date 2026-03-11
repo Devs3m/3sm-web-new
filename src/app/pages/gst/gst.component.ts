@@ -1,11 +1,12 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import{ GstService} from'../service/gst.service';
-import { FormBuilder,FormGroup,Validators } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { GstService } from '../service/gst.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-gst',
@@ -16,7 +17,8 @@ export class GstComponent implements OnInit {
 
   gst!:any[];
   gstForm!:FormGroup;
-  isFormOpen = false; // Controls the slider visibility
+  isFormOpen = false;
+  isEditMode = false;
   dropdownOptions:any[]=[];
   selectedItem: any;
   dropdownItems: any[] =[];  
@@ -29,15 +31,15 @@ export class GstComponent implements OnInit {
   private apiUrl = environment.apiUrl;
   
  
-  constructor(private gstservice:GstService,
-              private fromBuilder:FormBuilder,
-              private http:HttpClient){
-
-  }
+  constructor(
+    private gstservice: GstService,
+    private fromBuilder: FormBuilder,
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
   ngOnInit(): void {
     this.gstForm=this.fromBuilder.group({
-    
-
+    "gstid":[0],
     "totalgstpercent":[""],
     "igstpercent":[""],
     "cgstpercent":[""],
@@ -79,13 +81,48 @@ export class GstComponent implements OnInit {
       console.error('Form is Invalid');
     }
   }
-  createGst():void{
-    this.gstservice.addGst(this.gstForm.value).subscribe(data=>{
-      if(data){
-        this.getGstDetails();
-        this.gstForm.reset();
-      }
-      console.log(data);
+  /** Build payload matching master.gst schema */
+  private buildGstPayload(): Record<string, unknown> {
+    const v = this.gstForm.value;
+    const userId = this.authService.getUserId?.() ?? this.authService.getUser?.()?.userId ?? this.authService.getUser?.()?.userid ?? 1;
+    const toNum = (x: unknown) => (x === '' || x == null) ? 0 : Number(x) || 0;
+    const now = new Date().toISOString();
+    const chessVal = toNum(this.gstForm.get('chesspercent')?.value ?? v.chesspercent);
+    const payload: Record<string, unknown> = {
+      totalgstpercent: toNum(v.totalgstpercent),
+      igstpercent: toNum(v.igstpercent),
+      cgstpercent: toNum(v.cgstpercent),
+      sgstpercent: toNum(v.sgstpercent),
+      ugstpercent: toNum(v.ugstpercent),
+      chesspercent: chessVal,
+      chess: chessVal,
+      createddate: this.isEditMode ? (v.createddate || now) : now,
+      updateddate: now,
+      createdby: toNum(v.createdby) || userId,
+      updatedby: userId,
+      userid: toNum(v.userid) || userId,
+      gstisactive: v.isactive === true || v.isactive === 'true' || v.isactive === 'Active' || v.isactive === 1
+    };
+    if (this.isEditMode) {
+      const id = toNum(v.gstid);
+      if (id > 0) payload['gstid'] = id;
+    }
+    return payload;
+  }
+
+  createGst(): void {
+    const payload = this.buildGstPayload();
+    const obs = this.isEditMode && (payload['gstid'] as number) > 0
+      ? this.gstservice.updateGst(payload)
+      : this.gstservice.addGst(payload);
+    obs.subscribe({
+      next: (data) => {
+        if (data) {
+          this.getGstDetails();
+          this.restGstForm();
+        }
+      },
+      error: (err) => console.error(this.isEditMode ? 'Error updating GST' : 'Error adding GST', err)
     });
   }
   getGstDetails():void {
@@ -107,9 +144,21 @@ export class GstComponent implements OnInit {
     });
    }
    editItem(item: any): void {
-    console.log("Editing:", item);
-    this.isFormOpen = true; // Open the form for editing
-    this.gstForm.patchValue(item); // Load item into form for editing
+    this.isEditMode = true;
+    this.isFormOpen = true;
+    const id = item.gstid ?? item.gstId ?? item.id ?? 0;
+    this.gstForm.patchValue({
+      gstid: id,
+      totalgstpercent: item.totalgstpercent ?? item.totalGstPercent ?? '',
+      igstpercent: item.igstpercent ?? item.igstPercent ?? '',
+      cgstpercent: item.cgstpercent ?? item.cgstPercent ?? '',
+      sgstpercent: item.sgstpercent ?? item.sgstPercent ?? '',
+      ugstpercent: item.ugstpercent ?? item.ugstPercent ?? '',
+      chesspercent: item.chesspercent ?? item.chessPercent ?? '',
+      isactive: item.gstisactive ?? item.isactive ?? item.gstIsActive ?? true,
+      createddate: item.createddate ?? item.createdDate,
+      updateddate: item.updateddate ?? item.updatedDate ?? new Date()
+    });
   }
   
   deleteItem(item: any): void {
@@ -142,22 +191,24 @@ export class GstComponent implements OnInit {
     e.cancel = true; // Prevents default export
   }
   toggleForm(): void {
+    this.isEditMode = false;
     this.isFormOpen = true;
-    
   }
   restGstForm(): void {
-   this.isFormOpen=false;
+   this.isFormOpen = false;
+   this.isEditMode = false;
    this.gstForm.reset();
    this.gstForm.patchValue({
-    totalgstpercent: null,  // Reset dropdown
-    igstpercent:'',
-    cgstpercent:'',
-    sgstpercent:'',
-    ugstpercent:'',
-    chesspercent:'',
+    gstid: 0,
+    totalgstpercent: null,
+    igstpercent: '',
+    cgstpercent: '',
+    sgstpercent: '',
+    ugstpercent: '',
+    chesspercent: '',
     createdby: '',
     updatedby: '',
-    isactive: true,      // Set default value
+    isactive: true,
     createddate: new Date(),
     updateddate: new Date(),
   });

@@ -1,5 +1,6 @@
 <section>
-  <div class="form-container"[class.open]="isFormOpen">
+  <div class="form-backdrop" [class.open]="isFormOpen" (click)="restvatForm()"></div>
+  <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">Add VAT %</p>
     <button (click)="restvatForm()" class="close-btn">&times;</button>
       <form [formGroup]="vatForm" (ngSubmit)="onSubmit()">
@@ -64,8 +65,8 @@
 
       <dxi-column dataField="vatid"[allowSorting]="true" [sortOrder]="'asc'"caption="Vat ID" [width]="130"></dxi-column>
       <dxi-column dataField="vatpercent" caption="VAT%" [width]="230"></dxi-column>
-      <dxi-column dataField="createddate" caption="Created Date" [width]="230"></dxi-column>
-      <dxi-column dataField="updateddate" caption="Updated Date" [width]="230"></dxi-column>
+      <dxi-column dataField="createddate" caption="Created Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="230"></dxi-column>
+      <dxi-column dataField="updateddate" caption="Updated Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="230"></dxi-column>
       <dxi-column dataField="vatisactive" caption="Active" [width]="230"></dxi-column>
       <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="230"></dxi-column>
     

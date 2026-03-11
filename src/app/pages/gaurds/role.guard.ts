@@ -20,6 +20,16 @@ export class RoleGuard implements CanActivate {
       return false;
     }
 
+    // RBAC: Only Super Admin can access Role & Permission screens
+    const path = route.routeConfig?.path || '';
+    if (path === 'userrole') {
+      if (!this.permissionService.canManageRbac()) {
+        this.router.navigate(['/pages/dashboard']);
+        return false;
+      }
+      return true;
+    }
+
     // Get required permissions from route data
     const requiredPermission = route.data['permission'] as { resource: string; action: string };
     const requiredRole = route.data['role'] as string | string[];
@@ -30,7 +40,7 @@ export class RoleGuard implements CanActivate {
     }
 
     // For dashboard, allow access by default (permissions may not be loaded yet)
-    if (route.routeConfig?.path === 'dashboard' && !requiredPermission) {
+    if (path === 'dashboard' && !requiredPermission) {
       return true;
     }
 
@@ -40,7 +50,6 @@ export class RoleGuard implements CanActivate {
     // If permissions haven't loaded yet and user just logged in, allow access to dashboard
     // This prevents blocking users immediately after login
     if (!userRole && route.routeConfig?.path === 'dashboard') {
-      console.log('Permissions not loaded yet, allowing dashboard access');
       return true;
     }
 
@@ -52,13 +61,10 @@ export class RoleGuard implements CanActivate {
         const hasRole = roles.some(role => role.toLowerCase() === roleName);
         
         if (!hasRole) {
-          console.warn(`Access denied: User does not have required role. Required: ${roles.join(', ')}, User has: ${roleName}`);
-          this.router.navigate(['/pages/dashboard']); // Redirect to dashboard
+          this.router.navigate(['/pages/dashboard']);
           return false;
         }
       } else {
-        // If no role loaded yet, allow access (permissions still loading)
-        console.log('User role not loaded yet, allowing access');
         return true;
       }
     }
@@ -68,13 +74,10 @@ export class RoleGuard implements CanActivate {
       // First check if user is Super Admin - Super Admin has access to ALL resources and ALL actions
       const isSuperAdmin = this.permissionService.isSuperAdmin();
       if (isSuperAdmin) {
-        console.log(`✅ Super Admin access granted to ${requiredPermission.resource}:${requiredPermission.action}`);
-        return true; // Super Admin has full access
+        return true;
       }
 
-      // If permissions haven't loaded yet, allow access to prevent blocking after login
       if (!userRole) {
-        console.log('Permissions not loaded yet, allowing access');
         return true;
       }
 
@@ -84,7 +87,6 @@ export class RoleGuard implements CanActivate {
       );
 
       if (!hasPermission) {
-        console.warn(`Access denied: User does not have permission for ${requiredPermission.resource}:${requiredPermission.action}`);
         this.router.navigate(['/pages/dashboard']); // Redirect to dashboard
         return false;
       }

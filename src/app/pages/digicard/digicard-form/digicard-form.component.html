@@ -1,4 +1,5 @@
 <section>
+    <div class="form-backdrop" [class.open]="isFormOpen" (click)="restDigicardForm()"></div>
     <div class="form-container" [class.open]="isFormOpen">
         <p style="font-size: larger;">Add City</p>
         <button (click)="restDigicardForm()" class="close-btn">&times;</button>
@@ -214,7 +215,7 @@
             <dxi-column dataField="digicardid" caption="Digicard ID" [cellTemplate]="'digiTemplate'"></dxi-column>
             <dxi-column dataField="companyname" caption="Company Name"></dxi-column>
             <dxi-column dataField="digicardmobile1" caption="Mobile"></dxi-column>
-            <dxi-column dataField="createddate" caption="Created Date"></dxi-column>
+            <dxi-column dataField="createddate" caption="Created Date" dataType="date" [format]="'dd/MM/yyyy'"></dxi-column>
 
 
             <!-- Actions Column -->

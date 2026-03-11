@@ -10,7 +10,6 @@ export class VatService {
   private apiUrl = environment.apiUrl;
 
   deleteVat(vatid :any):Observable<any>{
-    console.log('Fetching data from API');
     return this.http.get(`${this.apiUrl}/vat/vatdelete`,vatid);
   
   }

@@ -75,6 +75,18 @@ const routes: Routes = [
         data: { permission: { resource: 'sales', action: 'view' } }
       },
       { 
+        path: 'salesadd', 
+        loadChildren: () => import(`./sales/sales.module`).then(m => m.SalesModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'sales', action: 'view' } }
+      },
+      { 
+        path: 'salesedit', 
+        loadChildren: () => import(`./salesedit/salesedit.module`).then(m => m.SaleseditModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'sales', action: 'update' } }
+      },
+      { 
         path: 'customer', 
         loadChildren: () => import(`./customer/customer.module`).then(m => m.CustomerModule),
         canActivate: [RoleGuard],

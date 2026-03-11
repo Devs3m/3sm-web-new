@@ -1,5 +1,6 @@
 <section>
-    <div class="form-container"[class.open]="isFormOpen">
+    <div class="form-backdrop" [class.open]="isFormOpen" (click)="restCityForm()"></div>
+    <div class="form-container" [class.open]="isFormOpen">
         <p style="font-size: larger;">Add City</p>
         <button (click)="restCityForm()" class="close-btn">&times;</button>
           <form [formGroup]="cityForm" (ngSubmit)="onSubmit()">
@@ -71,8 +72,8 @@
     
         <dxi-column dataField="cityid"[allowSorting]="true" [sortOrder]="'asc'"caption="City ID" [width]="130"></dxi-column>
         <dxi-column dataField="cityname" caption="City Name" [width]="250"></dxi-column>>
-        <dxi-column dataField="createddate" caption="Created Date" [width]="250"></dxi-column>>
-        <dxi-column dataField="updateddate" caption="Updated Date" [width]="250"></dxi-column>>
+        <dxi-column dataField="createddate" caption="Created Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="250"></dxi-column>
+        <dxi-column dataField="updateddate" caption="Updated Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="250"></dxi-column>
         <dxi-column dataField="isactive" caption="Active" [width]="200"></dxi-column>
         <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
       

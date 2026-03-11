@@ -1,0 +1,284 @@
+<section class="salesedit-container">
+
+  <div class="salesedit-form-scroll">
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-icon>hourglass_empty</mat-icon>
+    <span>Loading invoice...</span>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <form id="salesEditForm" *ngIf="!isLoading" [formGroup]="salesForm" (ngSubmit)="onSubmit()">
+
+    <!-- Customer + Invoice Info -->
+    <div class="form-section-card customer-section-card">
+
+      <!-- Col 1: Title -->
+      <div class="col-title">
+        <img src="assets/logo.png" class="brand-logo" alt="Connectsite Logo">
+        <h2 class="invoice-title-text">GST Invoice</h2>
+        <p class="invoice-subtitle-text">Edit existing invoice</p>
+      </div>
+
+      <div class="customer-divider"></div>
+
+      <!-- Col 2: Customer -->
+      <div class="col-customer">
+        <div class="section-title">
+          <mat-icon>person</mat-icon>
+          <h3>Customer Details</h3>
+        </div>
+
+        <ng-container *ngIf="!salesForm.get('customername')?.value">
+          <mat-form-field appearance="outline" class="customer-select-field">
+            <mat-label>Select Customer <span class="f-key-hint">F1</span></mat-label>
+            <select matNativeControl formControlName="customerid" #customerSelect (change)="onCustomerChange($event)">
+              <option value="" disabled>Select Customer</option>
+              <option *ngFor="let customer of customerOptions" [value]="customer.customerid">
+                {{ customer.customername }}
+              </option>
+            </select>
+            <mat-error *ngIf="salesForm.get('customerid')?.hasError('required') && salesForm.get('customerid')?.touched">
+              Customer is required
+            </mat-error>
+          </mat-form-field>
+        </ng-container>
+
+        <div class="customer-info-panel" *ngIf="salesForm.get('customername')?.value">
+          <div class="customer-card-header">
+            <span class="customer-card-title">
+              <mat-icon>account_circle</mat-icon>
+              {{ salesForm.get('customername')?.value }}
+            </span>
+            <div class="customer-card-actions">
+              <button type="button" mat-icon-button class="card-action-btn edit-btn-card" title="Change Customer" (click)="clearCustomer()">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button type="button" mat-icon-button class="card-action-btn close-btn-card" title="Remove Customer" (click)="clearCustomer()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+          <div class="customer-info-row" *ngIf="salesForm.get('customermobile')?.value">
+            <mat-icon class="info-icon">phone</mat-icon>
+            <span class="info-value">{{ salesForm.get('customermobile')?.value }}</span>
+          </div>
+          <div class="customer-info-row" *ngIf="salesForm.get('customeremail')?.value">
+            <mat-icon class="info-icon">email</mat-icon>
+            <span class="info-value">{{ salesForm.get('customeremail')?.value }}</span>
+          </div>
+          <div class="customer-info-row" *ngIf="salesForm.get('customeraddress')?.value">
+            <mat-icon class="info-icon">location_on</mat-icon>
+            <span class="info-value">
+              {{ salesForm.get('customeraddress')?.value }}<span *ngIf="salesForm.get('customercity')?.value">, {{ salesForm.get('customercity')?.value }}</span><span *ngIf="salesForm.get('customerstate')?.value">, {{ salesForm.get('customerstate')?.value }}</span><span *ngIf="salesForm.get('customerpincode')?.value"> - {{ salesForm.get('customerpincode')?.value }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="customer-divider"></div>
+
+      <!-- Col 3: Invoice Info -->
+      <div class="col-invoice">
+        <div class="section-title invoice-info-header">
+          <span class="invoice-info-title-group">
+            <mat-icon>receipt</mat-icon>
+            <h3>Invoice Info</h3>
+          </span>
+          <button type="button" class="back-btn" (click)="goBackToSales()">
+            <mat-icon>arrow_back</mat-icon>
+            Back to Sales
+          </button>
+        </div>
+        <div class="invoice-meta-fields">
+          <mat-form-field appearance="outline" class="invoice-meta-field">
+            <mat-label>Invoice No.</mat-label>
+            <input matInput formControlName="invoiceno" readonly>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="invoice-meta-field">
+            <mat-label>Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="saledate" placeholder="Select date">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="invoice-meta-field">
+            <mat-label>Payment Method</mat-label>
+            <select matNativeControl formControlName="paymentmethod">
+              <option value="" disabled>Select payment method</option>
+              <option value="Cash">Cash</option>
+              <option value="Credit Card">Credit Card</option>
+              <option value="Debit Card">Debit Card</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="UPI">UPI</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Other">Other</option>
+            </select>
+            <mat-error *ngIf="salesForm.get('paymentmethod')?.hasError('required') && salesForm.get('paymentmethod')?.touched">
+              Payment method is required
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="invoice-meta-field">
+            <mat-label>Payment Status</mat-label>
+            <select matNativeControl formControlName="paymentstatus">
+              <option value="" disabled>Select payment status</option>
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+              <option value="Partial">Partial</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            <mat-error *ngIf="salesForm.get('paymentstatus')?.hasError('required') && salesForm.get('paymentstatus')?.touched">
+              Payment status is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Items Table -->
+    <div class="form-section-card">
+      <div class="section-title">
+        <mat-icon>inventory_2</mat-icon>
+        <h3>Items</h3>
+      </div>
+
+      <div class="items-table-container">
+        <table class="items-table">
+          <colgroup>
+            <col class="col-desc">
+            <col class="col-hsn">
+            <col class="col-qty">
+            <col class="col-rate">
+            <col class="col-disc">
+            <col class="col-gst">
+            <col class="col-amount">
+            <col class="col-action">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>DESCRIPTION</th>
+              <th>HSN/SAC</th>
+              <th>QTY</th>
+              <th>RATE (₹)</th>
+              <th>DISC %</th>
+              <th>GST %</th>
+              <th class="th-right">AMOUNT (₹)</th>
+              <th class="th-center">ACTION</th>
+            </tr>
+          </thead>
+          <tbody formArrayName="items">
+            <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
+              <td>
+                <mat-form-field appearance="outline" class="table-field">
+                  <input matInput formControlName="description"
+                         #descInput
+                         placeholder="Search product..."
+                         [matAutocomplete]="auto">
+                  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onProductSelect(i, $event)">
+                    <mat-option *ngFor="let product of (filteredProducts[i] || productOptions)" [value]="product.productname">
+                      {{ product.productname }}
+                    </mat-option>
+                  </mat-autocomplete>
+                  <mat-error *ngIf="item.get('description')?.hasError('required') && item.get('description')?.touched">
+                    Required
+                  </mat-error>
+                </mat-form-field>
+              </td>
+              <td class="readonly-cell">
+                {{ item.get('hsnSac')?.value || '—' }}
+              </td>
+              <td>
+                <mat-form-field appearance="outline" class="table-field table-field-qty">
+                  <input matInput type="number" formControlName="quantity"
+                         #qtyInput
+                         (input)="calculateItemAmount(i)" min="1" placeholder="Qty"
+                         (keydown.enter)="$event.preventDefault(); focusDiscount(i)">
+                  <mat-error *ngIf="item.get('quantity')?.hasError('required') && item.get('quantity')?.touched">
+                    Required
+                  </mat-error>
+                </mat-form-field>
+              </td>
+              <td class="readonly-cell">
+                ₹{{ item.get('rate')?.value || 0 | number:'1.2-2' }}
+              </td>
+              <td>
+                <mat-form-field appearance="outline" class="table-field table-field-disc">
+                  <input matInput type="number" formControlName="discountPct"
+                         #discInput
+                         (input)="calculateItemAmount(i)" min="0" max="100" placeholder="0"
+                         (keydown.enter)="$event.preventDefault(); addItemAndFocusNext(i)">
+                  <span matSuffix>%</span>
+                </mat-form-field>
+              </td>
+              <td class="readonly-cell gst-cell">
+                {{ (item.get('gstPercent')?.value || 0) | number:'1.2-2' }}%
+              </td>
+              <td class="amount-cell">
+                ₹{{ item.get('amount')?.value || 0 | number:'1.2-2' }}
+              </td>
+              <td class="action-cell">
+                <button type="button" (click)="removeItem(i)" class="delete-btn-icon" mat-icon-button
+                        [disabled]="items.length === 1">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </form>
+
+  </div><!-- end salesedit-form-scroll -->
+
+  <!-- Summary Footer — outside scroll area, pinned to bottom of container -->
+  <div class="summary-footer" *ngIf="!isLoading">
+    <div class="summary-cols">
+      <div class="summary-col">
+        <span class="summary-col-label">Gross Amount</span>
+        <span class="summary-col-value">₹{{ getGrossSubtotal() | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-col discount-col">
+        <span class="summary-col-label">Total Discount</span>
+        <span class="summary-col-value discount-text">- ₹{{ getTotalDiscount() | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-col subtotal-col">
+        <span class="summary-col-label">Subtotal</span>
+        <span class="summary-col-value">₹{{ getSubtotal() | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-col">
+        <span class="summary-col-label">CGST</span>
+        <span class="summary-col-value">₹{{ getCgst() | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-col">
+        <span class="summary-col-label">SGST</span>
+        <span class="summary-col-value">₹{{ getSgst() | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-col">
+        <span class="summary-col-label">Total GST</span>
+        <span class="summary-col-value green-text">₹{{ getTotalGst() | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-col grand-col">
+        <span class="summary-col-label">Grand Total</span>
+        <span class="summary-col-value grand-value">₹{{ getGrandTotal() | number:'1.2-2' }}</span>
+        <span *ngIf="getTotalDiscount() > 0" class="discount-saved">
+          Saved ₹{{ getTotalDiscount() | number:'1.2-2' }}
+        </span>
+      </div>
+      <div class="summary-col action-col">
+        <button *appHasPermission="'sales:update'" type="submit" form="salesEditForm" class="save-btn">
+          <mat-icon>save</mat-icon>
+          <span class="save-btn-label">SAVE</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</section>

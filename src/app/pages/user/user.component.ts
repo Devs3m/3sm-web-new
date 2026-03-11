@@ -1,6 +1,10 @@
 import { Component, ElementRef, OnInit, ViewChild  } from '@angular/core';
-import{ UserService} from'../service/user.service';
-import { FormBuilder,FormGroup,Validators  } from '@angular/forms';
+import { UserService } from '../service/user.service';
+import { InstanceService } from '../service/instance.service';
+import { UserroleService } from '../service/userrole.service';
+import { AuthService } from '../service/auth.service';
+import { PermissionService } from '../service/permission.service';
+import { FormBuilder, FormGroup, Validators  } from '@angular/forms';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
@@ -17,70 +21,70 @@ import { environment } from '../../../environments/environment';
 export class UserComponent implements OnInit {
 
 
-    restuserForm() {
-    throw new Error('Method not implemented.');
-    }
     isFormOpen = false; // Controls the slider visibility
     isEditMode = false; // Controls edit mode
     user!:any[];
     userForm!: FormGroup;
-    dropdownOptions:any[]=[];
+    dropdownOptions: any[] = [];
     selectedItem: any;
-    dropdownItems: any[] =[];  
+    dropdownItems: any[] = [];
+    instanceList: any[] = [];
+    userroleDropdownItems: any[] = [];
     data: { id: number; userName: string; city: string; isActive: boolean }[] = [];
-    apiData:any[] =[];
+    apiData: any[] = [];
     longText: any;
-    totalUser:number=0;
-    activeUser:number=0;
-    deactiveUser:number=0;
+    totalUser: number = 0;
+    activeUser: number = 0;
+    deactiveUser: number = 0;
     private apiUrl = environment.apiUrl;
 
-    constructor(private userservice:UserService,
-      private fromBuilder:FormBuilder,
-      private http:HttpClient){}
+    constructor(
+      private userservice: UserService,
+      private instanceService: InstanceService,
+      private userroleService: UserroleService,
+      private authService: AuthService,
+      private permissionService: PermissionService,
+      private fromBuilder: FormBuilder,
+      private http: HttpClient
+    ) {}
 
 
   ngOnInit(): void {
-    this.userForm=this.fromBuilder.group({
-    "username":[""],
-    "usermobile":["",Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$")],
-    "useremail":[""],
-    "useraddress":[""],
-    "usercity":["",Validators.required],
-    "userstate":[""],
-    "usercountry":[""],
-    "userpincode":[""],
-    "userrole":[""],
-    "userasaenddate":[new Date()],
-    "userasaamount":[""],
-    "userpassword":[""],
-    "userforgotpwquest":[""],
-    "userforgotpwans":[""],
-    "createddate":[new Date()],
-    "updateddate":[new Date()],
-    "isactive":[""],
-    "createdby":[1],
-    "updatedby":[1],
-    "accountid": [0],
-    "instanceid": [0],
-    "cityid": [1],
-    "userisactive":[""],
-    "userroleid":[""],
-    })
+    const accountId = this.authService.getAccountId() ?? 0;
+    const instanceId = this.authService.getInstanceId() ?? 0;
+    const userId = this.authService.getUserId() ?? 1;
+    this.userForm = this.fromBuilder.group({
+      username: [""],
+      usermobile: ["", Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$")],
+      useremail: [""],
+      userpassword: [""],
+      verifypassword: [""],
+      useraddress: [""],
+      usercity: ["", Validators.required],
+      userstate: [""],
+      usercountry: [""],
+      userpincode: [""],
+      userrole: [""],
+      userroleid: [""],
+      userasaenddate: [new Date()],
+      userasaamount: [""],
+      userforgotpwquest: [""],
+      userforgotpwans: [""],
+      createddate: [new Date()],
+      updateddate: [new Date()],
+      isactive: [""],
+      createdby: [userId],
+      updatedby: [userId],
+      accountid: [accountId],
+      instanceid: [instanceId],
+      cityid: [1],
+      userisactive: ["true"],
+    });
     this.getUserDetails();
     this.getDropDownValue();
-    {
-      // Fetch data from API
-      this.http.get<{ totalUser: number;activeUser: number; deactiveUser: number}>(`${this.apiUrl}/user/counts`)
-        .subscribe(response => {
-          this.totalUser = response.totalUser; // Assign API response to totalAccounts
-          this.activeUser = response.activeUser; // Assign API response to totalAccounts
-          this.deactiveUser = response.deactiveUser; // Assign API response to totalAccounts
-          console.log(this.totalUser)
-        });
-       
-    }
-}
+    this.loadInstanceList();
+    this.loadUserroleList();
+  }
 
   onSubmit():void{
     if(this.userForm.valid){
@@ -95,37 +99,111 @@ export class UserComponent implements OnInit {
     }
   }
 
-  createUser():void{
-    this.userservice.addUser(this.userForm.value).subscribe(data=>{
-      if(data){
+  createUser(): void {
+    const raw = this.userForm.getRawValue();
+    const roleId = raw.userroleid != null && raw.userroleid !== '' ? Number(raw.userroleid) : null;
+    const selectedRole = roleId != null ? this.userroleDropdownItems.find((r: any) => Number(r.userroleid) === roleId) : null;
+    const payload = {
+      ...raw,
+      userrole: selectedRole ? selectedRole.userrolename : (raw.userrole || ''),
+      userroleid: roleId ?? raw.userroleid,
+      userisactive: raw.userisactive == null || raw.userisactive === '' ? 'true' : raw.userisactive,
+    };
+    delete (payload as any).verifypassword;
+    this.userservice.addUser(payload).subscribe(data => {
+      if (data) {
         this.getUserDetails();
-        this.userForm.reset();
+        this.restuserForm();
       }
-      console.log('User Details:',data);
+      console.log('User Details:', data);
     });
   }
 
-  getUserDetails():void {
+  private byAccountId<T extends { accountid?: number; accountId?: number }>(list: T[], accountId: number): T[] {
+    if (!Array.isArray(list) || accountId == null) return list || [];
+    return list.filter((item: any) => {
+      const id = item.accountid ?? item.accountId ?? item.account_id;
+      return id != null && Number(id) === Number(accountId);
+    });
+  }
+
+  getUserDetails(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
     this.userservice.getUserDetails().subscribe({
-      next:(apidata:any) => {
-        this.user=apidata.sort((a: any, b: any) => b.createddate - a.createddate);
-        
-        console.log('Sorted User Details:', this.user);
-        this.userservice.getUserDetails().subscribe((data) =>{
-          this.apiData=data;
-        });}
-     
+      next: (apidata: any) => {
+        const raw = Array.isArray(apidata) ? apidata : [];
+        const filtered = accountId != null ? this.byAccountId(raw, accountId) : raw;
+        this.user = filtered.sort((a: any, b: any) => (b.createddate || 0) - (a.createddate || 0));
+        this.apiData = [...this.user];
+        this.totalUser = filtered.length;
+        this.activeUser = filtered.filter((u: any) => u.userisactive === true || u.userisactive === 'true' || u.userisactive === 1).length;
+        this.deactiveUser = this.totalUser - this.activeUser;
+      },
+      error: (err) => console.error('Error fetching user details:', err)
     });
   }
      
- getDropDownValue (){
-  this.userservice.getDropdownItems().subscribe({
-    next: (items) => (this.dropdownItems = items),
-    error: (err) => console.error('Error fetching dropdown items', err),
-  });
- }
+  getDropDownValue(): void {
+    this.userservice.getDropdownItems().subscribe({
+      next: (items) => (this.dropdownItems = items),
+      error: (err) => console.error('Error fetching dropdown items', err),
+    });
+  }
 
- onSelectionChange(event:Event):void{
+  loadInstanceList(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
+    this.instanceService.getInstanceDetails().subscribe({
+      next: (list) => {
+        const raw = list || [];
+        const byAccount = accountId != null
+          ? raw.filter((i: any) => {
+              const id = i.accountid ?? i.accountId;
+              return id != null && Number(id) === Number(accountId);
+            })
+          : raw;
+        this.instanceList = byAccount.filter(
+          (i: any) => i.instanceisactive === true || i.instanceisactive === 'true' || i.instanceisactive === 1
+        );
+      },
+      error: (err) => console.error('Error fetching instance list', err),
+    });
+  }
+
+  loadUserroleList(): void {
+    this.userroleService.getDropdownItems().subscribe({
+      next: (list) => {
+        this.userroleDropdownItems = (list || []).filter(
+          (r: any) => r.userroleisactive === true || r.userroleisactive === 'true' || r.userroleisactive === 1
+        );
+      },
+      error: (err) => console.error('Error fetching user role list', err),
+    });
+  }
+
+  onInstanceSelectionChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const instanceId = select.value ? Number(select.value) : 0;
+    if (!instanceId) {
+      return;
+    }
+    const instance = this.instanceList.find((i: any) => Number(i.instanceid) === instanceId);
+    if (instance) {
+      this.userForm.patchValue({
+        instanceid: instance.instanceid,
+        accountid: instance.accountid != null ? instance.accountid : 0,
+        useraddress: instance.instanceaddress || '',
+        usercity: instance.instancecity || '',
+        userstate: instance.instancestate || '',
+        usercountry: instance.instancecountry || '',
+        userpincode: instance.instancepincode || '',
+        cityid: instance.cityid || 1,
+      });
+    }
+  }
+
+  onSelectionChange(event:Event):void{
     const selectedValue=  (event.target  as HTMLSelectElement).value;
     console.log('Selected City Name:',selectedValue)
     const selectedItem = this.dropdownItems.find((item) => item.cityname === selectedValue);
@@ -140,9 +218,10 @@ export class UserComponent implements OnInit {
   }
   editItem(item: any): void {
     console.log("Editing:", item);
-    this.isFormOpen = true; // Open the form for editing
-    this.isEditMode = true; // Set edit mode
-    this.userForm.patchValue(item); // Load item into form for editing
+    this.isFormOpen = true;
+    this.isEditMode = true;
+    const userisactive = item.userisactive === true || item.userisactive === 'true' || item.userisactive === 1 ? 'true' : 'false';
+    this.userForm.patchValue({ ...item, userisactive });
   }
   
   deleteItem(item: any): void {
@@ -177,7 +256,28 @@ export class UserComponent implements OnInit {
    }
 
   toggleForm(): void {
-    this.isFormOpen = true;}
+    this.isFormOpen = true;
+    if (!this.isEditMode) {
+      this.loadInstanceList();
+      this.loadUserroleList();
+    }
+  }
+
+  restuserForm(): void {
+    this.isFormOpen = false;
+    this.isEditMode = false;
+    this.userForm.reset();
+    const accountId = this.authService.getAccountId() ?? 0;
+    const instanceId = this.authService.getInstanceId() ?? 0;
+    this.userForm.patchValue({
+      instanceid: instanceId,
+      cityid: 1,
+      accountid: accountId,
+      userisactive: 'true',
+      createddate: new Date(),
+      updateddate: new Date(),
+    });
+  }
 
 
 

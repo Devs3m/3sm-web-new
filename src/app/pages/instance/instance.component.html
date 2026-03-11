@@ -1,5 +1,6 @@
 <section>
-    <div class="form-container"[class.open]="isFormOpen">
+    <div class="form-backdrop" [class.open]="isFormOpen" (click)="restinstanceForm()"></div>
+    <div class="form-container" [class.open]="isFormOpen">
         <p style="font-size: larger;">Add Instance</p>
         <button (click)="restinstanceForm()" class="close-btn">&times;</button>
         <form [formGroup]="instanceForm" (ngSubmit)="onSubmit()">
@@ -154,12 +155,12 @@
           
          <div class="form-submit">
           <ng-container *appHasPermission="'instance:create'">
-            <button *ngIf="!isEditMode" mat-raised-button type="submit" (click)="createInstance()">
+            <button *ngIf="!isEditMode" mat-raised-button type="submit">
               Submit
             </button>
           </ng-container>
           <ng-container *appHasPermission="'instance:update'">
-            <button *ngIf="isEditMode" mat-raised-button type="submit" (click)="createInstance()">
+            <button *ngIf="isEditMode" mat-raised-button type="submit">
               Update
             </button>
           </ng-container>

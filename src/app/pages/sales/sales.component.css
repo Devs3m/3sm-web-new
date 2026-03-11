@@ -1,7 +1,7 @@
+/* Same structure as account page (account.component.css) */
 .sales-container {
+  position: relative;
   padding: 20px;
-  background-color: #f5f7fa;
-  min-height: calc(100vh - 64px);
   width: 100%;
   box-sizing: border-box;
 }
@@ -10,72 +10,76 @@
   padding: 0;
 }
 
-/* Top Section - Cards and Button */
-.top-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  gap: 20px;
-  width: 100%;
-  flex-wrap: nowrap;
+html,
+body {
+  height: 100%;
 }
 
-/* Statistics Cards */
-::ng-deep app-sales .example-card {
-  display: flex !important;
-  flex-direction: row !important;
-  gap: 15px !important;
-  flex: 1 1 auto !important;
-  flex-wrap: nowrap !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  width: auto !important;
-  border: none !important;
-  box-shadow: none !important;
-  overflow: hidden;
-}
-
-::ng-deep app-sales .example-card mat-card {
-  flex: 1 1 0 !important;
-  min-width: 150px !important;
-  max-width: 100% !important;
-  overflow: hidden;
-}
-
-::ng-deep .example-card mat-card-header {
-  padding: 16px;
-}
-
-::ng-deep .example-card mat-card-title {
-  font-size: 16px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Action Bar */
-.action-bar {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-.add-sales-btn {
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 500;
+.form-container {
+  max-width: 100%;
+  margin: 15px auto;
+  padding: 20px;
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  background-color: #337ab7 !important;
+  box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
+  background-color: #ffff;
+  margin-top: 1% !important;
+  width: 1237px !important;
 }
 
-.add-sales-btn mat-icon {
-  margin-right: 0;
+.btn-pos-list {
+  position: absolute;
+  top: 0;
+  right: 355px;
+  width: 40px;
+  z-index: 1;
+}
+
+.mat-icon {
+  color: black;
+  height: 10px;
+}
+
+.edit-btn {
+  font-size: 18px;
+  color: #337ab7;
+}
+
+::ng-deep app-sales .dx-datagrid .dx-row > td {
+  vertical-align: middle !important;
+}
+
+.close-btn {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  font-size: 30px;
+  color: black;
+  font-weight: 700;
+  margin-left: 1134px;
+  margin-top: -14px;
+}
+
+/* Statistics Cards - same as account (reduced height) */
+::ng-deep app-sales .example-card mat-card-header {
+  display: flex;
+  padding: 10px 12px 10px;
+  background-color: whitesmoke !important;
+  border: 1px solid rgb(247, 243, 243) !important;
+  border-color: whitesmoke !important;
+}
+
+::ng-deep app-sales .example-card .mat-mdc-card-title,
+::ng-deep app-sales .example-card .mat-mdc-card-subtitle {
+  display: block;
+  margin: 4px;
+  width: 196px;
+}
+
+/* Total Amount card - wider width and no wrap to keep label + value on one line */
+::ng-deep app-sales .example-card .total-amount-card .mat-mdc-card-title {
+  width: auto;
+  min-width: 220px;
+  white-space: nowrap;
 }
 
 /* Invoice Form Container */
@@ -84,10 +88,14 @@
 }
 
 .invoice-form-container.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 64px);
   background-color: #f5f7fa;
   padding: 0;
   margin: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .invoice-form {
@@ -95,11 +103,16 @@
   border-radius: 0;
   padding: 0;
   box-shadow: none;
-  min-height: calc(100vh - 64px);
+  flex: 1;
 }
 
 .invoice-meta-field {
   width: 100%;
+}
+
+::ng-deep .col-invoice .mat-mdc-floating-label,
+::ng-deep .col-invoice .mdc-floating-label {
+  color: #337ab7 !important;
 }
 
 ::ng-deep .col-invoice .mat-mdc-text-field-wrapper {
@@ -124,11 +137,11 @@
   min-height: 36px !important;
 }
 
-.title-icon-sm {
-  font-size: 28px;
-  width: 28px;
-  height: 28px;
-  color: #337ab7;
+.brand-logo {
+  width: 100px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 4px;
 }
 
 .invoice-title-text {
@@ -163,6 +176,29 @@
   color: #c62828;
 }
 
+
+.back-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  color: #337ab7 !important;
+  border: 1px solid #337ab7 !important;
+  border-radius: 4px !important;
+  padding: 6px 14px !important;
+  background: white !important;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 130px;
+}
+
+.back-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #337ab7;
+}
+
 /* Form Section Cards */
 .form-section-card {
   background: white;
@@ -188,6 +224,30 @@
 }
 
 .section-title h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.invoice-info-header {
+  justify-content: space-between;
+}
+
+.invoice-info-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.invoice-info-title-group mat-icon {
+  color: #337ab7;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.invoice-info-title-group h3 {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
@@ -240,13 +300,14 @@
   padding-right: 8px;
 }
 
-/* Col 2: Customer */
+/* Col 2: Customer — align to top so Customer Details + New Customer button stay fixed */
 .col-customer {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 /* Col 3: Invoice Info */
@@ -303,21 +364,31 @@
   gap: 6px;
 }
 
+/* Wrapper to vertically center the dropdown in the section */
+.customer-select-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 50px;
+}
+
 .customer-select-field {
   width: 100%;
+  min-width: 320px;
 }
 
 .f-key-hint {
   display: inline-block;
-  background: #337ab7;
+  background: #337ab7;  
   color: #fff;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   padding: 1px 4px;
-  border-radius: 3px;
+  border-radius: 4px;
   margin-left: 4px;
   vertical-align: middle;
-  line-height: 14px;
+  line-height: 16px;
   letter-spacing: 0.5px;
 }
 
@@ -355,6 +426,7 @@
   font-size: 13px;
   font-weight: 600;
   color: #337ab7;
+  line-height: 1;
 }
 
 .customer-card-title mat-icon {
@@ -366,13 +438,18 @@
 
 .customer-card-actions {
   display: flex;
-  gap: 0;
+  align-items: center;
+  gap: 2px;
 }
 
 .card-action-btn {
-  width: 24px !important;
-  height: 24px !important;
-  line-height: 24px !important;
+  width: 22px !important;
+  height: 22px !important;
+  line-height: 22px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
 }
 
 .card-action-btn mat-icon {
@@ -380,6 +457,9 @@
   width: 14px !important;
   height: 14px !important;
   line-height: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .edit-btn-card mat-icon {
@@ -530,6 +610,14 @@
   font-size: 13px;
   min-width: 0 !important;
   width: 100% !important;
+  box-shadow: none !important;
+}
+
+.table-field ::ng-deep .mdc-text-field,
+.table-field ::ng-deep .mat-mdc-text-field-wrapper,
+.table-field ::ng-deep .mdc-text-field--filled,
+.table-field ::ng-deep .mdc-text-field--outlined {
+  box-shadow: none !important;
 }
 
 .table-field-qty {
@@ -588,48 +676,70 @@
 }
 
 /* Summary Section */
-.summary-section {
-  background: #fafafa;
-}
-
-.summary-content {
-  display: flex;
-  justify-content: space-between;
-  gap: 30px;
-  margin-bottom: 30px;
-}
-
-.summary-left {
-  flex: 1;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.summary-row:last-child {
-  border-bottom: none;
-}
-
-.summary-label {
-  font-size: 16px;
-  color: #666;
-  font-weight: 500;
-}
-
-.summary-value {
-  font-size: 16px;
-  color: #333;
-  font-weight: 600;
-}
-
-.gst-total {
-  margin-top: 8px;
-  padding-top: 16px;
+.summary-footer {
+  position: sticky;
+  bottom: -50px;
+  z-index: 1;
+  background: white;
   border-top: 2px solid #e0e0e0;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.summary-cols {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  overflow: hidden;
+  background: white;
+}
+
+.summary-col {
+  flex: 1 1 0;
+  min-width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 10px;
+  border-right: 1px solid #e0e0e0;
+  text-align: center;
+  gap: 4px;
+}
+
+.summary-col:last-child {
+  border-right: none;
+}
+
+.summary-col-label {
+  font-size: 11px;
+  color: #888;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.summary-col-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #333;
+}
+
+.discount-col .summary-col-label {
+  color: #e53935;
+}
+
+.discount-text {
+  color: #e53935 !important;
+  font-weight: 700;
+}
+
+.subtotal-col {
+  background: #f5f7fa;
+}
+
+.subtotal-col .summary-col-value {
+  color: #333;
 }
 
 .green-text {
@@ -637,72 +747,76 @@
   font-weight: 700;
 }
 
-.discount-row .summary-label {
-  color: #e53935;
+.grand-col {
+  background: #337ab7;
+  border-right: none;
 }
 
-.discount-text {
-  color: #e53935 !important;
-  font-weight: 600;
+.grand-col .summary-col-label {
+  color: rgba(255,255,255,0.8);
 }
 
-.subtotal-row {
-  border-bottom: 2px solid #e0e0e0 !important;
-  padding-bottom: 12px;
-  margin-bottom: 4px;
-}
-
-.subtotal-row .summary-label,
-.subtotal-row .summary-value {
+.grand-value {
+  font-size: 18px !important;
+  color: white !important;
   font-weight: 700;
-  color: #333;
 }
 
 .discount-saved {
-  margin-top: 10px;
-  font-size: 12px;
-  color: #e53935;
-  font-weight: 600;
-  background: #fce4ec;
+  font-size: 10px;
+  color: #fff3;
+  background: rgba(255,255,255,0.2);
   border-radius: 4px;
-  padding: 4px 8px;
+  padding: 2px 6px;
   display: inline-block;
+  white-space: nowrap;
 }
 
-.summary-right {
-  min-width: 250px;
-}
-
-.grand-total-box {
-  background: white;
-  border: 2px solid #337ab7;
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
-}
-
-.grand-total-header {
+.action-col {
+  flex: 0 0 auto;
+  padding: 10px 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  color: #666;
-  font-size: 14px;
-  font-weight: 500;
+  border-right: none;
+  background: #1a5276;
 }
 
-.grand-total-header mat-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
-  color: #337ab7;
+.save-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: white;
+  padding: 4px 8px;
 }
 
-.grand-total-value {
-  font-size: 32px;
+.save-btn mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  color: white;
+}
+
+.save-btn-label {
+  font-size: 11px;
   font-weight: 700;
-  color: #337ab7;
+  color: white;
+  letter-spacing: 1px;
+}
+
+.save-btn:hover mat-icon,
+.save-btn:hover .save-btn-label {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Payment Details */
@@ -739,16 +853,28 @@
 }
 
 .generate-btn {
-  padding: 12px 32px;
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 8px;
-  background-color: #337ab7 !important;
-  color: white !important;
-  display: flex;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  background-color: #337ab7;
+  color: white;
+  border: none;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(51, 122, 183, 0.4);
+}
+
+.generate-btn:hover {
+  background-color: #2a6099;
+}
+
+.generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .generate-btn mat-icon {
@@ -791,18 +917,66 @@
   color: #f44336 !important;
 }
 
-/* Material Form Field Overrides */
-::ng-deep app-sales .mat-form-field-appearance-outline .mat-form-field-outline {
-  color: #e0e0e0 !important;
+/* Form field overrides - same as account (account.component.css) */
+::ng-deep app-sales {
+  --mdc-outlined-text-field-focus-outline-color: #f7f5f5 !important;
+  --mdc-outlined-text-field-outline-color: #f7f5f5 !important;
 }
 
-::ng-deep app-sales .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
-  color: #337ab7 !important;
-  border-color: #337ab7 !important;
+/* Remove all box-shadows from text inputs */
+::ng-deep app-sales .mdc-text-field,
+::ng-deep app-sales .mdc-text-field--focused,
+::ng-deep app-sales .mdc-text-field--outlined,
+::ng-deep app-sales .mdc-text-field--filled,
+::ng-deep app-sales .mat-mdc-text-field-wrapper,
+::ng-deep app-sales .mat-mdc-form-field,
+::ng-deep app-sales .mat-mdc-form-field-focus-overlay,
+::ng-deep app-sales input.mat-mdc-input-element,
+::ng-deep app-sales .mdc-text-field:not(.mdc-text-field--disabled),
+::ng-deep app-sales .mat-mdc-input-element,
+::ng-deep app-sales .mdc-line-ripple,
+::ng-deep app-sales .mat-mdc-form-field .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  box-shadow: none !important;
 }
 
+::ng-deep app-sales input,
+::ng-deep app-sales select,
+::ng-deep app-sales textarea {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+::ng-deep app-sales .mat-form-field-appearance-outline .mat-form-field-outline,
 ::ng-deep app-sales .mat-form-field-appearance-outline .mat-form-field-outline-thick {
-  border-color: #e0e0e0 !important;
+  color: #f7f5f5 !important;
+}
+
+::ng-deep app-sales .form-container .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-sales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep app-sales .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline,
+::ng-deep app-sales .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+  border-color: #f7f5f5 !important;
+}
+
+::ng-deep app-sales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-start,
+::ng-deep app-sales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-gap,
+::ng-deep app-sales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-end {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+::ng-deep app-sales .invoice-form-container .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-sales .invoice-form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep app-sales .invoice-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
 }
 
 ::ng-deep app-sales .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick {
@@ -810,12 +984,8 @@
   border-color: #f44336 !important;
 }
 
-::ng-deep app-sales .mat-form-field-label {
-  color: #666 !important;
-}
-
-::ng-deep app-sales .mat-form-field.mat-focused .mat-form-field-label {
-  color: #337ab7 !important;
+::ng-deep app-sales .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline {
+  color: #f44336 !important;
 }
 
 /* Responsive Design */
@@ -883,58 +1053,203 @@
   }
 
 
-  .form-container {          /*Form Container with form fields inside*/
-    max-width: 100%;
-    margin: 15px auto;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
-    background-color: #ffff;
-    margin-top: 1% !important;
-    height: 250px !important;
+}
+
+/* ── Customer Section Header ─────────────────────────────────────────────── */
+.customer-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.customer-title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-customer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: #337ab7;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.add-customer-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  color: white;
+}
+
+.add-customer-btn:hover {
+  background: #1a5276;
+}
+
+/* Sales backdrop: above section (9999) but below form panel (10000) */
+.form-backdrop-sales.open {
+  z-index: 9999;
+}
+
+/* When Add Customer panel is open, bring this section on top of sidenav/content */
+.sales-container.sales-add-customer-popup-open {
+  position: relative;
+  z-index: 9999;
+}
+
+/* ── Add Customer sliding panel: same slide and CSS as Customer module create form ── */
+.sales-add-customer-panel.form-container {
+  z-index: 10000; /* On top of sales page (sales-container uses 9999 when panel is open) */
+  max-width: 100%;
+  margin: 15px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
+  background-color: #ffff;
+  margin-top: 1% !important;
+  height: 400px !important;
   width: 1237px !important;
-  }
+  overflow-y: auto;
+}
 
-  
-  .form-submit{
-    margin-top: 50px;
-    text-align: center;
-  }
-  .mat-icon{
-    color: black;
-    height: 10px;
-  }
-  
-  html,
-  body {
-      height: 100%;
-  }
-  
-  .btn-pos-list{
-    position: absolute;
-    top: 0px;
-    right: 355px;
-    width: 40px;
-    z-index: 1;
-  }
-  
-  .edit-btn{
-    font-size: 18px;
-    color:#337ab7;
-  }
-  ::ng-deep .dx-datagrid .dx-row > td {
-   vertical-align: middle !important;
-  }
-  .close-btn {
-    background: transparent;
-    box-shadow: none;
-    border: none;
-    font-size: 30px;
-    color: black;
-    font-weight: 700px;
-    margin-left: 1134px;
-    margin-top: -14px;
-  }
-  
+.sales-add-customer-panel .close-btn {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  font-size: 30px;
+  color: black;
+  font-weight: 700;
+  margin-left: 1134px;
+  margin-top: -14px;
+  cursor: pointer;
+}
 
+.sales-add-customer-panel .close-btn:hover {
+  color: #c0392b;
+}
+
+/* Sales Add Customer form: same CSS as Customer module add customer form, with 5-column layout (row1: 5 fields, row2: 4 fields) */
+.sales-add-customer-panel app-add-customer-form .add-customer-form-container {
+  max-width: 100%;
+  margin: 15px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
+  background-color: #ffff;
+  margin-top: 0;
+  overflow-y: auto;
+}
+
+.sales-add-customer-panel app-add-customer-form .add-customer-form-container form {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sales-add-customer-panel app-add-customer-form .add-customer-form-container .form-field {
+  width: 100%;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Form submit row – same as Customer module */
+.sales-add-customer-panel app-add-customer-form .add-customer-form-container .form-submit {
+  grid-column: 1 / -1;
+  margin-top: 50px;
+  text-align: center;
+}
+
+.sales-add-customer-panel app-add-customer-form .add-customer-form-container .form-submit .btn-primary {
+  background-color: #337ab7;
+  color: white;
+}
+
+/* Mat form field outline – same as customer module create form */
+.sales-add-customer-panel {
+  --mdc-outlined-text-field-focus-outline-color: #f7f5f5 !important;
+  --mdc-outlined-text-field-outline-color: #f7f5f5 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline,
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline .mat-form-field-outline-start,
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline .mat-form-field-outline-gap,
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline .mat-form-field-outline-end {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-start,
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-gap,
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-end {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline .mat-form-field-outline svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline .mat-form-field-outline-thick svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline .mat-form-field-outline svg path,
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg path {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick {
+  color: #f44336 !important;
+  border-color: #f44336 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline {
+  color: #f44336 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline svg,
+::ng-deep .sales-add-customer-panel .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick svg {
+  fill: #f44336 !important;
+  stroke: #f44336 !important;
+}
+
+::ng-deep .sales-add-customer-panel .mat-mdc-form-field .mat-mdc-floating-label,
+::ng-deep .sales-add-customer-panel .mat-mdc-form-field .mdc-floating-label,
+::ng-deep .sales-add-customer-panel .mat-mdc-form-field .mat-mdc-input-element,
+::ng-deep .sales-add-customer-panel .mat-mdc-form-field input {
+  color: black !important;
 }

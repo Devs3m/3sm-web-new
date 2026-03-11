@@ -71,8 +71,8 @@
         <mat-icon class="aligned-icon">person_add</mat-icon>User
       </a>
       
-      <!-- User Role - show if user has ANY userrole permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('userrole')" 
+      <!-- User Role / RBAC - only Super Admin (or RBAC.MANAGE) can access -->
+      <a *ngIf="permissionService.canManageRbac()" 
          mat-list-item routerLink='userrole' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">settings_applications</mat-icon>User Role
       </a>

@@ -4,19 +4,39 @@ import { Observable, of, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
+import { RBAC_MANAGE_KEY } from './rbac.constants';
+import {
+  PermissionDto,
+  UserPermissionsResponse,
+  toPermissionDto,
+  buildByKey,
+  normalizeByKeyToLower,
+  permissionCodeToKey,
+  resourceActionToKey,
+} from './permission.dto';
 
-// Permission interface - matches backend frontend-friendly format
-// Backend automatically transforms permissioncode (e.g., "account:create:name") 
-// into resource, action, field properties via transformPermissionToFrontendFormat()
+/** Unified permission shape – use PermissionDto for current user permissions. */
+export type { PermissionDto, UserPermissionsResponse };
+
+/** Legacy shape for role config / getAllPermissions (backend may still return resource, action, permissioncode). */
 export interface Permission {
   id?: number;
-  name: string;
+  name?: string;
   description?: string;
-  resource: string; // e.g., 'account', 'instance', 'user' - parsed from permissioncode by backend
-  action: string; // e.g., 'create', 'read', 'update', 'delete', 'view' - parsed from permissioncode by backend
-  field?: string; // For field-level permissions - parsed from permissioncode by backend
-  permissioncode?: string; // Full permission code (e.g., "permission:settings:access", "account:create:name")
-  // Backend may also include other fields (permissioncode, etc.) for backward compatibility
+  resource?: string;
+  action?: string;
+  field?: string | null;
+  permissioncode?: string;
+  allowed?: boolean;
+  permissionid?: number;
+  permissionname?: string;
+  key?: string;
+  module?: string;
+  endpoint?: string;
+  httpmethod?: string;
+  controller?: string;
+  methodName?: string;
+  permissionisactive?: boolean;
 }
 
 export interface RolePermission {
@@ -29,7 +49,7 @@ export interface UserRole {
   userId: number;
   roleId: number;
   roleName?: string;
-  permissions?: Permission[];
+  permissions?: PermissionDto[];
 }
 
 @Injectable({
@@ -39,7 +59,9 @@ export class PermissionService {
   private apiUrl = environment.apiUrl;
   private permissionsCache: Map<number, Permission[]> = new Map();
   private currentUserRole: UserRole | null = null;
-  private permissionResultCache: Map<string, boolean> = new Map(); // Cache permission check results
+  /** O(1) map: permission key → true for allowed only (from GET /role/user/permissions or built from permissions). */
+  private byKey: Record<string, boolean> = {};
+  private permissionResultCache: Map<string, boolean> = new Map();
   private lastPermissionCheckTime: number = 0;
   private isPermissionsLoaded: boolean = false;
   
@@ -48,8 +70,13 @@ export class PermissionService {
     return this.isPermissionsLoaded;
   }
   
-  private debugMode: boolean = false; // Set to true for debugging only
-  private cachedIsSuperAdmin: boolean | null = null; // Cache Super Admin check
+  /** Normalize role name for comparison; aligns with backend ("Super Admin" / "SuperAdmin" → "superadmin"). */
+  private normalizeRoleName(roleName: string | undefined | null): string {
+    if (!roleName || typeof roleName !== 'string') return '';
+    return roleName.toLowerCase().trim().replace(/\s+/g, '');
+  }
+
+  private cachedIsSuperAdmin: boolean | null = null;
   private lastSuperAdminCheckTime: number = 0;
 
   constructor(
@@ -63,7 +90,6 @@ export class PermissionService {
         const data = JSON.parse(loginPermissions);
         // Check if data is recent (within 5 minutes)
         if (data.timestamp && (Date.now() - data.timestamp) < 5 * 60 * 1000) {
-          console.log('✅ Loading permissions from login response cache');
           this.setPermissionsFromLogin(data.permissions || [], data.user);
           localStorage.removeItem('loginPermissions'); // Clear after use
           return; // Don't make API call if we have permissions from login
@@ -86,192 +112,107 @@ export class PermissionService {
     }, 200);
   }
 
-  // Set permissions directly from login response (avoids separate API call)
-  setPermissionsFromLogin(permissions: Permission[], user?: any): void {
-    console.log('✅ Setting permissions from login response:', permissions.length, 'permissions');
-    
+  /** Normalize raw permissions to PermissionDto[] and set currentUserRole + byKey. */
+  private setPermissionsAndByKey(
+    permissions: any[],
+    userId: number,
+    roleId: number,
+    roleName?: string
+  ): void {
+    const list: PermissionDto[] = [];
+    (permissions || []).forEach(p => {
+      const dto = toPermissionDto(p);
+      if (dto) list.push(dto);
+    });
+    this.byKey = buildByKey(list);
+    this.currentUserRole = {
+      userId,
+      roleId,
+      roleName,
+      permissions: list
+    };
+    this.isPermissionsLoaded = true;
+    this.permissionResultCache.clear();
+    this.cachedIsSuperAdmin = null;
+  }
+
+  // Set permissions directly from login response (unified shape; no byKey in login response)
+  setPermissionsFromLogin(permissions: any[], user?: any): void {
     const userId = user?.id || user?.userId || user?.userid || user?.user_id || 0;
     const roleId = user?.roleId || user?.roleid || user?.role_id || user?.userroleid || user?.userRoleId || 0;
     const roleName = user?.role || user?.roleName || user?.rolename || user?.role_name || user?.userrolename || user?.userRoleName;
-    
-    // Set current user role with permissions from login
-    this.currentUserRole = {
-      userId: userId,
-      roleId: roleId,
-      roleName: roleName,
-      permissions: permissions || []
-    };
-    
-    this.isPermissionsLoaded = true;
-    this.permissionResultCache.clear(); // Clear cache when permissions reload
-    this.cachedIsSuperAdmin = null; // Clear Super Admin cache to recalculate
-    
-    console.log('✅ Permissions set from login response');
-    console.log('  - User ID:', userId);
-    console.log('  - Role ID:', roleId);
-    console.log('  - Role Name:', roleName);
-    console.log('  - Permissions Count:', permissions.length);
+    this.setPermissionsAndByKey(permissions || [], userId, roleId, roleName);
   }
 
   // Load permissions for current logged-in user
-  // Uses new authenticated user endpoints: GET /auth/permissions or GET /role/user/permissions
-  // These endpoints don't require Super Admin access and return current user's permissions
+  // Single endpoint: GET /role/user/permissions (unified shape + byKey). Fallback: GET /auth/permissions, then role-based.
   loadCurrentUserPermissions(): void {
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) return;
+
     const user = this.authService.getUser();
-    if (!user) {
-      console.warn('No user found - cannot load permissions');
-      return;
-    }
+    if (!user) return;
 
     const userId = user.userId || user.userid || user.user_id || user.id;
     const roleId = user.roleId || user.roleid || user.role_id || user.userroleid || user.userRoleId;
     const fallbackRoleName = user.roleName || user.rolename || user.role_name || user.userrolename || user.userRoleName;
 
-    console.log('Loading current user permissions...');
-    console.log('User ID:', userId);
-    console.log('Role ID:', roleId);
-    
-    // Use new authenticated user permissions endpoint (recommended)
-    // GET /auth/permissions - Returns current logged-in user's permissions in frontend-friendly format
-    this.http.get<any>(`${this.apiUrl}/auth/permissions`).subscribe({
-      next: (response) => {
-        console.log('✅ Received user permissions from /auth/permissions:', response);
-        
-        // Handle response format: { success: true, userId: 1, permissions: [...], count: 10 }
-        let permissions: Permission[] = [];
-        let roleName: string | undefined = fallbackRoleName;
-        
-        if (response && response.permissions) {
-          permissions = Array.isArray(response.permissions) ? response.permissions : [];
-          // Extract role name from response if available
-          if (response.roleName || response.rolename || response.userrolename) {
-            roleName = response.roleName || response.rolename || response.userrolename || fallbackRoleName;
-          }
-        } else if (Array.isArray(response)) {
-          // Handle case where API returns array directly
-          permissions = response;
-        }
-        
-        // Permissions are already in frontend-friendly format with resource, action, field
-        this.currentUserRole = {
-          userId: response.userId || userId || 0,
-          roleId: response.roleId || roleId || 0,
-          roleName: roleName,
-          permissions: permissions
-        };
-        
-        this.isPermissionsLoaded = true;
-        this.permissionResultCache.clear(); // Clear cache when permissions reload
-        this.cachedIsSuperAdmin = null; // Clear Super Admin cache to recalculate
-        
-        console.log('✅ Loaded user permissions:', this.currentUserRole);
-        console.log('  - Role name:', roleName);
-        console.log('  - Permissions count:', permissions.length);
-        console.log('  - Permissions sample:', permissions.slice(0, 3));
-        
-        // If role name is still undefined, try to fetch it from roleId
-        if (!roleName && roleId) {
-          console.log('⚠️ Role name still undefined, fetching from roleId:', roleId);
-          this.getRoleDetails(roleId).subscribe({
-            next: (roleDetails: any) => {
-              if (roleDetails) {
-                const fetchedRoleName = roleDetails.userrolename || roleDetails.roleName || roleDetails.rolename || roleDetails.name;
-                if (fetchedRoleName && this.currentUserRole) {
-                  this.currentUserRole.roleName = fetchedRoleName;
-                  this.setRoleName(fetchedRoleName);
-                  console.log('✅ Role name fetched and set:', fetchedRoleName);
-                  console.log('  - isSuperAdmin check after setting role:', this.isSuperAdmin());
-                }
-              }
-            },
-            error: (err) => {
-              console.warn('Failed to fetch role name:', err);
-            }
-          });
-        } else if (roleName) {
-          // Ensure role name is set in currentUserRole
-          this.setRoleName(roleName);
-          console.log('✅ Role name set from permissions response:', roleName);
-          console.log('  - isSuperAdmin check:', this.isSuperAdmin());
-        }
-      },
-      error: (err) => {
-        console.warn('Failed to load permissions from /auth/permissions, trying fallback...', err);
-        
-        // Fallback: Try /role/user/permissions endpoint
-        this.http.get<any>(`${this.apiUrl}/role/user/permissions`).subscribe({
-          next: (response) => {
-            console.log('✅ Received user permissions from /role/user/permissions:', response);
-            
-            let permissions: Permission[] = [];
-            let roleName: string | undefined = fallbackRoleName;
-            
-            if (response && response.permissions) {
-              permissions = Array.isArray(response.permissions) ? response.permissions : [];
-              if (response.roleName || response.rolename || response.userrolename) {
-                roleName = response.roleName || response.rolename || response.userrolename || fallbackRoleName;
-              }
-            } else if (Array.isArray(response)) {
-              permissions = response;
-            }
-            
-            this.currentUserRole = {
-              userId: response.userId || userId || 0,
-              roleId: response.roleId || roleId || 0,
-              roleName: roleName,
-              permissions: permissions
-            };
-            
-            this.isPermissionsLoaded = true;
-            this.permissionResultCache.clear();
-            this.cachedIsSuperAdmin = null;
-            
-            console.log('✅ Loaded user permissions from fallback endpoint:', this.currentUserRole);
-            console.log('  - Role name:', roleName);
-            
-            // If role name is still undefined, try to fetch it from roleId
-            if (!roleName && roleId) {
-              console.log('⚠️ Role name still undefined in fallback, fetching from roleId:', roleId);
-              this.getRoleDetails(roleId).subscribe({
-                next: (roleDetails: any) => {
-                  if (roleDetails) {
-                    const fetchedRoleName = roleDetails.userrolename || roleDetails.roleName || roleDetails.rolename || roleDetails.name;
-                    if (fetchedRoleName && this.currentUserRole) {
-                      this.currentUserRole.roleName = fetchedRoleName;
-                      this.setRoleName(fetchedRoleName);
-                      console.log('✅ Role name fetched and set from fallback:', fetchedRoleName);
-                      console.log('  - isSuperAdmin check after setting role:', this.isSuperAdmin());
-                    }
-                  }
-                },
-                error: (err) => {
-                  console.warn('Failed to fetch role name from fallback:', err);
-                }
-              });
-            } else if (roleName) {
-              this.setRoleName(roleName);
-              console.log('✅ Role name set from fallback response:', roleName);
-              console.log('  - isSuperAdmin check:', this.isSuperAdmin());
+    const applyResponse = (response: any, roleName?: string) => {
+      const uid = response?.userId ?? userId;
+      const rid = response?.roleId ?? roleId;
+      const rn = roleName ?? response?.roleName ?? response?.rolename ?? response?.userrolename ?? fallbackRoleName;
+      let list: PermissionDto[] = [];
+      const rawPermissions =
+        response?.permissions ??
+        response?.data?.permissions ??
+        (Array.isArray(response?.data) ? response.data : null) ??
+        (Array.isArray(response) ? response : null);
+      if (Array.isArray(rawPermissions)) {
+        rawPermissions.forEach((p: any) => {
+          const dto = toPermissionDto(p);
+          if (dto) list.push(dto);
+        });
+      }
+      const byKeyFromApi = response?.byKey ?? response?.data?.byKey;
+      this.byKey = (byKeyFromApi && typeof byKeyFromApi === 'object')
+        ? normalizeByKeyToLower(byKeyFromApi)
+        : buildByKey(list);
+      this.currentUserRole = { userId: uid, roleId: rid, roleName: rn, permissions: list };
+      this.isPermissionsLoaded = true;
+      this.permissionResultCache.clear();
+      this.cachedIsSuperAdmin = null;
+      if (!rn && roleId) {
+        this.getRoleDetails(roleId).subscribe({
+          next: (roleDetails: any) => {
+            if (roleDetails && this.currentUserRole) {
+              const name = roleDetails.userrolename || roleDetails.roleName || roleDetails.rolename || roleDetails.name;
+              if (name) this.currentUserRole!.roleName = name;
             }
           },
-          error: (fallbackErr) => {
-            console.error('❌ Both user permission endpoints failed, using role-based fallback');
-            console.error('Primary error:', err);
-            console.error('Fallback error:', fallbackErr);
-            
-            // Final fallback: Use role-based permissions (requires Super Admin or specific role access)
+          error: () => {}
+        });
+      } else if (rn) {
+        this.setRoleName(rn);
+      }
+    };
+
+    // Primary: GET /role/user/permissions (unified response with permissions + byKey)
+    this.http.get<UserPermissionsResponse>(`${this.apiUrl}/role/user/permissions`).subscribe({
+      next: (response) => {
+        const roleName = response?.roleName ?? fallbackRoleName;
+        applyResponse(response, roleName);
+      },
+      error: () => {
+        this.http.get<any>(`${this.apiUrl}/auth/permissions`).subscribe({
+          next: (response) => {
+            const roleName = response?.roleName ?? response?.rolename ?? response?.userrolename ?? fallbackRoleName;
+            applyResponse(response, roleName);
+          },
+          error: () => {
             if (roleId) {
               this.loadPermissionsForRole(userId, roleId, fallbackRoleName);
             } else {
-              // Last resort: Use empty permissions
-              this.currentUserRole = {
-                userId: userId || 0,
-                roleId: 0,
-                roleName: fallbackRoleName,
-                permissions: []
-              };
-              this.isPermissionsLoaded = true;
-              console.warn('Using empty permissions - no role ID available');
+              this.setPermissionsAndByKey([], userId || 0, 0, fallbackRoleName);
             }
           }
         });
@@ -279,36 +220,25 @@ export class PermissionService {
     });
   }
 
-  // Helper method to load permissions for a role
   private loadPermissionsForRole(userId: number | undefined, roleId: number, roleName: string | undefined): void {
     this.getRolePermissions(roleId).subscribe({
       next: (permissions) => {
-        // Ensure permissions is always an array (even if empty)
-        const permissionsArray = Array.isArray(permissions) ? permissions : [];
-        this.currentUserRole = {
-          userId: userId || 0,
-          roleId: roleId,
-          roleName: roleName,
-          permissions: permissionsArray
-        };
-        this.isPermissionsLoaded = true; // Mark permissions as loaded
-        this.permissionResultCache.clear(); // Clear cache when permissions reload
-        console.log('Loaded user permissions from role:', this.currentUserRole);
-        console.log('Role name from DB:', roleName);
-        console.log('Permissions count:', permissionsArray.length);
+        const raw = Array.isArray(permissions) ? permissions : [];
+        const list: PermissionDto[] = [];
+        raw.forEach((p: any) => {
+          const dto = toPermissionDto(p);
+          if (dto) list.push(dto);
+        });
+        this.byKey = buildByKey(list);
+        this.currentUserRole = { userId: userId || 0, roleId, roleName, permissions: list };
+        this.isPermissionsLoaded = true;
+        this.permissionResultCache.clear();
       },
-      error: (err) => {
-        console.warn('Could not load permissions from role, using empty permissions array');
-        // Even if API fails, set empty array so super admin check can still work
-        this.currentUserRole = {
-          userId: userId || 0,
-          roleId: roleId,
-          roleName: roleName,
-          permissions: [] // Empty array, but roleName is set for super admin check
-        };
-        this.isPermissionsLoaded = true; // Mark permissions as loaded
-        this.permissionResultCache.clear(); // Clear cache when permissions reload
-        console.log('Role name (from error handler):', roleName);
+      error: () => {
+        this.byKey = {};
+        this.currentUserRole = { userId: userId || 0, roleId, roleName, permissions: [] };
+        this.isPermissionsLoaded = true;
+        this.permissionResultCache.clear();
       }
     });
   }
@@ -510,16 +440,12 @@ export class PermissionService {
     }
     
     if (!this.currentUserRole) {
-      // Cache result
       this.permissionResultCache.set(cacheKey, false);
       this.lastPermissionCheckTime = now;
       return false;
     }
 
-    const roleName = this.currentUserRole.roleName;
-    const roleNameLower = roleName?.toLowerCase()?.trim() || '';
-
-    // If no permissions array or empty array, return false (unless super admin check above passed)
+    // If no permissions, return false
     if (!this.currentUserRole.permissions || this.currentUserRole.permissions.length === 0) {
       // Cache result
       this.permissionResultCache.set(cacheKey, false);
@@ -527,76 +453,37 @@ export class PermissionService {
       return false;
     }
 
-    const permissions = this.currentUserRole.permissions;
-    
-    // Check for exact match (case-insensitive for resource and action)
-    const hasExactPermission = permissions.some(p => {
-      const resourceMatch = p.resource?.toLowerCase() === resource.toLowerCase();
-      const actionMatch = p.action?.toLowerCase() === action.toLowerCase();
-      const fieldMatch = !field || !p.field || p.field === field;
-      
-      return resourceMatch && actionMatch && fieldMatch;
-    });
-
-    if (hasExactPermission) {
-      // Cache result
+    // O(1) check via byKey; treat view/read/list as equivalent for route access
+    const key = resourceActionToKey(resource, action, field);
+    if (key && this.byKey[key] === true) {
       this.permissionResultCache.set(cacheKey, true);
       this.lastPermissionCheckTime = now;
       return true;
     }
-    
-    // Debug logging only when needed (commented out to reduce console noise)
-    // Uncomment below for detailed debugging of specific permission checks
-    // if (resource === 'account' && action === 'create') {
-    //   console.log('hasPermission DEBUG - account:create check:');
-    //   console.log('  - Requested:', { resource, action, field });
-    //   console.log('  - User Role:', this.currentUserRole.roleName);
-    //   console.log('  - Permissions count:', permissions.length);
-    //   console.log('  - All permissions:', permissions.map(p => ({
-    //     resource: p.resource,
-    //     action: p.action,
-    //     field: p.field,
-    //     id: p.id
-    //   })));
-    // }
-
-    // Check for wildcard permissions (admin access)
-    const hasWildcardPermission = permissions.some(p => 
-      p.resource === '*' && p.action === '*'
-    );
-
-    // Cache result
-    this.permissionResultCache.set(cacheKey, hasWildcardPermission);
+    const actionLower = (action || '').toLowerCase();
+    const equivalentActions: string[] = [];
+    if (actionLower === 'view' || actionLower === 'read') equivalentActions.push('view', 'read', 'list');
+    else if (actionLower === 'list') equivalentActions.push('list', 'view', 'read');
+    for (const alt of equivalentActions) {
+      if (alt === actionLower) continue;
+      const altKey = resourceActionToKey(resource, alt, field);
+      if (altKey && this.byKey[altKey] === true) {
+        this.permissionResultCache.set(cacheKey, true);
+        this.lastPermissionCheckTime = now;
+        return true;
+      }
+    }
+    const wildcard = this.byKey['*.*'] === true;
+    this.permissionResultCache.set(cacheKey, wildcard);
     this.lastPermissionCheckTime = now;
-    return hasWildcardPermission;
+    return wildcard;
   }
 
-  // Check if user has ANY permission for a resource (view, create, update, delete, etc.)
-  // This is useful for showing/hiding menu items - if user has any permission, show the menu
   hasAnyPermissionForResource(resource: string): boolean {
-    // First check if user is Super Admin - Super Admin has access to ALL resources
-    if (this.isSuperAdmin()) {
-      return true;
-    }
-
-    if (!this.currentUserRole || !this.currentUserRole.permissions || this.currentUserRole.permissions.length === 0) {
-      return false;
-    }
-
-    const permissions = this.currentUserRole.permissions;
-    const resourceLower = resource.toLowerCase();
-
-    // Check if user has any permission for this resource (any action)
-    const hasAnyPermission = permissions.some(p => 
-      p.resource?.toLowerCase() === resourceLower
-    );
-
-    // Also check for wildcard permissions
-    const hasWildcardPermission = permissions.some(p => 
-      p.resource === '*' && p.action === '*'
-    );
-
-    return hasAnyPermission || hasWildcardPermission;
+    if (this.isSuperAdmin()) return true;
+    if (this.byKey['*.*'] === true) return true;
+    const prefix = resource.trim().toLowerCase() + '.';
+    return Object.keys(this.byKey).some(k => this.byKey[k] && k.toLowerCase().startsWith(prefix));
   }
 
   // Check if current user has access to a page/route
@@ -624,48 +511,21 @@ export class PermissionService {
     return this.hasPermission(resource, action);
   }
 
-  // Check if user has a specific permission code (e.g., "permission:settings:access")
-  // This method checks both by permissioncode field and by parsing resource:action:field
+  // Check by permission key; accepts "account:create" or "account.create".
+  // Backend may alias update→edit in byKey; we treat edit and update as equivalent so either key grants access.
   hasPermissionCode(permissionCode: string): boolean {
-    if (!permissionCode) {
-      return false;
+    if (!permissionCode) return false;
+    if (this.isSuperAdmin()) return true;
+    const key = permissionCodeToKey(permissionCode);
+    if (key && this.byKey[key] === true) return true;
+    const suffix = key?.split('.').pop();
+    if (suffix === 'edit') {
+      const updateKey = key.replace(/\.edit$/, '.update');
+      if (this.byKey[updateKey] === true) return true;
+    } else if (suffix === 'update') {
+      const editKey = key.replace(/\.update$/, '.edit');
+      if (this.byKey[editKey] === true) return true;
     }
-
-    // First check if user is Super Admin
-    if (this.isSuperAdmin()) {
-      return true;
-    }
-
-    if (!this.currentUserRole || !this.currentUserRole.permissions || this.currentUserRole.permissions.length === 0) {
-      return false;
-    }
-
-    const permissions = this.currentUserRole.permissions;
-    const permissionCodeLower = permissionCode.toLowerCase().trim();
-
-    // Check for exact permissioncode match (case-insensitive)
-    const hasExactCode = permissions.some(p => {
-      if (p.permissioncode) {
-        return p.permissioncode.toLowerCase().trim() === permissionCodeLower;
-      }
-      return false;
-    });
-
-    if (hasExactCode) {
-      return true;
-    }
-
-    // Also check by parsing the permission code into resource:action:field
-    // This handles cases where backend doesn't include permissioncode field
-    const parts = permissionCode.split(':');
-    if (parts.length >= 2) {
-      const resource = parts[0];
-      const action = parts[1];
-      const field = parts.length >= 3 ? parts[2] : undefined;
-      
-      return this.hasPermission(resource, action, field);
-    }
-
     return false;
   }
 
@@ -685,9 +545,29 @@ export class PermissionService {
     return this.hasPermission(resource, action, field);
   }
 
-  // Get current user's role
   getCurrentUserRole(): UserRole | null {
     return this.currentUserRole;
+  }
+
+  /** O(1) permission checks: byKey['account.create'] === true */
+  getByKey(): Record<string, boolean> {
+    return { ...this.byKey };
+  }
+
+  /** List of permissions in unified shape (for menus, grouping). */
+  getPermissions(): PermissionDto[] {
+    return this.currentUserRole?.permissions ? [...this.currentUserRole.permissions] : [];
+  }
+
+  /** Group permissions by module (e.g. sidebar). */
+  getByModule(): Record<string, PermissionDto[]> {
+    const list = this.getPermissions();
+    return list.reduce((acc, p) => {
+      const m = p.module || 'Other';
+      if (!acc[m]) acc[m] = [];
+      acc[m].push(p);
+      return acc;
+    }, {} as Record<string, PermissionDto[]>);
   }
 
   // Get all available permissions (for configuration UI) - Super Admin only
@@ -726,84 +606,75 @@ export class PermissionService {
     );
   }
 
-  // Get predefined permission templates
+  // Get predefined permission templates (all pages/resources - used when backend list is empty)
   getPermissionTemplates(): { [key: string]: Permission[] } {
-    return {
-      'account': [
-        { name: 'Account View', resource: 'account', action: 'view' },
-        { name: 'Account Create', resource: 'account', action: 'create' },
-        { name: 'Account Update', resource: 'account', action: 'update' },
-        { name: 'Account Delete', resource: 'account', action: 'delete' },
-        { name: 'Account Export', resource: 'account', action: 'export' }
-      ],
-      'instance': [
-        { name: 'Instance View', resource: 'instance', action: 'view' },
-        { name: 'Instance Create', resource: 'instance', action: 'create' },
-        { name: 'Instance Update', resource: 'instance', action: 'update' },
-        { name: 'Instance Delete', resource: 'instance', action: 'delete' },
-        { name: 'Instance Export', resource: 'instance', action: 'export' }
-      ],
-      'user': [
-        { name: 'User View', resource: 'user', action: 'view' },
-        { name: 'User Create', resource: 'user', action: 'create' },
-        { name: 'User Update', resource: 'user', action: 'update' },
-        { name: 'User Delete', resource: 'user', action: 'delete' }
-      ],
-      'userrole': [
-        { name: 'Role View', resource: 'userrole', action: 'view' },
-        { name: 'Role Create', resource: 'userrole', action: 'create' },
-        { name: 'Role Update', resource: 'userrole', action: 'update' },
-        { name: 'Role Delete', resource: 'userrole', action: 'delete' },
-        { name: 'Role Configure', resource: 'userrole', action: 'configure' }
-      ]
-    };
+    const actions = ['view', 'create', 'update', 'delete', 'export'];
+    const resources: { key: string; label: string; extraActions?: string[] }[] = [
+      { key: 'account', label: 'Account' },
+      { key: 'instance', label: 'Instance' },
+      { key: 'user', label: 'User' },
+      { key: 'userrole', label: 'User Role', extraActions: ['configure'] },
+      { key: 'city', label: 'City' },
+      { key: 'gst', label: 'GST' },
+      { key: 'vat', label: 'VAT' },
+      { key: 'product', label: 'Product' },
+      { key: 'digicard', label: 'Digicard' },
+      { key: 'sales', label: 'Sales' },
+      { key: 'customer', label: 'Customer' },
+      { key: 'dashboard', label: 'Dashboard' }
+    ];
+    const out: { [key: string]: Permission[] } = {};
+    resources.forEach(({ key, label, extraActions = [] }) => {
+      const perms: Permission[] = [...actions, ...extraActions].map(action => ({
+        name: `${label} ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+        resource: key,
+        action
+      }));
+      out[key] = perms;
+    });
+    return out;
   }
 
-  // Clear cache (useful after permission updates)
   clearCache(): void {
     this.permissionsCache.clear();
-    this.permissionResultCache.clear(); // Clear permission result cache too
-    this.cachedIsSuperAdmin = null; // Clear Super Admin cache
+    this.permissionResultCache.clear();
+    this.cachedIsSuperAdmin = null;
+    this.byKey = {};
     this.isPermissionsLoaded = false;
     this.loadCurrentUserPermissions();
   }
 
-  // Force reload permissions (useful for debugging)
   reloadPermissions(): void {
-    console.log('🔄 Force reloading permissions...');
     this.currentUserRole = null;
+    this.byKey = {};
     this.permissionsCache.clear();
+    this.permissionResultCache.clear();
+    this.cachedIsSuperAdmin = null;
     this.loadCurrentUserPermissions();
   }
 
-  // Get current role name (for debugging)
   getCurrentRoleName(): string | undefined {
     const roleName = this.currentUserRole?.roleName;
-    console.log('getCurrentRoleName() called:');
-    console.log('  - currentUserRole:', this.currentUserRole);
-    console.log('  - roleName from currentUserRole:', roleName);
-    
+
     if (roleName) {
       return roleName;
     }
-    
+
     // Try to get from user object
     const user = this.authService.getUser();
     if (user) {
       const userRoleName = user.roleName || user.rolename || user.role_name || user.userrolename || user.userRoleName || user.role;
-      console.log('  - roleName from user object:', userRoleName);
       if (userRoleName) {
         return userRoleName;
       }
     }
-    
+
     // Try localStorage
     try {
       const userDataStr = localStorage.getItem('userData');
       if (userDataStr) {
         const userData = JSON.parse(userDataStr);
         const storedRoleName = userData.roleName || userData.rolename || userData.role_name || userData.userrolename || userData.userRoleName || userData.role;
-        console.log('  - roleName from localStorage:', storedRoleName);
         if (storedRoleName) {
           return storedRoleName;
         }
@@ -811,131 +682,61 @@ export class PermissionService {
     } catch (e) {
       // Ignore
     }
-    
-    console.log('  - ❌ No role name found, returning undefined');
+
     return undefined;
   }
 
   // Debug method to check what permissions user has (can be called from browser console)
   debugPermissions(): void {
+    const perms = this.currentUserRole?.permissions || [];
     console.log('=== PERMISSION DEBUG INFO ===');
     console.log('Current User Role:', this.currentUserRole);
     console.log('Is Super Admin:', this.isSuperAdmin());
     console.log('Permissions Loaded:', this.isPermissionsLoaded);
-    console.log('Total Permissions:', this.currentUserRole?.permissions?.length || 0);
-    console.log('All Permissions:', this.currentUserRole?.permissions || []);
-    console.log('Account Permissions:', this.currentUserRole?.permissions?.filter(p => 
-      p.resource?.toLowerCase() === 'account'
-    ) || []);
-    console.log('Create Permissions:', this.currentUserRole?.permissions?.filter(p => 
-      p.action?.toLowerCase() === 'create'
-    ) || []);
+    console.log('byKey:', this.getByKey());
+    console.log('Total Permissions:', perms.length);
+    console.log('All Permissions:', perms);
+    console.log('Account Permissions:', perms.filter(p => p.key?.startsWith('account.') || p.module === 'Account'));
+    console.log('Create Permissions:', perms.filter(p => p.action === 'create' || p.key?.endsWith('.create')));
     console.log('Account:Create Check:', this.hasPermission('account', 'create'));
     console.log('===========================');
   }
 
-  // Check if current user is Super Admin (with caching)
+  // Check if current user is Super Admin (with caching). Aligns with backend normalizeRoleName.
   isSuperAdmin(): boolean {
-    // Check cache first (valid for 5 seconds)
     const now = Date.now();
     if (this.cachedIsSuperAdmin !== null && (now - this.lastSuperAdminCheckTime < 5000)) {
       return this.cachedIsSuperAdmin;
     }
-    
-    // Only log when cache is missed (not on every call)
-    const shouldLog = !this.cachedIsSuperAdmin; // Only log on first check or when cache expired
-    
-    if (shouldLog) {
-      console.log('========================================');
-      console.log('isSuperAdmin() check (cache miss):');
-      console.log('  - currentUserRole:', this.currentUserRole);
-    }
-    
-    // First check currentUserRole
+
     let roleName = this.currentUserRole?.roleName;
-    if (shouldLog) {
-      console.log('  - roleName from currentUserRole:', roleName);
-    }
-    
-    // If not in currentUserRole, try to get from user object (JWT token)
     if (!roleName) {
       const user = this.authService.getUser();
-      if (shouldLog) {
-        console.log('  - user object:', user);
-      }
       if (user) {
-        // Check all possible role field variations, including JWT 'role' field
-        roleName = user.roleName || 
-                   user.rolename || 
-                   user.role_name || 
-                   user.userrolename || 
-                   user.userRoleName ||
-                   (user as any).role || // JWT token uses 'role' field (e.g., "SuperAdmin")
-                   user.role; // Also check 'role' field
-        if (shouldLog) {
-          console.log('  - roleName from user object:', roleName);
-          console.log('  - user.role:', (user as any).role);
-          console.log('  - All user fields:', Object.keys(user));
-        }
+        roleName = user.roleName || user.rolename || user.role_name || user.userrolename ||
+                   user.userRoleName || (user as any).role || user.role;
       }
     }
-    
-    // If still not found, try to get from localStorage userData
     if (!roleName) {
       try {
         const userDataStr = localStorage.getItem('userData');
         if (userDataStr) {
           const userData = JSON.parse(userDataStr);
-          roleName = userData.roleName || 
-                     userData.rolename || 
-                     userData.role_name || 
-                     userData.userrolename || 
-                     userData.userRoleName ||
-                     userData.role; // Also check 'role' field
-          if (shouldLog) {
-            console.log('  - roleName from localStorage:', roleName);
-            console.log('  - userData object:', userData);
-          }
+          roleName = userData.roleName || userData.rolename || userData.role_name ||
+                     userData.userrolename || userData.userRoleName || userData.role;
         }
-      } catch (e) {
-        if (shouldLog) {
-          console.error('  - Error parsing userData:', e);
-        }
+      } catch {
+        // ignore
       }
     }
-    
-    if (!roleName || roleName.trim() === '') {
-      if (shouldLog) {
-        console.log('  - ❌ No role name found, returning false (not Super Admin)');
-        console.log('========================================');
-      }
-      this.cachedIsSuperAdmin = false;
-      this.lastSuperAdminCheckTime = now;
-      return false;
-    }
-    
-    const roleNameLower = roleName.toLowerCase().trim();
-    // Check for Super Admin in various formats (case-insensitive)
-    // JWT token uses "SuperAdmin" (camelCase), database might use "Super Admin" (title case)
-    const isSuperAdmin = roleNameLower === 'super admin' || 
-                        roleNameLower === 'superadmin' || 
-                        roleNameLower === 'super_admin' ||
-                        roleNameLower === 'super-admin' ||
-                        roleName === 'SuperAdmin' || // Check original case for camelCase (JWT format)
-                        roleName === 'Super Admin' || // Check original case for title case
-                        roleNameLower.startsWith('super admin') ||
-                        roleNameLower.startsWith('superadmin') ||
-                        roleNameLower.includes('super admin') ||
-                        roleNameLower.includes('superadmin');
-    
-    if (shouldLog) {
-      console.log('  - Final roleName:', roleName);
-      console.log('  - roleNameLower:', roleNameLower);
-      console.log('  - isSuperAdmin result:', isSuperAdmin);
-      console.log('========================================');
-    }
-    
-    // Cache result
+
+    const normalized = this.normalizeRoleName(roleName);
+    const isSuperAdmin = normalized === 'superadmin' ||
+                        normalized === 'super_admin' ||
+                        normalized === 'super-admin' ||
+                        normalized.startsWith('superadmin') ||
+                        normalized.includes('superadmin');
+
     this.cachedIsSuperAdmin = isSuperAdmin;
     this.lastSuperAdminCheckTime = now;
     return isSuperAdmin;
@@ -944,6 +745,14 @@ export class PermissionService {
   // Check if user can manage permissions (Super Admin only)
   canManagePermissions(): boolean {
     return this.isSuperAdmin();
+  }
+
+  /**
+   * Only Super Admin (or user with RBAC.MANAGE) can access Role & Permission screens/APIs.
+   * Admin/Manager/User cannot access Role & Permission.
+   */
+  canManageRbac(): boolean {
+    return this.isSuperAdmin() || this.hasPermissionCode(RBAC_MANAGE_KEY);
   }
 
   // Set role name in currentUserRole (used when role name is loaded from other sources)

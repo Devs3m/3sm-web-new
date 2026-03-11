@@ -9,10 +9,8 @@ import { environment } from '../../../environments/environment';
 export class GstService {
   private apiUrl = environment.apiUrl;
 
-  deleteGst(gstid :any):Observable<any>{
-    console.log('Fetching data from API');
-    return this.http.get(`${this.apiUrl}/gst/gstdelete`,gstid);
-  
+  deleteGst(gstid: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/gst/gstdelete/${gstid}`);
   }
 
   constructor(private http:HttpClient) { }
@@ -23,9 +21,12 @@ export class GstService {
   
   }
 
-  addGst (gstData :any):Observable<any>{
-    console.log('Sending GST data to API', gstData);
-    return this.http.post(`${this.apiUrl}/gst/gstsave`,gstData)
+  addGst(gstData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/gst/gstsave`, gstData);
+  }
+
+  updateGst(gstData: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/gst/gstupdate`, gstData);
   }
   getDropdownItems(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/vat/list`);

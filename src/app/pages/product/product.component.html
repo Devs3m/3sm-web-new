@@ -1,4 +1,5 @@
 <section>
+  <div class="form-backdrop" [class.open]="isFormOpen" (click)="restproductForm()"></div>
   <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">{{ isEditMode ? 'Edit Product' : 'Add Product' }}</p>
     <button (click)="restproductForm()" class="close-btn">&times;</button>
@@ -195,7 +196,7 @@
 
     <div class="pos-relative">
       <div class="btn-pos-list">
-        <button (click)="toggleForm()" class="add-btn">
+        <button *appHasPermission="'product:create'" (click)="toggleForm()" class="add-btn">
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
@@ -218,15 +219,16 @@
       <dxi-column dataField="productmanufacturer" caption="Manufacturer" [width]="180"></dxi-column>
       <dxi-column dataField="productpackqty" caption="Packing" [width]="100"></dxi-column>
       <dxi-column dataField="productcategory" caption="Category" [width]="150"></dxi-column>
+      <dxi-column dataField="Sub Category" caption="Sub Category %" [width]="100"></dxi-column>
       <dxi-column dataField="productisactive" caption="Active" [width]="100"></dxi-column>
       <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
 
     
       <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
-        <a (click)="editItem(data.data)" style="cursor: pointer;">
+        <a *appHasPermission="'product:edit'" (click)="editItem(data.data)" style="cursor: pointer;">
           <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
         </a>
-        <a (click)="deleteItem(data.data)" style="cursor: pointer;">
+        <a *appHasPermission="'product:delete'" (click)="deleteItem(data.data)" style="cursor: pointer;">
           <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
         </a>
       </div>

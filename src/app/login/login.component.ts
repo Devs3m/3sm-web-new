@@ -1,7 +1,8 @@
-import { Component,OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../pages/service/auth.service';
+import { PermissionService } from '../pages/service/permission.service';
 
 @Component({
   selector: 'app-login',
@@ -12,8 +13,12 @@ export class LoginComponent {
   loginForm!: FormGroup;
   errorMessage = '';
 
-
-  constructor(private authService: AuthService, private router: Router,private fb: FormBuilder,) {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private fb: FormBuilder,
+    private permissionService: PermissionService
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
@@ -32,9 +37,11 @@ export class LoginComponent {
     this.authService.login(credentials).subscribe({
      next: (response: any) => {
         if (response && response.success !== false) {
-          // Login successful - permissions are already loaded by AuthService
-          console.log('✅ Login successful, navigating to dashboard');
-          console.log('Permissions loaded:', response.permissions?.length || 0);
+          if (response.permissions && Array.isArray(response.permissions) && response.permissions.length > 0) {
+            this.permissionService.setPermissionsFromLogin(response.permissions, response.user);
+          } else {
+            this.permissionService.loadCurrentUserPermissions();
+          }
           this.router.navigate(['/pages/dashboard']);
         } else {
           this.errorMessage = 'Invalid email or password';
@@ -45,6 +52,5 @@ export class LoginComponent {
       this.errorMessage = error.error?.message || 'Login failed. Try again.';
     }
   });
-  console.log('Login button clicked', this.loginForm.value);
   }
 }

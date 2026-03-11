@@ -17,6 +17,7 @@ export class CityComponent implements OnInit {
 @ViewChild('formSection') formSection!: ElementRef; // Reference to form
 
   isFormOpen = false; // Controls the slider visibility
+  isEditMode = false;
   city!:any[];
   cityForm!: FormGroup;
   dropdownOptions:any[]=[];
@@ -37,7 +38,7 @@ export class CityComponent implements OnInit {
   }
   ngOnInit(): void {
     this.cityForm=this.fromBuilder.group({
-    
+    "cityid":[0],
     "cityname":[""],
     "citystate":[""],
     "citycountry":[""],
@@ -81,13 +82,18 @@ export class CityComponent implements OnInit {
       console.error('Form is Invalid');
     }
   }
-  createCity():void{
-    this.cityservice.addCity(this.cityForm.value).subscribe(data=>{
-      if(data){
-        this.getCityDetails();
-        this.cityForm.reset();
-      }
-      console.log(data);
+  createCity(): void {
+    const obs = this.isEditMode && this.cityForm.value.cityid
+      ? this.cityservice.updateCity(this.cityForm.value)
+      : this.cityservice.addCity(this.cityForm.value);
+    obs.subscribe({
+      next: (data) => {
+        if (data) {
+          this.getCityDetails();
+          this.restCityForm();
+        }
+      },
+      error: (err) => console.error(this.isEditMode ? 'Error updating city' : 'Error adding city', err),
     });
   }
   getCityDetails():void {
@@ -103,9 +109,17 @@ export class CityComponent implements OnInit {
       });
   }
   editItem(item: any): void {
-    console.log("Editing:", item);
-    this.isFormOpen = true; // Open the form for editing
-    this.cityForm.patchValue(item); // Load item into form for editing
+    this.isEditMode = true;
+    this.isFormOpen = true;
+    this.cityForm.patchValue({
+      cityid: item.cityid ?? item.cityId ?? 0,
+      cityname: item.cityname ?? item.cityName ?? '',
+      citystate: item.citystate ?? item.cityState ?? '',
+      citycountry: item.citycountry ?? item.cityCountry ?? '',
+      isactive: item.isactive ?? item.isActive ?? true,
+      createddate: item.createddate ?? item.createdDate,
+      updateddate: item.updateddate ?? item.updatedDate ?? new Date(),
+    });
   }
   
   deleteItem(item: any): void {
@@ -138,17 +152,22 @@ export class CityComponent implements OnInit {
     e.cancel = true; // Prevents default export
   }
   toggleForm(): void {
+    this.isEditMode = false;
+    this.restCityForm();
     this.isFormOpen = true;
-    
   }
   restCityForm(): void {
-   this.isFormOpen=false;
+   this.isFormOpen = false;
+   this.isEditMode = false;
    this.cityForm.reset();
    this.cityForm.patchValue({
-    cityname: null,  // Reset dropdown
-    createdby: '',
-    updatedby: '',
-    isactive: true,      // Set default value
+    cityid: 0,
+    cityname: '',
+    citystate: '',
+    citycountry: '',
+    createdby: 1,
+    updatedby: 1,
+    isactive: true,
     createddate: new Date(),
     updateddate: new Date(),
   });

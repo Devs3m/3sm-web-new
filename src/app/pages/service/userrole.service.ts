@@ -14,22 +14,18 @@ export class UserroleService {
   constructor(private http:HttpClient) { }
 
   deleteUserrole(userroleid :any):Observable<any>{
-    console.log('Deleting Userrole from API');
     return this.http.delete(`${this.apiUrl}/userrole/userroledelete/${userroleid}`);
   }
 
   getUserroleDetails():Observable<any>{
-    console.log('Fetching Userrole data from API');
     return this.http.get(`${this.apiUrl}/userrole/list`);
   }
 
   addUserrole (userroleData :any):Observable<any>{
-    console.log('Sending Userrole data to API', userroleData);
     return this.http.post(`${this.apiUrl}/userrole/userrolesave`,userroleData);
   }
 
   updateUserrole(userroleData: any): Observable<any> {
-    console.log('Updating Userrole data to API', userroleData);
     return this.http.put(`${this.apiUrl}/userrole/userroleupdate`, userroleData);
   }
   
@@ -37,16 +33,31 @@ export class UserroleService {
     return this.http.get<any[]>(`${this.apiUrl}/userrole/list`);
   }
 
+  /**
+   * User role / RBAC check (audit & compliance).
+   * GET /role/permissions/userrole-check – returns whether current user can manage RBAC.
+   * Optional instanceId: when set, backend hasRbacManage(instanceId) allows instance-scoped Super Admins.
+   */
+  getUserRoleCheck(instanceId?: number | null): Observable<{ canManageRbac?: boolean; [key: string]: any }> {
+    let url = `${this.apiUrl}/role/permissions/userrole-check`;
+    if (instanceId != null && instanceId !== undefined && !Number.isNaN(Number(instanceId))) {
+      url += `?instanceId=${encodeURIComponent(String(instanceId))}`;
+    }
+    return this.http.get<{ canManageRbac?: boolean; [key: string]: any }>(url).pipe(
+      catchError((error) => {
+        if (error.status === 403 || error.status === 404) {
+          return throwError(() => error);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
   // Get permissions for a role (Super Admin only)
   // Uses GET /role/:roleId/permissions
   getRolePermissions(roleId: number): Observable<Permission[]> {
     return this.http.get<Permission[]>(`${this.apiUrl}/role/${roleId}/permissions`).pipe(
-      catchError((error) => {
-        if (error.status === 403) {
-          console.error('getRolePermissions: Forbidden - Super Admin access required');
-        }
-        return throwError(() => error);
-      })
+      catchError((error) => throwError(() => error))
     );
   }
 
@@ -54,12 +65,7 @@ export class UserroleService {
   // Uses GET /role/:roleId/details
   getRoleDetails(roleId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/role/${roleId}/details`).pipe(
-      catchError((error) => {
-        if (error.status === 403) {
-          console.error('getRoleDetails: Forbidden - Super Admin access required');
-        }
-        return throwError(() => error);
-      })
+      catchError((error) => throwError(() => error))
     );
   }
 
@@ -67,53 +73,30 @@ export class UserroleService {
   // Uses GET /role/:roleId/permissions/available
   getAvailablePermissions(roleId: number): Observable<Permission[]> {
     return this.http.get<Permission[]>(`${this.apiUrl}/role/${roleId}/permissions/available`).pipe(
-      catchError((error) => {
-        if (error.status === 403) {
-          console.error('getAvailablePermissions: Forbidden - Super Admin access required');
-        }
-        return throwError(() => error);
-      })
+      catchError((error) => throwError(() => error))
     );
   }
 
-  // Save permissions for a role (Super Admin only)
-  // Uses POST /role/:roleId/permissions/bulk for multiple permissions
-  // permissions should be an array of { permissionid: number } objects
+  // Save/update permissions for a role (Super Admin only)
+  // Tries: 1) POST .../permissions with { permissionIds }, 2) POST .../permissions/bulk with [{ permissionid }]
   saveRolePermissions(roleId: number, permissions: any[]): Observable<any> {
-    // Validate roleId
-    if (!roleId || roleId <= 0 || isNaN(roleId)) {
-      console.error('saveRolePermissions: Invalid roleId:', roleId);
+    if (!roleId || roleId <= 0 || isNaN(Number(roleId))) {
       return throwError(() => new Error('Invalid role ID'));
     }
-    
-    // Use bulk endpoint for multiple permissions
-    const url = `${this.apiUrl}/role/${roleId}/permissions/bulk`;
-    const body = permissions; // Already formatted as [{ permissionid: number }]
-    
-    console.log('saveRolePermissions - Request URL:', url);
-    console.log('saveRolePermissions - RoleId:', roleId, '(type:', typeof roleId, ')');
-    console.log('saveRolePermissions - Request Body:', JSON.stringify(body));
-    console.log('saveRolePermissions - Body type:', typeof body);
-    console.log('saveRolePermissions - Body is array:', Array.isArray(body));
-    if (body && body.length > 0) {
-      console.log('saveRolePermissions - First item:', body[0]);
-      console.log('saveRolePermissions - First item keys:', Object.keys(body[0]));
-      if (body[0].permissionid !== undefined) {
-        console.log('saveRolePermissions - First item.permissionid:', body[0].permissionid, '(type:', typeof body[0].permissionid, ')');
-      }
-    }
-    
-    return this.http.post(url, body).pipe(
-      catchError((error) => {
-        console.error('saveRolePermissions - Error:', error);
-        console.error('saveRolePermissions - Error status:', error.status);
-        console.error('saveRolePermissions - Error message:', error.message);
-        console.error('saveRolePermissions - Error body:', error.error);
-        
-        if (error.status === 403) {
-          console.error('saveRolePermissions: Forbidden - Super Admin access required');
+    const rid = Number(roleId);
+    const urlBase = `${this.apiUrl}/role/${rid}/permissions`;
+    const bodyBulk = Array.isArray(permissions) ? permissions : [];
+    const permissionIds = bodyBulk.map((p: any) => Number(p.permissionid ?? p.permissionId ?? p.id)).filter((id: number) => !isNaN(id) && id > 0);
+    const bodyIds = { permissionIds };
+
+    return this.http.post(urlBase, bodyIds).pipe(
+      catchError((err) => {
+        if (err && err.status === 403) {
+          return throwError(() => err);
         }
-        return throwError(() => error);
+        return this.http.post(`${urlBase}/bulk`, bodyBulk).pipe(
+          catchError((err2) => throwError(() => (err2 && err2.status === 403) ? err2 : err2 || err))
+        );
       })
     );
   }
@@ -125,12 +108,7 @@ export class UserroleService {
     const body = { permissionid: permissionId };
     
     return this.http.post(url, body).pipe(
-      catchError((error) => {
-        if (error.status === 403) {
-          console.error('assignPermission: Forbidden - Super Admin access required');
-        }
-        return throwError(() => error);
-      })
+      catchError((error) => throwError(() => error))
     );
   }
 
@@ -138,14 +116,8 @@ export class UserroleService {
   // Uses DELETE /role/:roleId/permissions/:permissionId
   removePermission(roleId: number, permissionId: number): Observable<any> {
     const url = `${this.apiUrl}/role/${roleId}/permissions/${permissionId}`;
-    
     return this.http.delete(url).pipe(
-      catchError((error) => {
-        if (error.status === 403) {
-          console.error('removePermission: Forbidden - Super Admin access required');
-        }
-        return throwError(() => error);
-      })
+      catchError((error) => throwError(() => error))
     );
   }
 
@@ -153,10 +125,7 @@ export class UserroleService {
   // Uses GET /role/all-with-permissions
   getAllRolesWithPermissions(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/role/all-with-permissions`).pipe(
-      catchError((error) => {
-        console.error('getAllRolesWithPermissions - Error:', error);
-        return throwError(() => error);
-      })
+      catchError((error) => throwError(() => error))
     );
   }
 

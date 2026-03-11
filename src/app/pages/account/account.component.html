@@ -1,4 +1,5 @@
 <section>
+  <div class="form-backdrop" [class.open]="isFormOpen" (click)="restaccountForm()"></div>
   <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">{{ isEditMode ? 'Edit Account' : 'Add Account' }}</p>
     <button (click)="restaccountForm()" class="close-btn">&times;</button>
@@ -114,6 +115,26 @@
         <input matInput placeholder="License Count" class="mat-input-element custom-placeholder"
           formControlName="licensecount" type="number">
       </mat-form-field>
+
+      <!-- Company Logo Upload -->
+      <div class="image-upload-field form-field">
+        <label class="image-upload-label">Company Logo</label>
+        <div class="image-upload-area" (click)="imageInput.click()">
+          <ng-container *ngIf="!imagePreview">
+            <mat-icon class="upload-icon">add_photo_alternate</mat-icon>
+            <span class="upload-text">Click to upload image</span>
+            <span class="upload-hint">PNG, JPG, GIF up to 2MB</span>
+          </ng-container>
+          <ng-container *ngIf="imagePreview">
+            <img [src]="imagePreview" class="image-preview" alt="Company Logo">
+            <button type="button" class="remove-image-btn" (click)="$event.stopPropagation(); removeImage()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </ng-container>
+        </div>
+        <input #imageInput type="file" accept="image/*" style="display:none"
+               (change)="onImageSelected($event)">
+      </div>
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Active</mat-label>

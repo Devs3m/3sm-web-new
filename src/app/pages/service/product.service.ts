@@ -23,7 +23,6 @@ export class ProductService {
   constructor(private http:HttpClient) { }
 
   getProductDetails():Observable<any>{
-    console.log('Fetching data from API');
     return this.http.get(`${this.apiUrl}/product/list`);
   
   }

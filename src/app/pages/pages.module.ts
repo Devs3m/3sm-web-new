@@ -5,7 +5,6 @@ import { InstanceService } from './service/instance.service';
 import { PagesComponent } from './pages.component';
 import { FormMaterialModule } from './service/form-material.module';
 import { HighchartsChartModule } from 'highcharts-angular';
-import { HighchartComponent } from './highchart/highchart.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DxButtonModule, DxChartModule, DxDataGridModule } from 'devextreme-angular';
@@ -13,9 +12,7 @@ import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   declarations: [
-    PagesComponent,
-    HighchartComponent,
-   
+    PagesComponent
   ],
   imports: [
     PagesRoutingModule,

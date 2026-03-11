@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CustomerService } from '../service/customer.service';
 import { AuthService } from '../service/auth.service';
+import { PermissionService } from '../service/permission.service';
 import { saveAs } from 'file-saver';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
@@ -28,7 +29,8 @@ export class CustomerComponent implements OnInit {
   constructor(
     private customerService: CustomerService,
     private formBuilder: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private permissionService: PermissionService
   ) { }
 
   ngOnInit(): void {
@@ -49,6 +51,8 @@ export class CustomerComponent implements OnInit {
   }
 
   initializeForm(): void {
+    const accountId = this.authService.getAccountId() ?? 1;
+    const instanceId = this.authService.getInstanceId() ?? 1;
     this.customerForm = this.formBuilder.group({
       customerid: [0],
       customername: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
@@ -59,8 +63,8 @@ export class CustomerComponent implements OnInit {
       customerstate: [''],
       customercountry: [''],
       customerpincode: [''],
-      accountid: [1],
-      instanceid: [1],
+      accountid: [accountId],
+      instanceid: [instanceId],
       cityid: [null],
       isactive: ['true', Validators.required],
       createddate: [new Date()],
@@ -70,11 +74,46 @@ export class CustomerComponent implements OnInit {
     });
   }
 
+  private byAccountId<T extends { accountid?: number; accountId?: number }>(list: T[], accountId: number): T[] {
+    if (!Array.isArray(list) || accountId == null) return list || [];
+    return list.filter((item: any) => {
+      const id = item.accountid ?? item.accountId ?? item.account_id;
+      return id != null && Number(id) === Number(accountId);
+    });
+  }
+
+  private byAccountAndInstance<T extends { accountid?: number; accountId?: number; instanceid?: number; instanceId?: number }>(
+    list: T[],
+    accountId: number | null,
+    instanceId: number | null
+  ): T[] {
+    if (!Array.isArray(list)) return [];
+    if (accountId == null) return list;
+    return list.filter((item: any) => {
+      const accId = item.accountid ?? item.accountId ?? item.account_id;
+      if (accId == null || Number(accId) !== Number(accountId)) return false;
+      if (instanceId != null && instanceId !== 0) {
+        const instId = item.instanceid ?? item.instanceId ?? item.instance_id;
+        return instId != null && Number(instId) === Number(instanceId);
+      }
+      return true;
+    });
+  }
+
   loadCustomers(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
+    const instanceId = isSuperAdmin ? null : this.authService.getInstanceId();
     this.customerService.getCustomerList().subscribe({
       next: (data: any[]) => {
-        this.customers = data.sort((a, b) => Number(b.customerid || 0) - Number(a.customerid || 0));
-        console.log('Customers loaded:', this.customers);
+        const raw = data || [];
+        const filtered = accountId != null
+          ? this.byAccountAndInstance(raw, accountId, instanceId ?? null)
+          : raw;
+        this.customers = filtered.sort((a, b) => Number(b.customerid || 0) - Number(a.customerid || 0));
+        this.totalCustomers = this.customers.length;
+        this.activeCustomers = this.customers.filter((c: any) => c.isactive === true || c.isactive === 'true' || c.isactive === 1).length;
+        this.deactiveCustomers = this.totalCustomers - this.activeCustomers;
       },
       error: (err) => {
         console.error('Error loading customers:', err);
@@ -84,11 +123,18 @@ export class CustomerComponent implements OnInit {
   }
 
   loadCounts(): void {
-    this.customerService.getCustomerCounts().subscribe({
-      next: (res) => {
-        this.totalCustomers = res.totalCustomers;
-        this.activeCustomers = res.activeCustomers;
-        this.deactiveCustomers = res.deactiveCustomers;
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
+    const instanceId = isSuperAdmin ? null : this.authService.getInstanceId();
+    this.customerService.getCustomerList().subscribe({
+      next: (data: any[]) => {
+        const raw = data || [];
+        const filtered = accountId != null
+          ? this.byAccountAndInstance(raw, accountId, instanceId ?? null)
+          : raw;
+        this.totalCustomers = filtered.length;
+        this.activeCustomers = filtered.filter((c: any) => c.isactive === true || c.isactive === 'true' || c.isactive === 1).length;
+        this.deactiveCustomers = this.totalCustomers - this.activeCustomers;
       },
       error: (err) => console.error('Error loading counts:', err)
     });
@@ -140,8 +186,8 @@ export class CustomerComponent implements OnInit {
       customerstate: item.customerstate || '',
       customercountry: item.customercountry || '',
       customerpincode: item.customerpincode || '',
-      accountid: item.accountid || 1,
-      instanceid: item.instanceid || 1,
+      accountid: item.accountid ?? this.authService.getAccountId() ?? 1,
+      instanceid: item.instanceid ?? this.authService.getInstanceId() ?? 1,
       cityid: item.cityid || 1,
       isactive: item.isactive === true || item.isactive === 'true' || item.isactive === 1 ? 'true' : 'false',
       createddate: item.createddate || new Date(),
@@ -212,6 +258,8 @@ export class CustomerComponent implements OnInit {
     this.isEditMode = false;
     this.errorMessage = '';
     this.getCurrentUserId();
+    const accountId = this.authService.getAccountId() ?? 1;
+    const instanceId = this.authService.getInstanceId() ?? 1;
     this.customerForm.reset({
       customerid: 0,
       customername: '',
@@ -222,8 +270,8 @@ export class CustomerComponent implements OnInit {
       customerstate: '',
       customercountry: '',
       customerpincode: '',
-      accountid: 1,
-      instanceid: 1,
+      accountid: accountId,
+      instanceid: instanceId,
       cityid: null,
       isactive: 'true',
       createddate: new Date(),

@@ -81,6 +81,7 @@ cardThemes = [
       "createddate": [new Date()],
       "updateddate": [new Date()],
       "digicardisactive": [""],
+      "isactive": [true],
       "createdby": [1],
       "updatedby": [1],
       cardTheme: ['whiteCard']

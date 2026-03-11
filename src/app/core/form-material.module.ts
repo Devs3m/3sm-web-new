@@ -1,7 +1,7 @@
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatDatepickerModule } from "@angular/material/datepicker";
-import { MatNativeDateModule } from "@angular/material/core";
+import { MatNativeDateModule, MAT_DATE_LOCALE } from "@angular/material/core";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSelectModule } from "@angular/material/select";
@@ -28,6 +28,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatPaginatorModule } from "@angular/material/paginator";
 @NgModule({
     imports: [],
+    providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-IN' }],
     exports: [
         FormsModule,
         ReactiveFormsModule,

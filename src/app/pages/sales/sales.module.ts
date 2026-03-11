@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { SalesRoutingModule } from './sales-routing.module';
 import { HttpClientModule } from '@angular/common/http';
 import { FormMaterialModule } from '../service/form-material.module';
@@ -16,6 +17,7 @@ import { SharedModule } from '../shared/shared.module';
   ],
   imports: [
     SalesRoutingModule,
+    RouterModule,
     HttpClientModule,
     FormMaterialModule,
     HighchartsChartModule,

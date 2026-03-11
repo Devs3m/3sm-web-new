@@ -1,4 +1,5 @@
-<section class="sales-container" [class.form-mode]="isFormOpen">
+<ng-container>
+<section class="sales-container" [class.form-mode]="isFormOpen" [class.sales-add-customer-popup-open]="showAddCustomerModal">
 
   <!-- Invoice Form -->
   <div class="invoice-form-container" [class.active]="isFormOpen">
@@ -9,15 +10,14 @@
         <span>{{ errorMessage }}</span>
       </div>
 
-      <form [formGroup]="salesForm" (ngSubmit)="onSubmit()">
+      <form id="salesForm" [formGroup]="salesForm" (ngSubmit)="onSubmit()">
         <!-- Customer Details Section: 3 columns -->
         <div class="form-section-card customer-section-card">
 
           <!-- Col 1: Title -->
           <div class="col-title">
-            <mat-icon class="title-icon-sm">description</mat-icon>
+            <img src="assets/logo.png" class="brand-logo" alt="Connectsite Logo">
             <h2 class="invoice-title-text">GST Invoice</h2>
-            <p class="invoice-subtitle-text">Create and manage invoices</p>
           </div>
 
           <!-- Divider -->
@@ -25,13 +25,19 @@
 
           <!-- Col 2: Customer -->
           <div class="col-customer">
-            <div class="section-title">
-              <mat-icon>person</mat-icon>
-              <h3>Customer Details</h3>
+            <div class="section-title customer-section-title">
+              <div class="customer-title-left">
+                <mat-icon>person</mat-icon>
+                <h3>Customer Details</h3>
+              </div>
+              <button type="button" class="add-customer-btn" title="Add New Customer" aria-label="Add New Customer" (click)="openAddCustomerModal()">
+                <mat-icon>person_add</mat-icon>
+                New Customer
+              </button>
             </div>
 
             <!-- Dropdown: shown only when no customer selected -->
-            <ng-container *ngIf="!salesForm.get('customername')?.value">
+            <div class="customer-select-wrapper" *ngIf="!salesForm.get('customername')?.value">
               <mat-form-field appearance="outline" class="customer-select-field">
                 <mat-label>Select Customer <span class="f-key-hint">F1</span></mat-label>
                 <select matNativeControl formControlName="customerid" #customerSelect (change)="onCustomerChange($event)">
@@ -44,7 +50,7 @@
                   Customer is required
                 </mat-error>
               </mat-form-field>
-            </ng-container>
+            </div>
 
             <!-- Info card: shown after customer is selected -->
             <div class="customer-info-panel" *ngIf="salesForm.get('customername')?.value">
@@ -82,14 +88,20 @@
 
           <!-- Col 3: Invoice Info -->
           <div class="col-invoice">
-            <div class="section-title">
-              <mat-icon>receipt</mat-icon>
-              <h3>Invoice Info</h3>
+            <div class="section-title invoice-info-header">
+              <span class="invoice-info-title-group">
+                <mat-icon>receipt</mat-icon>
+                <h3>Invoice Info</h3>
+              </span>
+              <button *ngIf="isFormOpen && isSalesAddPage" type="button" class="back-btn" (click)="goBackToSales()">
+                <mat-icon>arrow_back</mat-icon>
+                Back to Sales
+              </button>
             </div>
             <div class="invoice-meta-fields">
               <mat-form-field appearance="outline" class="invoice-meta-field">
                 <mat-label>Invoice No.</mat-label>
-                <input matInput formControlName="invoiceno" placeholder="INV-2026-001">
+                <input matInput formControlName="invoiceno" placeholder="Invoice #">
               </mat-form-field>
               <mat-form-field appearance="outline" class="invoice-meta-field">
                 <mat-label>Date</mat-label>
@@ -169,10 +181,10 @@
                     <mat-form-field appearance="outline" class="table-field">
                       <input matInput formControlName="description"
                              #descInput
-                             placeholder="Enter description"
+                             placeholder="Search product..."
                              [matAutocomplete]="auto">
                       <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onProductSelect(i, $event)">
-                        <mat-option *ngFor="let product of productOptions" [value]="product.productname">
+                        <mat-option *ngFor="let product of (filteredProducts[i] || productOptions)" [value]="product.productname">
                           {{ product.productname }}
                         </mat-option>
                       </mat-autocomplete>
@@ -208,7 +220,7 @@
                     </mat-form-field>
                   </td>
                   <td class="readonly-cell gst-cell">
-                    {{ item.get('gstPercent')?.value || 0 }}%
+                    {{ (item.get('gstPercent')?.value || 0) | number:'1.2-2' }}%
                   </td>
                   <td class="amount-cell">
                     ₹{{ item.get('amount')?.value || 0 | number:'1.2-2' }}
@@ -225,156 +237,135 @@
           </div>
         </div>
 
-        <!-- Summary Section -->
-        <div class="form-section-card summary-section">
-          <div class="section-title">
-            <mat-icon>summarize</mat-icon>
-            <h3>Summary</h3>
-          </div>
-          <div class="summary-content">
-            <div class="summary-left">
-              <div class="summary-row">
-                <span class="summary-label">Gross Amount:</span>
-                <span class="summary-value">₹{{ getGrossSubtotal() | number:'1.2-2' }}</span>
-              </div>
-              <div class="summary-row discount-row">
-                <span class="summary-label">Total Discount:</span>
-                <span class="summary-value discount-text">- ₹{{ getTotalDiscount() | number:'1.2-2' }}</span>
-              </div>
-              <div class="summary-row subtotal-row">
-                <span class="summary-label">Subtotal (after discount):</span>
-                <span class="summary-value">₹{{ getSubtotal() | number:'1.2-2' }}</span>
-              </div>
-              <div class="summary-row">
-                <span class="summary-label">CGST:</span>
-                <span class="summary-value">₹{{ getCgst() | number:'1.2-2' }}</span>
-              </div>
-              <div class="summary-row">
-                <span class="summary-label">SGST:</span>
-                <span class="summary-value">₹{{ getSgst() | number:'1.2-2' }}</span>
-              </div>
-              <div class="summary-row gst-total">
-                <span class="summary-label">Total GST (info only):</span>
-                <span class="summary-value green-text">₹{{ getTotalGst() | number:'1.2-2' }}</span>
-              </div>
-            </div>
-            <div class="summary-right">
-              <div class="grand-total-box">
-                <div class="grand-total-header">
-                  <mat-icon>attach_money</mat-icon>
-                  <span>Grand Total (excl. GST)</span>
-                </div>
-                <div class="grand-total-value">₹{{ getGrandTotal() | number:'1.2-2' }}</div>
-                <div *ngIf="getTotalDiscount() > 0" class="discount-saved">
-                  You saved ₹{{ getTotalDiscount() | number:'1.2-2' }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Form Actions -->
-          <div class="form-actions">
-            <button type="button" (click)="resetSalesForm()" class="cancel-btn" mat-stroked-button>
-              Cancel
-            </button>
-            <ng-container *appHasPermission="'sales:create'">
-              <button *ngIf="!isEditMode" type="submit" class="generate-btn" mat-raised-button color="primary"
-                      [disabled]="salesForm.invalid">
-                <mat-icon>download</mat-icon>
-                Generate Invoice
-              </button>
-            </ng-container>
-            <ng-container *appHasPermission="'sales:update'">
-              <button *ngIf="isEditMode" type="submit" class="generate-btn" mat-raised-button color="primary"
-                      [disabled]="salesForm.invalid">
-                <mat-icon>update</mat-icon>
-                Update Invoice
-              </button>
-            </ng-container>
-          </div>
-        </div>
       </form>
-    </div>
-  </div>
+    </div><!-- end invoice-form (scrollable) -->
 
-  <!-- Listing Page: Cards + Add Button + Grid -->
-  <div *ngIf="!isFormOpen">
-
-    <!-- Statistics Cards and Action Bar -->
-    <div class="top-section">
-      <div class="example-card">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Sales&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalSales}}</mat-card-title>
-          </mat-card-header>
-        </mat-card>
-
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeSales}}</mat-card-title>
-          </mat-card-header>
-        </mat-card>
-
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveSales}}</mat-card-title>
-          </mat-card-header>
-        </mat-card>
-
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Total Amount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹{{totalAmount | number:'1.2-2'}}</mat-card-title>
-          </mat-card-header>
-        </mat-card>
+    <!-- Summary Footer — outside the scroll area, pinned to bottom of container -->
+    <div class="summary-footer" *ngIf="isFormOpen">
+      <div class="summary-cols">
+        <div class="summary-col">
+          <span class="summary-col-label">Gross Amount</span>
+          <span class="summary-col-value">₹{{ getGrossSubtotal() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col discount-col">
+          <span class="summary-col-label">Total Discount</span>
+          <span class="summary-col-value discount-text">- ₹{{ getTotalDiscount() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col subtotal-col">
+          <span class="summary-col-label">Subtotal</span>
+          <span class="summary-col-value">₹{{ getSubtotal() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col">
+          <span class="summary-col-label">CGST</span>
+          <span class="summary-col-value">₹{{ getCgst() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col">
+          <span class="summary-col-label">SGST</span>
+          <span class="summary-col-value">₹{{ getSgst() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col">
+          <span class="summary-col-label">Total GST</span>
+          <span class="summary-col-value green-text">₹{{ getTotalGst() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col grand-col">
+          <span class="summary-col-label">Grand Total</span>
+          <span class="summary-col-value grand-value">₹{{ getGrandTotal() | number:'1.2-2' }}</span>
+          <span *ngIf="getTotalDiscount() > 0" class="discount-saved">
+            Saved ₹{{ getTotalDiscount() | number:'1.2-2' }}
+          </span>
+        </div>
+        <div class="summary-col action-col">
+          <ng-container *appHasPermission="'sales:create'">
+            <button *ngIf="!isEditMode" type="submit" form="salesForm" class="save-btn">
+              <mat-icon>save</mat-icon>
+              <span class="save-btn-label">SAVE</span>
+            </button>
+          </ng-container>
+          <ng-container *appHasPermission="'sales:update'">
+            <button *ngIf="isEditMode" type="submit" form="salesForm" class="save-btn"
+                    [disabled]="salesForm.invalid">
+              <mat-icon>save</mat-icon>
+              <span class="save-btn-label">SAVE</span>
+            </button>
+          </ng-container>
+        </div>
       </div>
+    </div>
+  </div><!-- end invoice-form-container -->
 
-      <div class="action-bar">
-        <button *appHasPermission="'sales:create'"
-                (click)="toggleForm()"
-                class="add-sales-btn"
-                mat-raised-button
-                color="primary">
-          <mat-icon>add</mat-icon>
-          <span>Add New Sale</span>
+  <!-- Listing Page: Cards + Add Button + Grid (same structure as account page) -->
+  <div *ngIf="!isFormOpen">
+    <div *ngIf="errorMessage" class="error-message">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <div class="example-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Sales&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalSales}}</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+
+      <mat-card class="total-amount-card">
+        <mat-card-header>
+          <mat-card-title>Total Amount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹{{totalAmount | number:'1.2-2'}}</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+    </div>
+
+    <div class="pos-relative">
+      <div class="btn-pos-list">
+        <button *appHasPermission="'sales:create'" routerLink="/pages/salesadd" class="add-btn">
+          <mat-icon>add_circle</mat-icon>
         </button>
       </div>
+      <dx-data-grid
+        [dataSource]="salesSummaryList"
+        [allowColumnReordering]="true"
+        [allowColumnResizing]="true"
+        [showBorders]="true"
+        [headerFilter]="{ visible: true }"
+        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search sales summary...' }"
+        [paging]="{ pageSize: 15 }"
+        title="Sales Summary"
+        (onExporting)="onExporting($event)">
+        <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx', 'pdf']"></dxo-export>
+        <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150"></dxi-column>
+        <dxi-column dataField="customername" caption="Customer Name"></dxi-column> 
+        <dxi-column dataField="tdisaper" caption="Dis %" [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+        <dxi-column dataField="grandtotal" caption="Grand Total" alignment="right" [width]="130"
+          [format]="{ type: 'currency', currency: 'INR', precision: 2 }"></dxi-column>
+        <dxi-column dataField="saledate" caption="Sale Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="120"></dxi-column>
+        <dxi-column dataField="paymenttype" caption="Payment Method" [width]="150"></dxi-column>
+        <dxi-column dataField="paymentstatus" caption="Payment Status" [width]="130"></dxi-column>
+        <dxi-column caption="Actions" alignment="center" cellTemplate="salesActionTemplate" [width]="140"></dxi-column>
+
+        <div *dxTemplate="let data of 'salesActionTemplate'" style="display:flex; gap:8px; justify-content:center;">
+          <a (click)="downloadInvoicePdf(data.data)" style="cursor:pointer;" title="Download Invoice PDF">
+            <span class="material-symbols-outlined action-icon print-icon">picture_as_pdf</span>
+          </a>
+          <a *appHasPermission="'sales:update'" (click)="editSummaryItem(data.data)" style="cursor:pointer;" title="Edit">
+            <span class="material-symbols-outlined action-icon edit-icon">edit</span>
+          </a>
+          <a *appHasPermission="'sales:delete'" (click)="deleteSummaryItem(data.data)" style="cursor:pointer;" title="Delete">
+            <span class="material-symbols-outlined action-icon delete-icon">delete</span>
+          </a>
+        </div>
+      </dx-data-grid>
     </div>
-
-    <!-- Sales Data Grid -->
-    <div class="data-grid-container">
-    <dx-data-grid 
-      [dataSource]="apiData"
-      [allowColumnReordering]="true" 
-      [allowColumnResizing]="true" 
-      [showBorders]="true"
-      [headerFilter]="{ visible: true }" 
-      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search sales...' }" 
-      [paging]="{ pageSize: 15 }" 
-      (onExporting)="onExporting($event)"
-      title="Sales Records">
-   
-      <dxi-column dataField="salesid" [allowSorting]="true" [sortOrder]="'dsc'" caption="Sales ID" [width]="130"></dxi-column>
-      <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150"></dxi-column>
-      <dxi-column dataField="customername" caption="Customer Name"></dxi-column>
-      <dxi-column dataField="grandtotal" caption="Grand Total" alignment="right" [width]="130" 
-        [format]="{ type: 'currency', currency: 'INR', precision: 2 }"></dxi-column>
-      <dxi-column dataField="saledate" caption="Sale Date" dataType="date" [format]="'shortDate'" [width]="120"></dxi-column>
-      <dxi-column dataField="paymentmethod" caption="Payment Method" [width]="150"></dxi-column>
-      <dxi-column dataField="paymentstatus" caption="Payment Status" [width]="130"></dxi-column>
-      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
-
-      <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
-        <a *appHasPermission="'sales:update'" (click)="editItem(data.data)" style="cursor: pointer;">
-          <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
-        </a>
-        <a *appHasPermission="'sales:delete'" (click)="deleteItem(data.data)" style="cursor: pointer;">
-          <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
-        </a>
-      </div>
-  
-      <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
-    </dx-data-grid>
-    </div>
-
   </div>
+
 </section>
+
+<!-- Add Customer sliding panel: same slide and CSS as Customer module create form -->
+<div class="form-backdrop form-backdrop-sales" [class.open]="showAddCustomerModal" (click)="closeAddCustomerModal()"></div>
+<div class="form-container sales-add-customer-panel" [class.open]="showAddCustomerModal" role="dialog" aria-modal="true" aria-labelledby="sales-add-customer-title">
+  <p id="sales-add-customer-title" style="font-size: larger;">Add Customer</p>
+  <button type="button" (click)="closeAddCustomerModal()" class="close-btn" aria-label="Close">&times;</button>
+  <app-add-customer-form
+    (saved)="handleCustomerSaved($event)"
+    (cancelled)="closeAddCustomerModal()">
+  </app-add-customer-form>
+</div>
+
+</ng-container>

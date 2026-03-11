@@ -11,14 +11,12 @@ export class UserService {
   private apiUrl = environment.apiUrl;
   
   deleteUser(userid :any):Observable<any>{
-    console.log('Fetching data from API');
     return this.http.get(`${this.apiUrl}/user/userdelete`,userid);}
 
 
   constructor(private http:HttpClient) { }
 
   getUserDetails():Observable<any>{
-    console.log('Fetching data from API');
     return this.http.get(`${this.apiUrl}/user/list`);}
 
   addUser (userData :any):Observable<any>{

@@ -1,0 +1,129 @@
+/* Same CSS as Customer module create form (customer-form + customer.component) */
+.add-customer-form-container {
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 15px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
+  background-color: #ffff;
+  margin-top: 1% !important;
+  overflow-y: auto;
+}
+
+.add-customer-form-container .form-field {
+  width: 100%;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.add-customer-form-container .form-submit {
+  margin-top: 50px;
+  text-align: center;
+}
+
+.add-customer-form-container .form-submit .btn-primary,
+.btn-primary {
+  background-color: #337ab7;
+  color: white;
+}
+
+.close-btn {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  font-size: 30px;
+  color: black;
+  font-weight: 700;
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #c0392b;
+}
+
+.mat-icon {
+  color: black;
+  height: 10px;
+}
+
+/* Outline color overrides — same as Customer module (customer-form / customer.component) */
+:host {
+  --mdc-outlined-text-field-focus-outline-color: #f7f5f5 !important;
+  --mdc-outlined-text-field-outline-color: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline,
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline-start,
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline-gap,
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline-end {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-start,
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-gap,
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-end {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick svg {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline svg path {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg path {
+  fill: #f7f5f5 !important;
+  stroke: #f7f5f5 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick {
+  color: #f44336 !important;
+  border-color: #f44336 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline {
+  color: #f44336 !important;
+}
+
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline svg,
+::ng-deep .add-customer-form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick svg {
+  fill: #f44336 !important;
+  stroke: #f44336 !important;
+}

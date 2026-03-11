@@ -1,6 +1,7 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { AccountService } from '../service/account.service';
 import { AuthService } from '../service/auth.service';
+import { PermissionService } from '../service/permission.service';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
@@ -16,7 +17,7 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./account.component.css'],
 })
 export class AccountComponent implements OnInit {
-  @ViewChild('formSection') formSection!: ElementRef;
+  @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
 
   isFormOpen = false;
   isEditMode = false;
@@ -30,13 +31,16 @@ export class AccountComponent implements OnInit {
   activeAccounts: number = 0;
   deactiveAccounts: number = 0;
   errorMessage: string = '';
-  currentUserId: number = 1; // Default to 1 if user not found
+  currentUserId: number = 1;
+  imagePreview: string | null = null;
 
   constructor(
     private accountservice: AccountService,
     private formBuilder: FormBuilder,
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private permissionService: PermissionService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -60,6 +64,7 @@ export class AccountComponent implements OnInit {
       companycountry: [""],
       companypincode: [""],
       licensecount: [""],
+      accountimage: [null],
       createddate: [new Date()],
       updateddate: [new Date()],
       isactive: [true, Validators.required],
@@ -71,19 +76,6 @@ export class AccountComponent implements OnInit {
 
     this.getAccountDetails();
     this.getDropDownValue();
-
-    // Fetch API data
-    this.http.get<{ totalAccounts: number; activeAccounts: number; deactiveAccounts: number }>(`${environment.apiUrl}/account/counts`)
-      .subscribe({
-        next: (response) => {
-          this.totalAccounts = response.totalAccounts;
-          this.activeAccounts = response.activeAccounts;
-          this.deactiveAccounts = response.deactiveAccounts;
-        },
-        error: (err) => {
-          console.error('Error fetching counts:', err);
-        }
-      });
   }
 
   // Get current logged-in user ID from JWT token
@@ -208,6 +200,35 @@ export class AccountComponent implements OnInit {
     });
   }
 
+  onImageSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage = 'Please select a valid image file.';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.errorMessage = 'Image size must be less than 2MB.';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      this.imagePreview = base64;
+      this.accountForm.patchValue({ accountimage: base64 });
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeImage(): void {
+    this.imagePreview = null;
+    this.accountForm.patchValue({ accountimage: null });
+    if (this.imageInput) {
+      this.imageInput.nativeElement.value = '';
+    }
+  }
+
   onSubmit(): void {
     // Mark all fields as touched to show validation errors
     this.markFormGroupTouched();
@@ -311,25 +332,29 @@ export class AccountComponent implements OnInit {
   }
 
   getAccountCounts(): void {
-    this.http.get<{ totalAccounts: number; activeAccounts: number; deactiveAccounts: number }>(`${environment.apiUrl}/account/counts`)
-      .subscribe({
-        next: (response) => {
-          this.totalAccounts = response.totalAccounts;
-          this.activeAccounts = response.activeAccounts;
-          this.deactiveAccounts = response.deactiveAccounts;
-        },
-        error: (err) => {
-          console.error('Error fetching counts:', err);
-        }
-      });
+    this.getAccountDetails();
+  }
+
+  private byAccountId<T extends { accountid?: number; accountId?: number }>(list: T[], accountId: number): T[] {
+    if (!Array.isArray(list) || accountId == null) return list || [];
+    return list.filter((item: any) => {
+      const id = item.accountid ?? item.accountId ?? item.account_id;
+      return id != null && Number(id) === Number(accountId);
+    });
   }
 
   getAccountDetails(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
     this.accountservice.getAccountDetails().subscribe({
       next: (apidata: any) => {
-        // Sort by accountid in descending order
-        this.account = apidata.sort((a: any, b: any) => (b.accountid || 0) - (a.accountid || 0));
-        this.apiData = apidata.sort((a: any, b: any) => (b.accountid || 0) - (a.accountid || 0));
+        const raw = Array.isArray(apidata) ? apidata : [];
+        const filtered = accountId != null ? this.byAccountId(raw, accountId) : raw;
+        this.account = filtered.sort((a: any, b: any) => (b.accountid || 0) - (a.accountid || 0));
+        this.apiData = [...this.account];
+        this.totalAccounts = filtered.length;
+        this.activeAccounts = filtered.filter((a: any) => a.isactive === true || a.isactive === 'true' || a.isactive === 1).length;
+        this.deactiveAccounts = this.totalAccounts - this.activeAccounts;
         console.log('Sorted Account Details by Account ID (Descending):', this.account);
       },
       error: (err) => {
@@ -398,6 +423,7 @@ export class AccountComponent implements OnInit {
       companycountry: item.companycountry || '',
       companypincode: item.companypincode || '',
       licensecount: item.licensecount || '',
+      accountimage: item.accountimage || null,
       isactive: item.isactive === true || item.isactive === 'true' || item.isactive === 1 ? 'true' : 'false',
       createddate: item.createddate || new Date(),
       updateddate: new Date(),
@@ -405,6 +431,7 @@ export class AccountComponent implements OnInit {
       updatedby: item.updatedby || 1,
       cityid: item.cityid || 1
     }, { emitEvent: false });
+    this.imagePreview = item.accountimage || null;
     
     console.log('Form values after patching:', this.accountForm.value);
     console.log('Form valid:', this.accountForm.valid);
@@ -463,6 +490,9 @@ export class AccountComponent implements OnInit {
     // Get current user ID again in case it changed
     this.getCurrentUserId();
     
+    this.imagePreview = null;
+    if (this.imageInput) this.imageInput.nativeElement.value = '';
+
     // Reset form and set default values
     this.accountForm.reset({
       companyname: '',
@@ -475,6 +505,7 @@ export class AccountComponent implements OnInit {
       companycountry: '',
       companypincode: '',
       licensecount: '',
+      accountimage: null,
       isactive: 'true',
       createddate: new Date(),
       updateddate: new Date(),

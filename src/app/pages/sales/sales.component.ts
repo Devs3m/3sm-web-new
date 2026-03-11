@@ -1,13 +1,22 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild, ViewChildren, QueryList, ChangeDetectorRef } from '@angular/core';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { of } from 'rxjs';
+import { filter, catchError } from 'rxjs/operators';
 import { SalesService } from '../service/sales.service';
+import { CustomerService } from '../service/customer.service';
 import { AuthService } from '../service/auth.service';
+import { PermissionService } from '../service/permission.service';
+import { InstanceService } from '../service/instance.service';
 import { GstService } from '../service/gst.service';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
-import { exportDataGrid } from 'devextreme/excel_exporter';
+import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
+import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
 import { Workbook } from 'exceljs';
+import jsPDF from 'jspdf';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { environment } from '../../../environments/environment';
+import { SaveSalessummaryDto, SalesDetailItemDto } from './models/save-salessummary.dto';
 
 @Component({
   selector: 'app-sales',
@@ -43,9 +52,11 @@ export class SalesComponent implements OnInit {
   salesForm!: FormGroup;
   customerOptions: any[] = [];
   productOptions: any[] = [];
+  filteredProducts: any[][] = [];
   gstOptions: any[] = [];
   selectedItem: any;
   apiData: any[] = [];
+  salesSummaryList: any[] = [];
   totalSales: number = 0;
   activeSales: number = 0;
   deactiveSales: number = 0;
@@ -53,32 +64,455 @@ export class SalesComponent implements OnInit {
   errorMessage: string = '';
   currentUserId: number = 1;
   invoiceNumber: string = '';
+  /** When editing a salessummary, the invoiceno being edited (for update API) */
+  editingInvoiceno: number | null = null;
+
+  // Add New Customer modal (uses shared app-add-customer-form)
+  showAddCustomerModal = false;
 
   constructor(
     private salesService: SalesService,
+    private customerService: CustomerService,
     private formBuilder: FormBuilder,
     private http: HttpClient,
     private authService: AuthService,
+    private permissionService: PermissionService,
     private gstService: GstService,
-    private cdr: ChangeDetectorRef
+    private instanceService: InstanceService,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private route: ActivatedRoute
   ) { }
+
+  get isSalesAddPage(): boolean {
+    return this.router.url.includes('salesadd');
+  }
+
+  goBackToSales(): void {
+    this.editingInvoiceno = null;
+    this.router.navigate(['/pages/sales']);
+  }
+
+  /** Edit from sales summary table: go to salesedit/:invoiceno */
+  editSummaryItem(item: any): void {
+    const invoiceno = item?.invoiceno != null ? item.invoiceno : null;
+    if (invoiceno == null) {
+      this.errorMessage = 'Invalid invoice. Cannot edit.';
+      return;
+    }
+    this.router.navigate(['/pages/salesedit', invoiceno]);
+  }
+
+  /** Download invoice PDF using salesprint API data (salessummary, salesdetails, instance, customer). */
+  downloadInvoicePdf(item: any): void {
+    const invoiceno = item?.invoiceno ?? item?.salessummaryid;
+    if (invoiceno == null) {
+      this.errorMessage = 'Invalid invoice. Cannot download PDF.';
+      return;
+    }
+    this.salesService.getSalesPrintData(invoiceno).subscribe({
+      next: (data: any) => {
+        const s = data?.salessummary ?? data?.summary ?? data;
+        const details = data?.salesdetails ?? data?.details ?? data?.items ?? data?.salesdetail ?? data?.sales_details ?? s?.salesdetails ?? s?.details ?? s?.items ?? s?.salesdetail ?? s?.sales_details ?? [];
+        const instanceFromApi = data?.instance ?? data?.salessummary?.instance ?? data?.summary?.instance ?? s?.instance;
+        const customerFromApi = data?.customer ?? data?.salessummary?.customer ?? s?.customer;
+
+        if (customerFromApi) {
+          Object.assign(s, {
+            customername: s.customername ?? s.customer_name ?? customerFromApi.customername ?? customerFromApi.customer_name,
+            customeraddress: s.customeraddress ?? s.customer_address ?? customerFromApi.customeraddress ?? customerFromApi.customer_address ?? customerFromApi.address ?? '',
+            customercity: s.customercity ?? s.customer_city ?? customerFromApi.customercity ?? customerFromApi.customer_city ?? customerFromApi.city ?? '',
+            customerstate: s.customerstate ?? s.customer_state ?? customerFromApi.customerstate ?? customerFromApi.customer_state ?? customerFromApi.state ?? '',
+            customerpincode: s.customerpincode ?? s.customer_pincode ?? customerFromApi.customerpincode ?? customerFromApi.customer_pincode ?? customerFromApi.pincode ?? '',
+            customermobile: s.customermobile ?? s.customer_mobile ?? customerFromApi.customermobile ?? customerFromApi.customermobileno ?? customerFromApi.mobile ?? '',
+            customeremail: s.customeremail ?? s.customer_email ?? customerFromApi.customeremail ?? customerFromApi.email ?? ''
+          });
+        }
+
+        const runPdf = (instance: any) => {
+          this.generateInvoicePdf(s, Array.isArray(details) ? details : [], invoiceno, instance);
+          this.errorMessage = '';
+        };
+        const loadInstanceAndPdf = (fetchedInstance: any) => {
+          const instance = instanceFromApi ? { ...instanceFromApi, ...(fetchedInstance || {}) } : fetchedInstance;
+          runPdf(instance);
+        };
+
+        const doPdfWithInstance = () => {
+          if (instanceFromApi) {
+            runPdf(instanceFromApi);
+          } else {
+            const instanceid = s?.instanceid ?? s?.instance_id ?? 1;
+            this.instanceService.getInstanceById(instanceid).pipe(catchError(() => of(null))).subscribe(loadInstanceAndPdf);
+          }
+        };
+
+        if (!customerFromApi && (s?.customerid ?? s?.customer_id)) {
+          this.salesService.getCustomerById(s.customerid ?? s.customer_id).pipe(catchError(() => of(null))).subscribe((cust: any) => {
+            if (cust) {
+              Object.assign(s, {
+                customeraddress: s.customeraddress ?? cust.customeraddress ?? cust.address ?? '',
+                customercity: s.customercity ?? cust.customercity ?? cust.city ?? '',
+                customerstate: s.customerstate ?? cust.customerstate ?? cust.state ?? '',
+                customerpincode: s.customerpincode ?? cust.customerpincode ?? cust.pincode ?? '',
+                customermobile: s.customermobile ?? cust.customermobile ?? cust.customermobileno ?? cust.mobile ?? '',
+                customeremail: s.customeremail ?? cust.customeremail ?? cust.email ?? ''
+              });
+            }
+            doPdfWithInstance();
+          });
+        } else {
+          doPdfWithInstance();
+        }
+      },
+      error: (err: any) => {
+        this.errorMessage = err?.error?.message || err?.message || 'Failed to load invoice for PDF.';
+      }
+    });
+  }
+
+  private generateInvoicePdf(summary: any, details: any[], invoiceno: number, instance: any): void {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const left = 14;
+    const right = pageW - 14;
+    const rightCol = 105;
+    let y = 14;
+
+    const invdate = summary.invdate ?? summary.saledate ?? new Date();
+    const dateStr = invdate ? new Date(invdate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('GST Invoice', left, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Invoice No: ${invoiceno}`, left, y);
+    doc.text(`Date: ${dateStr}`, right - 40, y);
+    y += 12;
+
+    let yLeft = y;
+    let yRight = y;
+
+    if (instance) {
+      const instanceName = instance.instancename ?? instance.instance_name ?? 'Instance Name';
+      const instAddr = [
+        instance.instanceaddress ?? instance.instance_address ?? instance.address,
+        instance.instancecity ?? instance.instance_city ?? instance.city,
+        instance.instancestate ?? instance.instance_state ?? instance.state,
+        instance.instancepincode ?? instance.instance_pincode ?? instance.pincode
+      ].filter(Boolean).join(', ');
+      const country = instance.instancecountry ?? instance.instance_country ?? instance.country;
+      const ownerPhone = instance.ownermobile ?? instance.owner_mobile ?? instance.instancephone ?? instance.instance_phone ?? instance.managermobile ?? instance.phone ?? instance.mobile;
+      const ownerEmail = instance.owneremail ?? instance.owner_email ?? instance.instanceemail ?? instance.instance_email ?? instance.manageremail ?? instance.email;
+      const gstno = instance.instancegstno ?? instance.instance_gstno ?? instance.gstno;
+      const vatno = instance.instancevatno ?? instance.instance_vatno ?? instance.vatno;
+      const fssai = instance.instancefssaino ?? instance.instance_fssaino ?? instance.fssaino;
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(instanceName, left, yLeft);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      yLeft += 6;
+      if (instAddr) { doc.text(instAddr, left, yLeft); yLeft += 5; }
+      if (country) { doc.text(country, left, yLeft); yLeft += 5; }
+      if (ownerPhone) { doc.text(`Owner Phone: ${ownerPhone}`, left, yLeft); yLeft += 5; }
+      if (ownerEmail) { doc.text(`Owner Email: ${ownerEmail}`, left, yLeft); yLeft += 5; }
+      if (gstno) { doc.text(`GSTIN: ${gstno}`, left, yLeft); yLeft += 5; }
+      if (vatno) { doc.text(`VAT No: ${vatno}`, left, yLeft); yLeft += 5; }
+      if (fssai) { doc.text(`FSSAI No: ${fssai}`, left, yLeft); yLeft += 5; }
+      yLeft += 6;
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('Bill To:', rightCol, yRight);
+    doc.setFont('helvetica', 'normal');
+    yRight += 6;
+    const custName = summary.customername ?? summary.customer_name ?? '-';
+    doc.text(custName, rightCol, yRight);
+    yRight += 5;
+    const addr = [
+      summary.customeraddress ?? summary.customer_address ?? summary.address,
+      summary.customercity ?? summary.customer_city ?? summary.city,
+      summary.customerstate ?? summary.customer_state ?? summary.state,
+      summary.customerpincode ?? summary.customer_pincode ?? summary.pincode
+    ].filter(Boolean).join(', ');
+    if (addr) { doc.text(addr, rightCol, yRight); yRight += 5; }
+    const mobile = summary.customermobile ?? summary.customer_mobile ?? summary.customermobileno ?? summary.mobile;
+    if (mobile) { doc.text(`Mobile: ${mobile}`, rightCol, yRight); yRight += 5; }
+    const email = summary.customeremail ?? summary.customer_email ?? summary.email;
+    if (email) { doc.text(`Email: ${email}`, rightCol, yRight); yRight += 5; }
+
+    y = Math.max(yLeft, yRight) + 8;
+
+    const colW = [8, 50, 18, 14, 22, 16, 16, 28];
+    const headers = ['S.No', 'Description', 'HSN', 'Qty', 'Rate', 'Disc %', 'GST %', 'Amount'];
+    doc.setDrawColor(0, 0, 0);
+    doc.rect(left, y, colW.reduce((a, b) => a + b, 0), 8);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    let x = left;
+    headers.forEach((h, i) => { doc.text(h, x + 2, y + 5.5); x += colW[i]; });
+    doc.setFont('helvetica', 'normal');
+    y += 10;
+
+    doc.setFontSize(8);
+    details.forEach((d: any, idx: number) => {
+      if (y > 260) { doc.addPage(); y = 20; }
+      const productname = String(d.productname ?? d.product_name ?? d.description ?? '-');
+      const hsn = String(d.salehsn ?? d.sale_hsn ?? d.hsnSac ?? '-');
+      const qty = Number(d.saleqty ?? d.sale_qty ?? d.quantity ?? 0) || 0;
+      const rate = parseFloat(d.salemrp ?? d.sale_mrp ?? d.rate ?? 0) || 0;
+      const disc = parseFloat(d.saledisper ?? d.sale_dis_per ?? d.discountPct ?? 0) || 0;
+      const gst = parseFloat(d.salegstper ?? d.sale_gst_per ?? d.gstPercent ?? 0) || 0;
+      const amount = parseFloat(d.saleamount ?? d.sale_amount ?? d.salesubtotal ?? d.sale_subtotal ?? d.amount ?? 0) || 0;
+      const row = [String(idx + 1), productname.substring(0, 35), hsn, String(qty), rate.toFixed(2), disc.toFixed(1), gst.toFixed(1), amount.toFixed(2)];
+      x = left;
+      row.forEach((val, i) => { doc.text(val, x + 2, y + 4); x += colW[i]; });
+      y += 6;
+    });
+    y += 8;
+
+    const tgross = details.reduce((acc: number, d: any) => {
+      const qty = Number(d.saleqty ?? d.sale_qty ?? d.quantity ?? 0) || 0;
+      const rate = parseFloat(String(d.salemrp ?? d.sale_mrp ?? d.rate ?? 0)) || 0;
+      return acc + (qty * rate);
+    }, 0) || (parseFloat(String(summary.tgrossamount ?? summary.tgross_amount ?? 0)) || 0);
+    const tdisRaw = summary.tdisamount ?? summary.tdis_amount ?? 0;
+    let tdis = parseFloat(String(tdisRaw)) || 0;
+    if (tdis === 0 && details?.length) {
+      const sumDisc = details.reduce((acc: number, d: any) => acc + (parseFloat(String(d.saltotaldisc ?? d.sale_total_disc ?? 0)) || 0), 0);
+      if (sumDisc > 0) tdis = sumDisc;
+    }
+    const subtotal = tgross - tdis;
+    const totalgst = parseFloat(String(summary.tgstamount ?? summary.tgst_amount ?? 0)) || 0;
+    const grandtotal = parseFloat(String(summary.grandtotal ?? 0)) || 0;
+    const totalLeft = left + colW.slice(0, -1).reduce((a, b) => a + b, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Gross Amount:', totalLeft - 50, y);
+    doc.text(`Rs.${tgross.toFixed(2)}`, totalLeft + colW[7] - 22, y);
+    y += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Total Discount:', totalLeft - 50, y);
+    doc.text(`Rs.${tdis.toFixed(2)}`, totalLeft + colW[7] - 22, y);
+    y += 6;
+    doc.text('Subtotal:', totalLeft - 50, y);
+    doc.text(`Rs.${subtotal.toFixed(2)}`, totalLeft + colW[7] - 22, y);
+    y += 6;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Total GST:', totalLeft - 50, y);
+    doc.text(`Rs.${totalgst.toFixed(2)}`, totalLeft + colW[7] - 22, y);
+    y += 8;
+    doc.setDrawColor(0, 0, 0);
+    doc.rect(totalLeft - 55, y - 5, colW[7] + 55, 12);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Grand Total:', totalLeft - 50, y + 3);
+    doc.text(`Rs.${grandtotal.toFixed(2)}`, totalLeft + colW[7] - 22, y + 3);
+    y += 16;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setFontSize(9);
+    doc.text(`Payment Method: ${summary.paymenttype ?? summary.payment_type ?? '-'}`, left, y);
+    doc.text(`Payment Status: ${summary.paymentstatus === true || summary.paymentstatus === 'Paid' ? 'Paid' : (summary.paymentstatus || '-')}`, left, y + 6);
+
+    doc.save(`Invoice-${invoiceno}.pdf`);
+  }
+
+  /** Delete from sales summary table */
+  deleteSummaryItem(item: any): void {
+    const invoiceno = item?.invoiceno != null ? item.invoiceno : null;
+    if (invoiceno == null) return;
+    if (!confirm('Are you sure you want to delete this sales record?')) return;
+    this.salesService.deleteSalesSummary(invoiceno).subscribe({
+      next: () => {
+        this.getSalesSummaryDetails();
+        this.getSalesSummaryListData();
+        this.errorMessage = '';
+      },
+      error: (err: any) => {
+        this.errorMessage = err?.error?.message || err?.message || 'Error deleting sales. Please try again.';
+      }
+    });
+  }
+
+  /** Load one salessummary by invoiceno and populate form (salesadd edit) */
+  loadSalesSummaryForEdit(invoiceno: number): void {
+    this.salesService.getSalesSummaryByInvoice(invoiceno).subscribe({
+      next: (data: any) => {
+        this.populateFormFromSummary(data, invoiceno);
+        this.enrichCustomerAddressIfNeeded();
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.errorMessage = err?.error?.message || err?.message || 'Failed to load invoice for editing.';
+      }
+    });
+  }
+
+  /** When editing: if summary has no address, use customer from list (reuse customerOptions to avoid extra API call) */
+  private enrichCustomerAddressIfNeeded(): void {
+    const customerid = this.salesForm.get('customerid')?.value;
+    const address = this.salesForm.get('customeraddress')?.value;
+    if (!customerid || address) return;
+
+    const applyCustomer = (list: any[]) => {
+      const cust = list.find((c: any) => String(c.customerid ?? c.id ?? c.customerId) === String(customerid));
+      if (cust) {
+        this.salesForm.patchValue({
+          customermobile: cust.customermobile ?? cust.customermobileno ?? cust.mobile ?? '',
+          customeremail: cust.customeremail ?? cust.email ?? '',
+          customeraddress: cust.customeraddress ?? cust.address ?? '',
+          customercity: cust.customercity ?? cust.city ?? '',
+          customerstate: cust.customerstate ?? cust.state ?? '',
+          customercountry: cust.customercountry ?? cust.country ?? '',
+          customerpincode: cust.customerpincode ?? cust.pincode ?? '',
+          customergstin: cust.customergstin ?? cust.gstin ?? ''
+        }, { emitEvent: false });
+        this.cdr.detectChanges();
+      }
+    };
+
+    const list = Array.isArray(this.customerOptions) ? this.customerOptions : [];
+    if (list.length > 0) {
+      applyCustomer(list);
+    } else {
+      this.salesService.getCustomers().subscribe({
+        next: (opts: any[]) => {
+          this.customerOptions = opts;
+          applyCustomer(Array.isArray(opts) ? opts : []);
+        }
+      });
+    }
+  }
+
+  /** Map API salessummary + details response into the sales form */
+  private populateFormFromSummary(data: any, invoiceno: number): void {
+    const s = data?.summary ?? data;
+    const details = data?.details ?? data?.items ?? data?.salesdetails ?? data?.salesdetail ?? data?.sales_details ?? s?.details ?? s?.items ?? s?.salesdetails ?? s?.salesdetail ?? s?.sales_details ?? [];
+    while (this.items.length > 0) this.items.removeAt(0);
+
+    const detailList = Array.isArray(details) ? details : [];
+    if (detailList.length === 0) {
+      this.items.push(this.createItemFormGroup());
+    } else {
+      detailList.forEach((d: any) => {
+        const qty = Number(d.saleqty ?? d.sale_qty ?? d.quantity ?? 1) || 1;
+        const rate = parseFloat(d.salemrp ?? d.sale_mrp ?? d.rate ?? 0) || 0;
+        const discPct = parseFloat(d.saledisper ?? d.sale_dis_per ?? d.discountPct ?? 0) || 0;
+        const gstPct = parseFloat(d.salegstper ?? d.sale_gst_per ?? d.gstPercent ?? 0) || 0;
+        const amount = parseFloat(d.saleamount ?? d.sale_amount ?? d.salesubtotal ?? d.sale_subtotal ?? d.amount ?? 0) || 0;
+        this.items.push(this.formBuilder.group({
+          productid: [d.productid ?? d.product_id ?? null],
+          description: [String(d.productname ?? d.product_name ?? d.description ?? '')],
+          hsnSac: [String(d.salehsn ?? d.sale_hsn ?? d.hsnSac ?? '')],
+          quantity: [qty],
+          rate: [rate],
+          discountPct: [discPct],
+          gstPercent: [gstPct],
+          amount: [amount]
+        }));
+      });
+    }
+
+    const invdate = s.invdate ?? s.saledate;
+    const paymentstatus = s.paymentstatus;
+    const paymentStatusValue = paymentstatus === true || paymentstatus === 'Paid' || paymentstatus === 'true' ? 'Paid' : (paymentstatus === false || paymentstatus === 'Unpaid' ? 'Unpaid' : paymentstatus);
+
+    const customerid = s.customerid ?? s.customer_id ?? '';
+    const tgross = parseFloat(s.tgrossamount ?? s.tgross_amount ?? s.subtotal ?? 0) || 0;
+    const tdis = parseFloat(s.tdisamount ?? s.tdis_amount ?? 0) || 0;
+    const netSubtotal = tgross > 0 && tdis >= 0 ? tgross - tdis : tgross;
+    const patch: any = {
+      invoiceno,
+      saledate: invdate ? new Date(invdate) : new Date(),
+      customerid,
+      customername: s.customername ?? s.customer_name ?? '',
+      customermobile: s.customermobile ?? s.customer_mobile ?? s.customermobileno ?? '',
+      customeremail: s.customeremail ?? s.customer_email ?? '',
+      customeraddress: s.customeraddress ?? s.customer_address ?? s.address ?? '',
+      customercity: s.customercity ?? s.customer_city ?? s.city ?? '',
+      customerstate: s.customerstate ?? s.customer_state ?? s.state ?? '',
+      customercountry: s.customercountry ?? s.customer_country ?? s.country ?? '',
+      customerpincode: s.customerpincode ?? s.customer_pincode ?? s.pincode ?? '',
+      customergstin: s.customergstin ?? s.customer_gstin ?? '',
+      subtotal: (netSubtotal || s.subtotal) ?? 0,
+      totalgst: parseFloat(s.tgstamount ?? s.tgst_amount ?? s.totalgst ?? 0) || 0,
+      grandtotal: parseFloat(s.grandtotal ?? 0) || 0,
+      paymentmethod: s.paymenttype ?? s.payment_type ?? s.paymentmethod ?? '',
+      paymentstatus: paymentStatusValue,
+      notes: s.notes ?? '',
+      isactive: s.isactive !== false
+    };
+
+    this.salesForm.patchValue(patch, { emitEvent: false });
+
+    this.editingInvoiceno = invoiceno;
+    this.isEditMode = true;
+    this.calculateTotals();
+
+    // Re-sync filteredProducts after items are rebuilt
+    this.filteredProducts = this.items.controls.map(() => [...this.productOptions]);
+    this.items.controls.forEach((_, i) => this.subscribeDescriptionFilter(i));
+  }
+
+  private lastLoadedInvoiceno: number | null = null;
 
   ngOnInit(): void {
     this.getCurrentUserId();
     this.generateInvoiceNumber();
-    this.getSalesDetails();
+    this.initializeForm();
+    this.loadSalesSummaryWhenOnList();
     this.getCustomers();
+    if (this.router.url.includes('salesadd')) {
+      this.toggleForm();
+      this.tryLoadInvoiceFromQuery();
+    }
     this.getProducts();
     this.getGstOptions();
-    this.getSalesCounts();
-    this.initializeForm();
+    this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)).subscribe((e) => {
+      const url = e.urlAfterRedirects || '';
+      if (url.includes('salesadd')) {
+        this.toggleForm();
+        this.tryLoadInvoiceFromQuery();
+        if (this.customerOptions.length === 0) {
+          this.getCustomers();
+        }
+      } else {
+        this.lastLoadedInvoiceno = null;
+        this.getCustomers();
+        this.loadSalesSummaryWhenOnList();
+      }
+    });
+  }
+
+  /** Load list/counts only when on sales list view (skip on salesadd edit) */
+  private loadSalesSummaryWhenOnList(): void {
+    if (!this.router.url.includes('salesadd')) {
+      this.getSalesSummaryDetails();
+      this.getSalesSummaryListData();
+    }
+  }
+
+  private tryLoadInvoiceFromQuery(): void {
+    const invoiceno = this.route.snapshot.queryParamMap.get('invoiceno')
+      ?? this.route.root.snapshot.queryParamMap.get('invoiceno');
+    if (invoiceno == null || invoiceno === '') return;
+    const num = +invoiceno;
+    if (isNaN(num) || num <= 0) return;
+    if (this.lastLoadedInvoiceno === num) return;
+    this.lastLoadedInvoiceno = num;
+    this.loadSalesSummaryForEdit(num);
   }
 
   initializeForm(): void {
     const today = new Date();
     this.salesForm = this.formBuilder.group({
       salesid: [0],
-      invoiceno: [this.invoiceNumber, Validators.required],
+      invoiceno: [0], // New invoice: omit in payload; server generates next per account+instance
       saledate: [today, Validators.required],
       customerid: ["", Validators.required],
       customername: ["", Validators.required],
@@ -94,8 +528,8 @@ export class SalesComponent implements OnInit {
       subtotal: [0],
       totalgst: [0],
       grandtotal: [0],
-      paymentmethod: ["", Validators.required],
-      paymentstatus: ["", Validators.required],
+      paymentmethod: ["Cash", Validators.required],
+      paymentstatus: ["Paid", Validators.required],
       notes: [""],
       isactive: [true, Validators.required],
       createddate: [today],
@@ -112,6 +546,7 @@ export class SalesComponent implements OnInit {
 
   createItemFormGroup(): FormGroup {
     return this.formBuilder.group({
+      productid: [null as number | null],
       description: ["", Validators.required],
       hsnSac: [""],
       quantity: [null, [Validators.required, Validators.min(1)]],
@@ -127,7 +562,10 @@ export class SalesComponent implements OnInit {
   }
 
   addItem(): void {
+    const idx = this.items.length;
     this.items.push(this.createItemFormGroup());
+    this.filteredProducts.push([...this.productOptions]);
+    this.subscribeDescriptionFilter(idx);
     this.calculateTotals();
   }
 
@@ -161,10 +599,11 @@ export class SalesComponent implements OnInit {
       totalGst += (amount * gstPercent) / 100;
     });
 
+    const grandtotal = subtotal + totalGst;
     this.salesForm.patchValue({
       subtotal: subtotal.toFixed(2),
       totalgst: totalGst.toFixed(2),
-      grandtotal: subtotal.toFixed(2)
+      grandtotal: grandtotal.toFixed(2)
     }, { emitEvent: false });
   }
 
@@ -185,6 +624,22 @@ export class SalesComponent implements OnInit {
     this.invoiceNumber = `INV-${year}-${random}`;
   }
 
+  /** Load next invoice number from API (GET next-invoice-no) and set on form (sales add) */
+  loadNextInvoiceNumber(): void {
+    const user = this.authService.getUser() as any;
+    const accountId = user?.accountid ?? user?.accountId ?? 1;
+    const instanceId = user?.instanceid ?? user?.instanceId ?? 1;
+    this.salesService.getNextInvoiceNo(accountId, instanceId).subscribe({
+      next: (res) => {
+        if (this.salesForm && res?.nextInvoiceNo != null) {
+          this.salesForm.patchValue({ invoiceno: res.nextInvoiceNo }, { emitEvent: false });
+          this.invoiceNumber = String(res.nextInvoiceNo);
+          this.cdr.detectChanges();
+        }
+      }
+    });
+  }
+
   getCurrentUserId(): void {
     const user = this.authService.getUser();
     if (user) {
@@ -196,37 +651,83 @@ export class SalesComponent implements OnInit {
     }
   }
 
-  getSalesCounts(): void {
-    this.salesService.getSalesCounts().subscribe({
-      next: (response) => {
-        this.totalSales = response.totalSales || 0;
-        this.activeSales = response.activeSales || 0;
-        this.deactiveSales = response.deactiveSales || 0;
-        this.totalAmount = response.totalAmount || 0;
+  getSalesSummaryDetails(): void {
+    this.salesService.getSalesSummaryCounts().subscribe({
+      next: (response: any) => {
+        this.activeSales = response.activeSalessummary ?? response.activeSales ?? response.active ?? 0;
+        this.deactiveSales = response.deactiveSalessummary ?? response.deactiveSales ?? response.deactive ?? response.inactive ?? 0;
+        // totalSales and totalAmount are set from getSalesSummaryListData() so they stay scoped to accountId/instanceId
       },
       error: (err) => {
-        console.error('Error fetching sales counts:', err);
+        console.error('Error fetching sales summary counts:', err);
       }
     });
   }
 
-  getSalesDetails(): void {
-    this.salesService.getSalesDetails().subscribe({
-      next: (apidata: any) => {
-        this.sales = apidata.sort((a: any, b: any) => (b.salesid || 0) - (a.salesid || 0));
-        this.apiData = apidata.sort((a: any, b: any) => (b.salesid || 0) - (a.salesid || 0));
-        console.log('Sales Details:', this.sales);
+  private byAccountId<T extends { accountid?: number; accountId?: number }>(list: T[], accountId: number): T[] {
+    if (!Array.isArray(list) || accountId == null) return list || [];
+    return list.filter((item: any) => {
+      const id = item.accountid ?? item.accountId ?? item.account_id;
+      return id != null && Number(id) === Number(accountId);
+    });
+  }
+
+  private byAccountAndInstance<T extends { accountid?: number; accountId?: number; instanceid?: number; instanceId?: number }>(
+    list: T[], accountId: number, instanceId: number
+  ): T[] {
+    if (!Array.isArray(list) || accountId == null || instanceId == null) return list || [];
+    return list.filter((item: any) => {
+      const accId = item.accountid ?? item.accountId ?? item.account_id;
+      const instId = item.instanceid ?? item.instanceId ?? item.instance_id;
+      return accId != null && Number(accId) === Number(accountId) &&
+             instId != null && Number(instId) === Number(instanceId);
+    });
+  }
+
+  getSalesSummaryListData(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
+    const instanceId = isSuperAdmin ? null : this.authService.getInstanceId();
+    const listObs = accountId != null
+      ? this.salesService.getSalesSummaryList(accountId, instanceId ?? undefined)
+      : this.salesService.getSalesSummaryList();
+    listObs.subscribe({
+      next: (data: any) => {
+        const rawList = Array.isArray(data) ? data : (data?.list ?? data?.data ?? data?.records ?? []);
+        let filtered: any[];
+        if (accountId == null) {
+          filtered = rawList;
+        } else if (instanceId != null) {
+          filtered = this.byAccountAndInstance(rawList, accountId, instanceId);
+          if (filtered.length === 0 && rawList.length > 0) {
+            filtered = this.byAccountId(rawList, accountId);
+          }
+        } else {
+          filtered = this.byAccountId(rawList, accountId);
+        }
+        this.salesSummaryList = filtered.map((item: any) => ({
+          ...item,
+          saledate: item.invdate ?? item.invoicedate ?? item.invoiceDate ?? item.saledate ?? item.date
+        }));
+        this.totalSales = this.salesSummaryList.length;
+        this.totalAmount = this.salesSummaryList.reduce((sum: number, item: any) => {
+          const val = parseFloat(item.grandtotal ?? item.grandTotal ?? 0);
+          return sum + (isNaN(val) ? 0 : val);
+        }, 0);
       },
       error: (err) => {
-        console.error('Error fetching sales details:', err);
+        console.error('Error fetching sales summary list:', err);
       }
     });
   }
 
   getCustomers(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
     this.salesService.getCustomers().subscribe({
       next: (customers) => {
-        this.customerOptions = customers;
+        const raw = Array.isArray(customers) ? customers : [];
+        this.customerOptions = accountId != null ? this.byAccountId(raw, accountId) : raw;
       },
       error: (err) => {
         console.error('Error fetching customers:', err);
@@ -235,16 +736,34 @@ export class SalesComponent implements OnInit {
   }
 
   getProducts(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
     this.salesService.getProducts().subscribe({
       next: (products) => {
-        this.productOptions = products;
-        if (products.length > 0) {
-          console.log('Product API sample fields:', Object.keys(products[0]));
+        const raw = Array.isArray(products) ? products : [];
+        const filtered = accountId != null ? this.byAccountId(raw, accountId) : raw;
+        this.productOptions = filtered;
+        this.filteredProducts = this.items.controls.map(() => [...filtered]);
+        this.items.controls.forEach((_, i) => this.subscribeDescriptionFilter(i));
+        if (filtered.length > 0) {
+          console.log('Product API sample fields:', Object.keys(filtered[0]));
         }
       },
       error: (err) => {
         console.error('Error fetching products:', err);
       }
+    });
+  }
+
+  private subscribeDescriptionFilter(index: number): void {
+    const ctrl = this.items.at(index)?.get('description');
+    if (!ctrl) return;
+    ctrl.valueChanges.subscribe((val: string) => {
+      const search = (val || '').toLowerCase();
+      this.filteredProducts[index] = search
+        ? this.productOptions.filter(p =>
+            (p.productname || '').toLowerCase().includes(search))
+        : [...this.productOptions];
     });
   }
 
@@ -292,6 +811,60 @@ export class SalesComponent implements OnInit {
     }, { emitEvent: false });
   }
 
+  // ── Add New Customer ──────────────────────────────────────────────────────
+
+  openAddCustomerModal(): void {
+    console.log('openAddCustomerModal called');
+    this.showAddCustomerModal = true;
+    this.cdr.detectChanges();
+  }
+
+  closeAddCustomerModal(): void {
+    console.log('closeAddCustomerModal called');
+    this.showAddCustomerModal = false;
+  }
+
+  /** Called when Add Customer form (shared component) saves successfully */
+  handleCustomerSaved(savedCustomer: any): void {
+    this.closeAddCustomerModal();
+    this.salesService.getCustomers().subscribe({
+      next: (customers) => {
+        this.customerOptions = customers;
+        const newId = savedCustomer?.customerid ?? savedCustomer?.id ?? savedCustomer?.data?.customerid;
+        const match = newId
+          ? customers.find((c: any) => String(c.customerid) === String(newId))
+          : customers.find((c: any) => c.customername === savedCustomer?.customername);
+        if (match) {
+          this.salesForm.patchValue({
+            customerid: match.customerid,
+            customername: match.customername || '',
+            customermobile: match.customermobile || '',
+            customeremail: match.customeremail || '',
+            customeraddress: match.customeraddress || '',
+            customercity: match.customercity || '',
+            customerstate: match.customerstate || '',
+            customercountry: match.customercountry || '',
+            customerpincode: match.customerpincode || '',
+            customergstin: match.customergstin || ''
+          });
+        } else {
+          this.salesForm.patchValue({
+            customername: savedCustomer.customername ?? '',
+            customermobile: savedCustomer.customermobile ?? '',
+            customeremail: savedCustomer.customeremail ?? '',
+            customeraddress: savedCustomer.customeraddress ?? '',
+            customercity: savedCustomer.customercity ?? '',
+            customerstate: savedCustomer.customerstate ?? '',
+            customercountry: savedCustomer.customercountry ?? '',
+            customerpincode: savedCustomer.customerpincode ?? ''
+          });
+        }
+        this.errorMessage = '';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   onCustomerChange(event: Event): void {
     const selectedValue = (event.target as HTMLSelectElement).value;
     const selectedCustomer = this.customerOptions.find((item) => item.customerid == selectedValue);
@@ -307,6 +880,7 @@ export class SalesComponent implements OnInit {
         customerpincode: selectedCustomer.customerpincode || '',
         customergstin: selectedCustomer.customergstin || ''
       });
+      this.errorMessage = '';
     }
   }
 
@@ -323,6 +897,7 @@ export class SalesComponent implements OnInit {
         || selectedProduct.gst
         || 0;
       item.patchValue({
+        productid: selectedProduct.productid ?? selectedProduct.productId ?? null,
         description: selectedProduct.productname || '',
         hsnSac: selectedProduct.producthsncode || '',
         rate: selectedProduct.productlastprice || selectedProduct.price || selectedProduct.unitprice || 0,
@@ -354,7 +929,10 @@ export class SalesComponent implements OnInit {
   }
 
   addItemAndFocusNext(index: number): void {
+    const idx = this.items.length;
     this.items.push(this.createItemFormGroup());
+    this.filteredProducts.push([...this.productOptions]);
+    this.subscribeDescriptionFilter(idx);
     this.calculateTotals();
     // Wait for Angular to render the new row, then focus its description input
     setTimeout(() => {
@@ -366,80 +944,228 @@ export class SalesComponent implements OnInit {
     }, 50);
   }
 
+  /** True if we have enough data to create an invoice (customer, payment, at least one line with description + qty) */
+  private canCreateInvoice(): boolean {
+    const v = this.salesForm.value;
+    if (!v.customerid && !v.customername) return false;
+    if (!v.paymentmethod || v.paymentmethod === '') return false;
+    if (v.paymentstatus === '' || v.paymentstatus == null) return false;
+    const hasValidItem = this.items.controls.some(
+      (ctrl) => ctrl.get('description')?.value && Number(ctrl.get('quantity')?.value) > 0
+    );
+    return hasValidItem;
+  }
+
   onSubmit(): void {
     this.markFormGroupTouched();
 
-    if (this.salesForm.valid && this.items.length > 0) {
+    if (this.isEditMode) {
+      if (!this.canCreateInvoice()) {
+        this.errorMessage = 'Please ensure customer, payment method, payment status and at least one item are set.';
+        return;
+      }
       this.errorMessage = '';
-      
-      this.salesForm.patchValue({
-        updatedby: this.currentUserId,
-        updateddate: new Date()
-      });
-      
-      if (this.isEditMode) {
-        const formData = { ...this.salesForm.value };
-        if (!formData.salesid || formData.salesid === 0) {
-          console.error('Sales ID is missing for update');
-          this.errorMessage = 'Sales ID is missing. Cannot update.';
+      this.salesForm.patchValue({ updatedby: this.currentUserId, updateddate: new Date() });
+
+      if (this.editingInvoiceno != null) {
+        const payload = this.buildSalessummaryPayload();
+        if (!payload || payload.items.length === 0) {
+          this.errorMessage = 'Please add at least one item.';
           return;
         }
-        
-        console.log('Updating sales with data:', formData);
-        this.salesService.updateSales(formData).subscribe({
-          next: (response: any) => {
-            console.log('Sales updated successfully:', response);
-            this.getSalesDetails();
-            this.getSalesCounts();
+        this.salesService.updateSalesSummaryWithDetails(payload).subscribe({
+          next: () => {
+            this.getSalesSummaryDetails();
+            this.getSalesSummaryListData();
             this.resetSalesForm();
             this.errorMessage = '';
           },
           error: (error: any) => {
-            console.error('Error updating sales:', error);
-            if (error.status === 400 && error.error?.message) {
-              this.errorMessage = error.error.message;
-            } else if (error.error?.message) {
-              this.errorMessage = error.error.message;
-            } else {
-              this.errorMessage = 'Error updating sales. Please try again.';
-            }
+            this.errorMessage = error?.error?.message || error?.message || 'Error updating sales. Please try again.';
           }
         });
       } else {
-        this.createSales();
+        const formData = { ...this.salesForm.value };
+        if (!formData.salesid || formData.salesid === 0) {
+          this.errorMessage = 'Sales ID is missing. Cannot update.';
+          return;
+        }
+        this.salesService.updateSales(formData).subscribe({
+          next: () => {
+            this.getSalesSummaryDetails();
+            this.getSalesSummaryListData();
+            this.resetSalesForm();
+            this.errorMessage = '';
+          },
+          error: (error: any) => {
+            this.errorMessage = error.error?.message || error.message || 'Error updating sales. Please try again.';
+          }
+        });
       }
-    } else {
-      console.error('Form is Invalid');
-      this.errorMessage = 'Please fill all required fields correctly and add at least one item.';
+      return;
     }
+
+    if (!this.canCreateInvoice()) {
+      if (!this.salesForm.value.customerid && !this.salesForm.value.customername) {
+        this.errorMessage = 'Please select a customer.';
+      } else if (!this.salesForm.value.paymentmethod) {
+        this.errorMessage = 'Please select payment method.';
+      } else if (this.salesForm.value.paymentstatus === '' || this.salesForm.value.paymentstatus == null) {
+        this.errorMessage = 'Please select payment status.';
+      } else {
+        this.errorMessage = 'Please add at least one item with description and quantity.';
+      }
+      return;
+    }
+
+    this.errorMessage = '';
+    this.salesForm.patchValue({
+      updatedby: this.currentUserId,
+      updateddate: new Date()
+    });
+    this.createSales();
+  }
+
+  /** Format saledate to YYYY-MM-DD for API */
+  private formatDateForApi(value: any): string {
+    if (!value) return new Date().toISOString().split('T')[0];
+    if (value instanceof Date) return value.toISOString().split('T')[0];
+    if (typeof value === 'string') return value.split('T')[0];
+    if (value && value.year && value.month != null && value.day != null) {
+      const m = String(value.month).padStart(2, '0');
+      const d = String(value.day).padStart(2, '0');
+      return `${value.year}-${m}-${d}`;
+    }
+    return new Date().toISOString().split('T')[0];
+  }
+
+  /** Build DTO for salessummary/save (transaction: salessummary + salesdetail). New invoice: omit invoiceno (server generates per account+instance). Edit: include existing invoiceno. */
+  buildSalessummaryPayload(): SaveSalessummaryDto | null {
+    const v = this.salesForm.value;
+    const user = this.authService.getUser() as any;
+    const accountid = user?.accountid ?? user?.accountId ?? 1;
+    const instanceid = user?.instanceid ?? user?.instanceId ?? 1;
+    const now = new Date().toISOString().split('T')[0];
+
+    const items: SalesDetailItemDto[] = this.items.controls
+      .filter((ctrl) => ctrl.get('description')?.value && Number(ctrl.get('quantity')?.value) > 0)
+      .map((ctrl) => {
+      const i = ctrl.value;
+      const qty = Number(i.quantity) || 0;
+      const rate = Number(i.rate) || 0;
+      const discPct = Number(i.discountPct) || 0;
+      const gstPct = Number(i.gstPercent) || 0;
+      const grossAmount = qty * rate;
+      const discAmount = (grossAmount * discPct) / 100;
+      const subtotal = grossAmount - discAmount;
+      const gstAmount = (subtotal * gstPct) / 100;
+      const cgst = gstAmount / 2;
+      const sgst = gstAmount / 2;
+      const grandtotal = subtotal + gstAmount;
+      return {
+        productid: i.productid ?? 0,
+        productname: i.description || '',
+        salehsn: i.hsnSac || null,
+        saleqty: Math.round(qty),
+        salemrp: String(rate),
+        saledisper: discPct || null,
+        salegstper: Math.round(gstPct),
+        saleamount: Math.round(subtotal),
+        salegrossamount: Math.round(grossAmount),
+        saltotaldisc: Math.round(discAmount) || null,
+        salesubtotal: Math.round(subtotal),
+        saletotalcgst: Math.round(cgst),
+        saletotalsgst: Math.round(sgst),
+        saletotalgst: Math.round(gstAmount),
+        salegrandtotal: Math.round(grandtotal),
+      };
+    });
+
+    const grossSubtotal = this.getGrossSubtotal();
+    const totalDiscount = this.getTotalDiscount();
+    const tdisamount = Math.round(totalDiscount * 100) / 100;
+    const tdisaper = grossSubtotal > 0 ? Math.round((totalDiscount / grossSubtotal) * 100 * 100) / 100 : null;
+    const netSubtotal = parseFloat(v.subtotal) || 0;
+    const totalgst = parseFloat(v.totalgst) || 0;
+    const grandtotalVal = netSubtotal + totalgst;
+
+    const payload: SaveSalessummaryDto = {
+      invdate: this.formatDateForApi(v.saledate),
+      customerid: Number(v.customerid) || 0,
+      customername: v.customername || null,
+      tgrossamount: Math.round(grossSubtotal * 100) / 100,
+      tdisaper,
+      tdisamount,
+      tgstamount: totalgst,
+      tsgstamount: totalgst / 2,
+      tcgstamount: totalgst / 2,
+      grandtotal: Math.round(grandtotalVal * 100) / 100,
+      paymenttype: v.paymentmethod || null,
+      paymentstatus: v.paymentstatus === true || v.paymentstatus === 'Paid' || v.paymentstatus === 'true',
+      accountid,
+      instanceid,
+      createdby: this.currentUserId,
+      updatedby: this.currentUserId,
+      createddate: now,
+      updateddate: now,
+      isactive: v.isactive !== false,
+      items,
+    };
+    // Update flow: send existing invoiceno. New invoice: omit so server generates next per account+instance.
+    if (this.editingInvoiceno != null) {
+      payload.invoiceno = typeof v.invoiceno === 'number' && v.invoiceno > 0 ? v.invoiceno : this.editingInvoiceno;
+    }
+    return payload;
   }
 
   createSales(): void {
     this.errorMessage = '';
-    
     this.salesForm.patchValue({
       createdby: this.currentUserId,
       updatedby: this.currentUserId,
       createddate: new Date(),
       updateddate: new Date()
     });
-    
-    this.salesService.addSales(this.salesForm.value).subscribe({
+
+    const payload = this.buildSalessummaryPayload();
+    if (!payload || payload.items.length === 0) {
+      this.errorMessage = 'Please add at least one item.';
+      return;
+    }
+    // New invoice: invoiceno omitted so server generates next per (accountid, instanceid)
+    this.salesService.saveSalesSummaryWithDetails(payload).subscribe({
       next: (data: any) => {
-        console.log("Sales Form Submitted", data);
-        this.getSalesDetails();
-        this.getSalesCounts();
+        console.log('Sales summary saved', data);
+        this.getSalesSummaryDetails();
+        this.getSalesSummaryListData();
         this.resetSalesForm();
         this.errorMessage = '';
       },
       error: (err: any) => {
-        console.error('Error creating sales:', err);
+        console.warn('salessummary/save failed, falling back to sales/salessave', err);
+        this.createSalesViaLegacyApi();
+      }
+    });
+  }
+
+  /** Fallback: use existing sales/salessave API when salessummary/save is not available */
+  private createSalesViaLegacyApi(): void {
+    this.salesService.addSales(this.salesForm.value).subscribe({
+      next: (data: any) => {
+        console.log('Sales saved via legacy API', data);
+        this.getSalesSummaryDetails();
+        this.getSalesSummaryListData();
+        this.resetSalesForm();
+        this.errorMessage = '';
+      },
+      error: (err: any) => {
+        console.error('Error saving sales:', err);
         if (err.status === 400 && err.error?.message) {
           this.errorMessage = err.error.message;
         } else if (err.error?.message) {
           this.errorMessage = err.error.message;
         } else {
-          this.errorMessage = 'Something went wrong. Please try again.';
+          this.errorMessage = err.message || 'Something went wrong. Please try again.';
         }
       }
     });
@@ -523,8 +1249,8 @@ export class SalesComponent implements OnInit {
       this.salesService.deleteSales(item.salesid).subscribe({
         next: () => {
           console.log("Deleted:", item);
-          this.getSalesDetails();
-          this.getSalesCounts();
+          this.getSalesSummaryDetails();
+          this.getSalesSummaryListData();
         },
         error: (err: any) => {
           console.error('Error deleting sales', err);
@@ -535,20 +1261,28 @@ export class SalesComponent implements OnInit {
   }
 
   onExporting(e: any) {
-    const workbook = new Workbook();
-    const worksheet = workbook.addWorksheet('Sales Data');
-
-    exportDataGrid({
-      component: e.component,
-      worksheet: worksheet,
-      autoFilterEnabled: true,
-    }).then(() => {
-      workbook.xlsx.writeBuffer().then((buffer) => {
-        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        saveAs(blob, "SalesData.xlsx");
+    if (e.format === 'pdf') {
+      const doc = new jsPDF({ orientation: 'landscape' });
+      exportDataGridToPdf({
+        jsPDFDocument: doc,
+        component: e.component,
+      }).then(() => {
+        doc.save('SalesData.pdf');
       });
-    });
-
+    } else {
+      const workbook = new Workbook();
+      const worksheet = workbook.addWorksheet('Sales Data');
+      exportDataGridToExcel({
+        component: e.component,
+        worksheet: worksheet,
+        autoFilterEnabled: true,
+      }).then(() => {
+        workbook.xlsx.writeBuffer().then((buffer) => {
+          const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          saveAs(blob, 'SalesData.xlsx');
+        });
+      });
+    }
     e.cancel = true;
   }
 
@@ -559,13 +1293,24 @@ export class SalesComponent implements OnInit {
     this.getCurrentUserId();
     this.generateInvoiceNumber();
     this.initializeForm();
+    const isEditFromQuery = this.route.snapshot.queryParamMap.get('invoiceno') != null;
     setTimeout(() => {
       if (this.salesForm) {
         const today = new Date();
-        this.salesForm.patchValue({
-          saledate: today,
-          invoiceno: this.invoiceNumber
-        }, { emitEvent: false });
+        this.salesForm.patchValue({ saledate: today }, { emitEvent: false });
+        if (!isEditFromQuery) {
+          const user = this.authService.getUser() as any;
+          const accountId = user?.accountid ?? user?.accountId ?? 1;
+          const instanceId = user?.instanceid ?? user?.instanceId ?? 1;
+          this.salesService.getNextInvoiceNo(accountId, instanceId).subscribe({
+            next: (res) => {
+              if (this.salesForm && res?.nextInvoiceNo != null) {
+                this.salesForm.patchValue({ invoiceno: res.nextInvoiceNo }, { emitEvent: false });
+                this.cdr.detectChanges();
+              }
+            }
+          });
+        }
         this.cdr.detectChanges();
       }
       // Focus first product description input
@@ -579,11 +1324,13 @@ export class SalesComponent implements OnInit {
   resetSalesForm(): void {
     this.isFormOpen = false;
     this.isEditMode = false;
+    this.editingInvoiceno = null;
     this.errorMessage = '';
-    
     this.getCurrentUserId();
     this.generateInvoiceNumber();
-    // Don't initialize form when closing - it will be initialized when opening again
+    if (this.router.url.includes('salesadd')) {
+      this.router.navigate(['/pages/sales']);
+    }
   }
 
   markFormGroupTouched(): void {

@@ -1,0 +1,101 @@
+<div class="form-container">
+  <p *ngIf="!hideHeader" style="font-size: larger;">Add Customer</p>
+  <button *ngIf="!hideHeader" (click)="onCancel()" class="close-btn">&times;</button>
+
+  <div *ngIf="errorMessage" class="error-message"
+    style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
+    {{ errorMessage }}
+  </div>
+
+  <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label style="color:black">Customer Name</mat-label>
+      <input matInput placeholder="Customer Name" class="mat-input-element custom-placeholder"
+        formControlName="customername">
+      <mat-error *ngIf="customerForm.get('customername')?.hasError('required') && customerForm.get('customername')?.touched">
+        Customer name is required
+      </mat-error>
+      <mat-error *ngIf="customerForm.get('customername')?.hasError('minlength') && customerForm.get('customername')?.touched">
+        Customer name must be at least 3 characters
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label style="color:black">Mobile Number</mat-label>
+      <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
+        formControlName="customermobile" type="tel">
+      <mat-error *ngIf="customerForm.get('customermobile')?.hasError('required') && customerForm.get('customermobile')?.touched">
+        Mobile number is required
+      </mat-error>
+      <mat-error *ngIf="customerForm.get('customermobile')?.hasError('pattern') && customerForm.get('customermobile')?.touched">
+        Please enter a valid mobile number (10-12 digits)
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label style="color:black !important">Email</mat-label>
+      <input matInput placeholder="Email" class="mat-input-element custom-placeholder"
+        formControlName="customeremail" type="email">
+      <mat-error *ngIf="customerForm.get('customeremail')?.hasError('email') && customerForm.get('customeremail')?.touched">
+        Enter a valid email
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label style="color:black">Address</mat-label>
+      <input matInput placeholder="Address" class="mat-input-element custom-placeholder"
+        formControlName="customeraddress">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label style="color:black">City</mat-label>
+      <select *ngIf="cityDropdown.length > 0" matNativeControl formControlName="customercity" (change)="onCityChange($event)">
+        <option value="" disabled>Select</option>
+        <option *ngFor="let city of cityDropdown" [value]="city.cityname">{{ city.cityname }}</option>
+      </select>
+      <input *ngIf="cityDropdown.length === 0" matInput placeholder="Enter city" class="mat-input-element custom-placeholder"
+        formControlName="customercity">
+      <mat-error *ngIf="customerForm.get('customercity')?.hasError('required') && customerForm.get('customercity')?.touched">
+        City is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label style="color:black">State</mat-label>
+      <input matInput placeholder="State" class="mat-input-element custom-placeholder" formControlName="customerstate">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label style="color:black">Country</mat-label>
+      <input matInput placeholder="Country" class="mat-input-element custom-placeholder"
+        formControlName="customercountry">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label style="color:black">Pincode</mat-label>
+      <input matInput placeholder="Pincode" class="mat-input-element custom-placeholder"
+        formControlName="customerpincode">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label style="color:black">Active</mat-label>
+      <select matNativeControl formControlName="isactive">
+        <option value="" disabled>Select</option>
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+      </select>
+      <mat-error *ngIf="customerForm.get('isactive')?.hasError('required') && customerForm.get('isactive')?.touched">
+        Active status is required
+      </mat-error>
+    </mat-form-field>
+
+    <div class="form-submit">
+      <button mat-raised-button type="submit" class="btn-primary"
+        [disabled]="customerForm.invalid || customerForm.pending || isSaving">
+        {{ isSaving ? 'Saving...' : 'Submit' }}
+      </button>
+    </div>
+
+  </form>
+</div>

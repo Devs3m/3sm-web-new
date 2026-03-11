@@ -6,8 +6,12 @@ import { FormMaterialModule } from '../service/form-material.module';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DxButtonModule, DxChartModule, DxDataGridModule } from 'devextreme-angular';
-import { InstanceService } from '../service/instance.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DashboardComponent } from './dashboard.component';
+import { AccountService } from '../service/account.service';
+import { InstanceService } from '../service/instance.service';
+import { CustomerService } from '../service/customer.service';
+import { SalesService } from '../service/sales.service';
 
 @NgModule({
   declarations: [
@@ -23,9 +27,14 @@ import { DashboardComponent } from './dashboard.component';
     DxDataGridModule,
     DxButtonModule,
     DxChartModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatProgressSpinnerModule
   ],
-    providers: [InstanceService],
-    bootstrap: [DashboardComponent]
+  providers: [
+    AccountService,
+    InstanceService,
+    CustomerService,
+    SalesService
+  ]
 })
 export class DashboardModule { }

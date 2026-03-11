@@ -18,6 +18,11 @@ export interface LoginResponse {
     roleName?: string;
     roleId?: number;
     userroleid?: number;
+    /** Account-level scope when null; instance-level when set. */
+    accountid?: number | null;
+    accountId?: number | null;
+    instanceid?: number | null;
+    instanceId?: number | null;
   };
   permissions?: any[];
   permissionCount?: number;
@@ -37,47 +42,21 @@ export class AuthService {
   login(credentials: { email: string; password: string }): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
-        console.log('========================================');
-        console.log('Login Response Received:');
-        console.log('  - Full Response:', response);
-        console.log('  - Has Token:', !!response.token);
-        console.log('  - Has User:', !!response.user);
-        console.log('  - Has Permissions:', !!response.permissions);
-        console.log('  - Permissions Count:', response.permissions?.length || 0);
-        console.log('  - Permission Count Field:', response.permissionCount);
-        console.log('========================================');
-        
-        // Store token
         if (response.token) {
           localStorage.setItem('token', response.token);
         }
-        
-        // Store user email from login credentials
         if (credentials.email) {
           localStorage.setItem('userEmail', credentials.email);
         }
-        
-        // Store user data if provided in response
         if (response.user) {
           localStorage.setItem('userData', JSON.stringify(response.user));
         }
-        
-        // Store permissions if provided in login response (PermissionService will pick this up)
         if (response.permissions && Array.isArray(response.permissions) && response.permissions.length > 0) {
-          console.log('✅ Received permissions in login response:', response.permissions.length, 'permissions');
-          console.log('  - Sample permissions:', response.permissions.slice(0, 3));
-          // Store in localStorage for PermissionService to pick up (avoids circular dependency)
           localStorage.setItem('loginPermissions', JSON.stringify({
             permissions: response.permissions,
             user: response.user,
             timestamp: Date.now()
           }));
-          console.log('✅ Stored permissions in localStorage as loginPermissions');
-        } else {
-          console.warn('⚠️ No permissions in login response');
-          console.warn('  - response.permissions:', response.permissions);
-          console.warn('  - Is Array:', Array.isArray(response.permissions));
-          console.warn('  - Will load permissions separately via API');
         }
       }),
       map((response) => response)
@@ -105,7 +84,6 @@ export class AuthService {
         try {
           return JSON.parse(storedUserData);
         } catch (e) {
-          console.error('Error parsing user data:', e);
         }
       }
       
@@ -130,7 +108,6 @@ export class AuthService {
       }
     }
     // Default fallback (should not happen in production)
-    console.warn('⚠️ Account ID not found in user token, defaulting to 1');
     return 1;
   }
 
@@ -145,7 +122,6 @@ export class AuthService {
       }
     }
     // Default fallback (should not happen in production)
-    console.warn('⚠️ Instance ID not found in user token, defaulting to 1');
     return 1;
   }
 
@@ -160,7 +136,6 @@ export class AuthService {
       }
     }
     // Default fallback (should not happen in production)
-    console.warn('⚠️ User ID not found in user token, defaulting to 1');
     return 1;
   }
 

@@ -13,12 +13,11 @@ export class InstanceService {
   private apiUrl = environment.apiUrl; 
   instanceservice: any;
 
-  getInstanceById(instanceId: any) {
-    throw new Error('Method not implemented.');
+  getInstanceById(instanceId: any): Observable<any> {
+    return this.http.get(`${this.apiUrl}/instance/${instanceId}`);
   }
 
   getInstanceOrderby() {
-    console.log('Fetching data from API');
     return this.http.get(`${this.apiUrl}/instance/instanceorderby`);
   }
 
@@ -30,7 +29,6 @@ export class InstanceService {
   constructor(private http:HttpClient) { }
 
   getInstanceDetails():Observable<any>{
-    console.log('Fetching data from API');
     return this.http.get(`${this.apiUrl}/instance/list`);
   
   }

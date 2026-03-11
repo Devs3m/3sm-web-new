@@ -1,9 +1,10 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ProductService } from '../service/product.service';
 import { AuthService } from '../service/auth.service';
+import { PermissionService } from '../service/permission.service';
 import { GstService } from '../service/gst.service';
 import { VatService } from '../service/vat.service';
-import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
@@ -41,6 +42,7 @@ export class ProductComponent implements OnInit {
     private fromBuilder: FormBuilder,
     private http: HttpClient,
     private authService: AuthService,
+    private permissionService: PermissionService,
     private gstService: GstService,
     private vatService: VatService
   ) { }
@@ -93,19 +95,6 @@ export class ProductComponent implements OnInit {
     this.getDropDownValue();
     this.loadGstDropdown();
     this.loadTaxDropdown();
-
-    // Fetch data from API
-    this.http.get<{ totalProduct: number; activeProduct: number; deactiveProduct: number }>(`${this.apiUrl}/product/counts`)
-      .subscribe({
-        next: (response) => {
-          this.totalProduct = response.totalProduct;
-          this.activeProduct = response.activeProduct;
-          this.deactiveProduct = response.deactiveProduct;
-        },
-        error: (err) => {
-          console.error('Error fetching counts:', err);
-        }
-      });
   }
 
 
@@ -217,6 +206,10 @@ export class ProductComponent implements OnInit {
   }
 
   createProduct(): void {
+    if (!this.permissionService.hasPermissionCode('product:create') && !this.permissionService.hasPermissionCode('product.create')) {
+      this.errorMessage = 'You do not have permission to add products.';
+      return;
+    }
     this.errorMessage = '';
 
     // Ensure createdby and updatedby are set to current user ID
@@ -255,24 +248,29 @@ export class ProductComponent implements OnInit {
   }
 
   getProductCounts(): void {
-    this.http.get<{ totalProduct: number; activeProduct: number; deactiveProduct: number }>(`${this.apiUrl}/product/counts`)
-      .subscribe({
-        next: (response) => {
-          this.totalProduct = response.totalProduct;
-          this.activeProduct = response.activeProduct;
-          this.deactiveProduct = response.deactiveProduct;
-        },
-        error: (err) => {
-          console.error('Error fetching counts:', err);
-        }
-      });
+    this.getProductDetails();
+  }
+
+  private byAccountId<T extends { accountid?: number; accountId?: number }>(list: T[], accountId: number): T[] {
+    if (!Array.isArray(list) || accountId == null) return list || [];
+    return list.filter((item: any) => {
+      const id = item.accountid ?? item.accountId ?? item.account_id;
+      return id != null && Number(id) === Number(accountId);
+    });
   }
 
   getProductDetails(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
     this.productservice.getProductDetails().subscribe({
       next: (apidata: any) => {
-        this.product = apidata.sort((a: any, b: any) => b.productid - a.productid);
-        this.apiData = apidata;
+        const raw = Array.isArray(apidata) ? apidata : [];
+        const filtered = accountId != null ? this.byAccountId(raw, accountId) : raw;
+        this.product = filtered.sort((a: any, b: any) => b.productid - a.productid);
+        this.apiData = [...this.product];
+        this.totalProduct = filtered.length;
+        this.activeProduct = filtered.filter((p: any) => p.productisactive === true || p.productisactive === 'true' || p.productisactive === 1).length;
+        this.deactiveProduct = this.totalProduct - this.activeProduct;
         console.log('Product Details:', this.product);
       },
       error: (err: any) => {

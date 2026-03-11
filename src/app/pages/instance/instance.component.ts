@@ -1,5 +1,7 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { InstanceService } from '../service/instance.service';
+import { AuthService } from '../service/auth.service';
+import { PermissionService } from '../service/permission.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
@@ -30,11 +32,16 @@ export class InstanceComponent implements OnInit {
   deactiveInstance: number = 0;
   dropdownAccountItems: any[]=[];
 
-  constructor(private instanceservice: InstanceService,
+  constructor(
+    private instanceservice: InstanceService,
+    private authService: AuthService,
+    private permissionService: PermissionService,
     private fromBuilder: FormBuilder,
-    private http: HttpClient) { }
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
+    const accountId = this.authService.getAccountId() ?? 1;
     this.instanceForm = this.fromBuilder.group({
       instancename: ["", [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
       ownername: ["", [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
@@ -61,21 +68,12 @@ export class InstanceComponent implements OnInit {
       instancevatno: [""],
       instancefssaino: [""],
       instanceid: [0],
-      accountid: [1],
+      accountid: [accountId],
       cityid: [1]
     })
     this.getInstanceDetails();
     this.getDropDownValue();
-    this.getDropdownAccountValue(); // Load account dropdown data
-    
-    // Fetch data from API
-    this.http.get<{ totalInstance: number; activeInstance: number; deactiveInstance: number }>(`${environment.apiUrl}/instance/counts`)
-      .subscribe(response => {
-        this.totalInstance = response.totalInstance;
-        this.activeInstance = response.activeInstance;
-        this.deactiveInstance = response.deactiveInstance;
-        console.log(this.totalInstance)
-      });
+    this.getDropdownAccountValue();
 
   }
 
@@ -122,17 +120,29 @@ export class InstanceComponent implements OnInit {
     });
   }
 
+  private byAccountId<T extends { accountid?: number; accountId?: number }>(list: T[], accountId: number): T[] {
+    if (!Array.isArray(list) || accountId == null) return list || [];
+    return list.filter((item: any) => {
+      const id = item.accountid ?? item.accountId ?? item.account_id;
+      return id != null && Number(id) === Number(accountId);
+    });
+  }
+
   getInstanceDetails(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
     this.instanceservice.getInstanceDetails().subscribe({
       next: (apidata: any) => {
-        this.instance = apidata.sort((a: any, b: any) => b.createddate - a.createddate);
-
+        const raw = Array.isArray(apidata) ? apidata : [];
+        const filtered = accountId != null ? this.byAccountId(raw, accountId) : raw;
+        this.instance = filtered.sort((a: any, b: any) => b.createddate - a.createddate);
+        this.apiData = [...this.instance];
+        this.totalInstance = filtered.length;
+        this.activeInstance = filtered.filter((i: any) => i.instanceisactive === true || i.instanceisactive === 'true' || i.instanceisactive === 1).length;
+        this.deactiveInstance = this.totalInstance - this.activeInstance;
         console.log('Sorted Instance Details:', this.instance);
-        this.instanceservice.getInstanceDetails().subscribe((data) => {
-          this.apiData = data;
-        });
-      }
-
+      },
+      error: (err) => console.error('Error fetching instance details:', err)
     });
   }
 
@@ -178,9 +188,14 @@ export class InstanceComponent implements OnInit {
       },
     });
   }
-  getDropdownAccountValue() {
+  getDropdownAccountValue(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
     this.instanceservice.getDropdownAccountItems().subscribe({
-      next: (items) => (this.dropdownAccountItems = items),
+      next: (items) => {
+        const raw = Array.isArray(items) ? items : [];
+        this.dropdownAccountItems = accountId != null ? this.byAccountId(raw, accountId) : raw;
+      },
       error: (err) => console.error('Error fetching dropdown items', err),
     });
   }
@@ -284,8 +299,9 @@ export class InstanceComponent implements OnInit {
     this.getDropDownValue();
     this.getDropdownAccountValue();
     
+    const accountId = this.authService.getAccountId() ?? 1;
     this.instanceForm.patchValue({
-      accountid: '',
+      accountid: accountId,
       instancecity: '',
       instancestate: '',
       instancecountry: '',

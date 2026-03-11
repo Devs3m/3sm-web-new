@@ -41,7 +41,7 @@ export class PagesComponent implements OnInit {
       if (isLoaded && hasPermissions) {
         console.log('✅ Permissions loaded, menus will update');
         console.log('  - Permissions count:', currentRole?.permissions?.length || 0);
-        console.log('  - Available resources:', currentRole?.permissions ? [...new Set(currentRole.permissions.map(p => p.resource))] : []);
+        console.log('  - Available resources:', currentRole?.permissions ? [...new Set(currentRole.permissions.map(p => p.key?.split('.')[0] || p.module?.toLowerCase()).filter(Boolean))] : []);
         // Force change detection to update menu visibility
         this.cdr.detectChanges();
         clearInterval(checkPermissionsInterval);
@@ -65,8 +65,6 @@ export class PagesComponent implements OnInit {
         // Ensure permission service has the role name
         this.permissionService.setRoleName(roleName);
         clearInterval(checkRoleInterval);
-        console.log('User role loaded in top menu:', this.userRole);
-        console.log('Permission service updated with role name');
       } else if (checkCount >= maxChecks) {
         // After max checks, try fallback
         this.getUserRoleFallback();
@@ -76,15 +74,11 @@ export class PagesComponent implements OnInit {
   }
 
   getUserRole(): void {
-    console.log('getUserRole called');
-    
     // Try to get role name from permission service first
     const roleName = this.permissionService.getCurrentRoleName();
-    console.log('Role name from permission service:', roleName);
-    
+
     if (roleName && roleName.trim() !== '') {
       this.userRole = roleName;
-      console.log('✅ User role set from permission service:', this.userRole);
       return;
     }
     
@@ -124,8 +118,7 @@ export class PagesComponent implements OnInit {
 
   getLoggedInUser(): void {
     this.loggedInUser = this.authService.getUser();
-    console.log('Raw user data:', this.loggedInUser);
-    
+
     // Get email from auth service (handles fallback to localStorage)
     this.userEmail = this.authService.getUserEmail();
     
@@ -147,10 +140,6 @@ export class PagesComponent implements OnInit {
                         this.loggedInUser.useremail ||
                         '';
       }
-      
-      console.log('Extracted userName:', this.userName);
-      console.log('Extracted userEmail:', this.userEmail);
-      console.log('All user properties:', Object.keys(this.loggedInUser));
     } else {
       console.warn('No user data found');
     }
@@ -228,7 +217,6 @@ export class PagesComponent implements OnInit {
           } else if (roleName) {
             // If role name is directly in user object
             this.userRole = roleName;
-            console.log('Role name found in user object:', this.userRole);
             // Also update permission service if role name is found
             this.updatePermissionServiceRoleName(this.userRole);
           } else {
@@ -240,8 +228,6 @@ export class PagesComponent implements OnInit {
           // Store user data for future use
           localStorage.setItem('userData', JSON.stringify(user));
           
-          console.log('User details fetched from API:', user);
-          console.log('Extracted userName from API:', this.userName);
         } else {
           console.warn('User not found in API with email:', email);
         }
@@ -291,7 +277,8 @@ export class PagesComponent implements OnInit {
     
     // Use the permission service's setRoleName method
     this.permissionService.setRoleName(roleName);
-    console.log('✅ Updated permission service with role name:', roleName);
+    const permissions = this.permissionService.getCurrentUserRole()?.permissions ?? [];
+    console.log('Permission details:', permissions);
   }
 
   getUserDisplayName(): string {

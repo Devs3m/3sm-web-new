@@ -1,5 +1,6 @@
 <section>  
-    <div class="form-container"[class.open]="isFormOpen">
+    <div class="form-backdrop" [class.open]="isFormOpen" (click)="restGstForm()"></div>
+    <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">Add GST %</p>
     <button (click)="restGstForm()" class="close-btn">&times;</button>
       <form [formGroup]="gstForm" (ngSubmit)="onSubmit()">
@@ -26,7 +27,7 @@
         </mat-form-field>
         <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Chess%</mat-label>
-        <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" formControlName="chesspercent">
+        <input matInput type="number" step="0.001" placeholder="Chess %" class="mat-input-element custom-placeholder" formControlName="chesspercent">
         </mat-form-field>
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">Active</mat-label>

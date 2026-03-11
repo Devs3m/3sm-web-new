@@ -1,0 +1,227 @@
+.dashboard-container {
+  padding: 24px;
+  background: #f4f6fb;
+  min-height: calc(100vh - 64px);
+  box-sizing: border-box;
+}
+
+/* Permissions card */
+.permissions-card {
+  margin-top: 24px;
+}
+.permissions-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.permissions-icon {
+  color: #5a6c7d;
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+.permissions-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a5276;
+}
+.permissions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+}
+.permissions-module {
+  min-width: 180px;
+}
+.permissions-module-name {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.permissions-items {
+  margin: 0;
+  padding-left: 18px;
+  list-style: disc;
+}
+.permissions-item {
+  font-size: 12px;
+  color: #444;
+  margin-bottom: 2px;
+}
+.permissions-key {
+  font-family: monospace;
+  color: #1a5276;
+}
+.permissions-name {
+  color: #666;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.dashboard-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-icon {
+  color: #337ab7;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.dashboard-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a5276;
+}
+
+.refresh-btn {
+  background: #fff;
+  border: 1px solid #d0d8e8;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #337ab7;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.refresh-btn:hover {
+  background: #eaf2fb;
+  box-shadow: 0 2px 6px rgba(51,122,183,0.15);
+}
+
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+.loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  gap: 16px;
+  color: #888;
+  font-size: 14px;
+}
+
+/* ── Stat Cards ──────────────────────────────────────────────────────────── */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+}
+
+.stat-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon-wrap mat-icon {
+  font-size: 26px;
+  width: 26px;
+  height: 26px;
+  color: #fff;
+}
+
+/* Card accent colours */
+.stat-card.accounts    .stat-icon-wrap { background: linear-gradient(135deg, #337ab7, #1a5276); }
+.stat-card.instances   .stat-icon-wrap { background: linear-gradient(135deg, #8e44ad, #6c3483); }
+.stat-card.customers   .stat-icon-wrap { background: linear-gradient(135deg, #27ae60, #1e8449); }
+.stat-card.sales-count .stat-icon-wrap { background: linear-gradient(135deg, #e67e22, #ca6f1e); }
+.stat-card.sales-value .stat-icon-wrap { background: linear-gradient(135deg, #c0392b, #922b21); }
+
+.stat-card.accounts    { border-left: 4px solid #337ab7; }
+.stat-card.instances   { border-left: 4px solid #8e44ad; }
+.stat-card.customers   { border-left: 4px solid #27ae60; }
+.stat-card.sales-count { border-left: 4px solid #e67e22; }
+.stat-card.sales-value { border-left: 4px solid #c0392b; }
+
+.stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1a2a3a;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Chart Card ──────────────────────────────────────────────────────────── */
+.chart-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 16px;
+  }
+
+  .stat-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-cards {
+    grid-template-columns: 1fr;
+  }
+}

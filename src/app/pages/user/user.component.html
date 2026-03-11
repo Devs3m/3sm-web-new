@@ -1,12 +1,24 @@
 <section>
-    <div class="form-container"[class.open]="isFormOpen">
+    <div class="form-backdrop" [class.open]="isFormOpen" (click)="restuserForm()"></div>
+    <div class="form-container" [class.open]="isFormOpen">
         <p style="font-size: larger;">{{ isEditMode ? 'Edit User' : 'Add User' }}</p>
         <button (click)="restuserForm()" class="close-btn">&times;</button>
         <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Instance</mat-label>
+            <select matNativeControl formControlName="instanceid"
+                    (change)="onInstanceSelectionChange($event)">
+              <option [value]="0" disabled>Select Instance</option>
+              <option *ngFor="let item of instanceList" [value]="item.instanceid">
+                {{ item.instancename }}
+              </option>
+            </select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">User Name</mat-label>
-            <input matInput placeholder="Instance" class="mat-input-element custom-placeholder" 
+            <input matInput placeholder="User Name" class="mat-input-element custom-placeholder" 
             formControlName="username">
         </mat-form-field >
 
@@ -19,8 +31,20 @@
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">User Email</mat-label>
-            <input matInput placeholder="Manager Email" class="mat-input-element custom-placeholder" 
+            <input matInput placeholder="User Email" class="mat-input-element custom-placeholder" 
             formControlName="useremail">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Password</mat-label>
+            <input matInput type="password" placeholder="Password" class="mat-input-element custom-placeholder" 
+            formControlName="userpassword">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Verify Password</mat-label>
+            <input matInput type="password" placeholder="Verify Password" class="mat-input-element custom-placeholder" 
+            formControlName="verifypassword">
         </mat-form-field>
        
         <mat-form-field appearance="outline" class="form-field">
@@ -61,23 +85,42 @@
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">User Role</mat-label>
-            <input matInput placeholder="Sales Amount" class="mat-input-element custom-placeholder" 
-            formControlName="userrole">
+            <select matNativeControl formControlName="userroleid">
+              <option value="" disabled>Select Role</option>
+              <option *ngFor="let item of userroleDropdownItems" [value]="item.userroleid">
+                {{ item.userrolename }}
+              </option>
+            </select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">User ASA Amount</mat-label>
+            <input matInput type="number" placeholder="ASA Amount" class="mat-input-element custom-placeholder" 
+            formControlName="userasaamount">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Forgot Password Question</mat-label>
+            <input matInput placeholder="Security question" class="mat-input-element custom-placeholder" 
+            formControlName="userforgotpwquest">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+            <mat-label style="color:black">Forgot Password Answer</mat-label>
+            <input matInput placeholder="Security answer" class="mat-input-element custom-placeholder" 
+            formControlName="userforgotpwans">
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">Active</mat-label>
-           <select matNativeControl formControlName="isactive">
-            <option  value="" disabled>Select</option>
-            <option  value="true">Active</option>
-            <option  value="false">Inactive</option>
-           </select>     
-
-          
+            <select matNativeControl formControlName="userisactive">
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
         </mat-form-field>
         <div class="form-submit">
           <ng-container *appHasPermission="'user:create'">
-            <button mat-raised-button type="submit" (click)="createUser()">
+            <button *ngIf="!isEditMode" mat-raised-button type="submit" (click)="createUser()">
               Submit
             </button>
           </ng-container>

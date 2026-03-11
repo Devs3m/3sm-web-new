@@ -18,7 +18,6 @@ export class AccountService {
   }
 
   getAccountOrderby() {
-    console.log('Fetching data from API');
     return this.http.get(`${this.apiUrl}/account/accountorderby`);
   }
   
@@ -28,7 +27,6 @@ export class AccountService {
   }
 
   getAccountDetails(): Observable<any> {
-    console.log('Fetching data from API');
     return this.http.get(`${this.apiUrl}/account/list`);
   }
 

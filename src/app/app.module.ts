@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, LOCALE_ID } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -16,7 +16,6 @@ import { FormMaterialModule } from './core/form-material.module';
 import { CommonModule } from '@angular/common';
 import { DxTemplateModule } from 'devextreme-angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { UniqueMobileValidatorComponent } from './pages/unique-mobile.validator/unique-mobile.validator.component';
 import { AuthInterceptor } from './core/auth.interceptor';
 
 const routes: Routes = [
@@ -26,8 +25,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    AppComponent,
-    UniqueMobileValidatorComponent
+    AppComponent
   ],
   imports: [
     BrowserModule,
@@ -49,6 +47,7 @@ const routes: Routes = [
   ],
   providers: [
     InstanceService,
+    { provide: LOCALE_ID, useValue: 'en-IN' },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
