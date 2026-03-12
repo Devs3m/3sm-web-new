@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.join.connectsite.in',
+  apiUrl: 'https://api.connectsite.in',
   apiHost: 'https://join.connectsite.in/'
 };
