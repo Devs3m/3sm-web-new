@@ -71,6 +71,18 @@
               "sourceMap": true,
               "namedChunks": true
             },
+            "local-server": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.local-server.ts"
+                }
+              ],
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "sourceMap": true
+            },
             "join": {
               "fileReplacements": [
                 {
@@ -109,6 +121,9 @@
             },
             "development": {
               "browserTarget": "3sm-web:build:development"
+            },
+            "local-server": {
+              "browserTarget": "3sm-web:build:local-server"
             }
           },
           "defaultConfiguration": "development"

@@ -49,7 +49,17 @@ export class LoginComponent {
      },
     error: (error) => {
       console.error('Login error:', error);
-      this.errorMessage = error.error?.message || 'Login failed. Try again.';
+      const msg = error?.error?.message || error?.error?.error || error?.message;
+      const status = error?.status;
+      if (status === 401) {
+        this.errorMessage = 'Invalid email or password.';
+      } else if (status === 403) {
+        this.errorMessage = msg || 'Access denied. Please contact administrator.';
+      } else if (status === 0) {
+        this.errorMessage = 'Cannot reach server. Check API URL and network.';
+      } else {
+        this.errorMessage = msg || `Login failed (${status || 'error'}). Try again.`;
+      }
     }
   });
   }

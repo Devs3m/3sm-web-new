@@ -262,7 +262,7 @@ body {
 		text-align: center;
 		display: flex;
 		flex-direction: column;
-		justify-content: end;
+		justify-content: flex-end;
 		align-items: center;
 		p {
 			&:nth-of-type(1) {

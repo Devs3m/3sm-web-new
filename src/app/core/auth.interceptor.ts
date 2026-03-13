@@ -3,6 +3,7 @@ import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -19,12 +20,11 @@ export class AuthInterceptor implements HttpInterceptor {
 
     // If token exists, clone the request and add the Authorization header
     if (token) {
-      // Try Bearer token format first (standard JWT format)
-      // If your API expects just the token without "Bearer", change this line to:
-      // Authorization: token
+      const format = (environment as any).authHeaderFormat || 'Bearer';
+      const authValue = format === 'token' ? token : `Bearer ${token}`;
       const cloned = req.clone({
         setHeaders: {
-          Authorization: `Bearer ${token}`
+          Authorization: authValue
         }
       });
       return next.handle(cloned).pipe(

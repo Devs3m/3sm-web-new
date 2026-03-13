@@ -145,7 +145,7 @@ export class PermissionService {
   }
 
   // Load permissions for current logged-in user
-  // Single endpoint: GET /role/user/permissions (unified shape + byKey). Fallback: GET /auth/permissions, then role-based.
+  // Single endpoint: GET /role/user/permissions (unified shape + byKey). Fallback: load by role or empty.
   loadCurrentUserPermissions(): void {
     const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
     if (!token) return;
@@ -155,7 +155,18 @@ export class PermissionService {
 
     const userId = user.userId || user.userid || user.user_id || user.id;
     const roleId = user.roleId || user.roleid || user.role_id || user.userroleid || user.userRoleId;
-    const fallbackRoleName = user.roleName || user.rolename || user.role_name || user.userrolename || user.userRoleName;
+    const fallbackRoleName = user.role || user.roleName || user.rolename || user.role_name || user.userrolename || user.userRoleName;
+
+    // SuperAdmin: skip API (endpoints may not exist); hasPermission uses isSuperAdmin() for full access
+    const roleNorm = this.normalizeRoleName(fallbackRoleName);
+    if (roleNorm === 'superadmin' || roleNorm.startsWith('superadmin') || roleNorm.includes('superadmin')) {
+      this.currentUserRole = { userId, roleId: roleId || 0, roleName: fallbackRoleName || 'SuperAdmin', permissions: [] };
+      this.isPermissionsLoaded = true;
+      this.byKey = {};
+      this.cachedIsSuperAdmin = true;
+      this.permissionResultCache.clear();
+      return;
+    }
 
     const applyResponse = (response: any, roleName?: string) => {
       const uid = response?.userId ?? userId;
@@ -203,19 +214,12 @@ export class PermissionService {
         applyResponse(response, roleName);
       },
       error: () => {
-        this.http.get<any>(`${this.apiUrl}/auth/permissions`).subscribe({
-          next: (response) => {
-            const roleName = response?.roleName ?? response?.rolename ?? response?.userrolename ?? fallbackRoleName;
-            applyResponse(response, roleName);
-          },
-          error: () => {
-            if (roleId) {
-              this.loadPermissionsForRole(userId, roleId, fallbackRoleName);
-            } else {
-              this.setPermissionsAndByKey([], userId || 0, 0, fallbackRoleName);
-            }
-          }
-        });
+        // Fallback: /auth/permissions may not exist on backend; use role-based load or empty
+        if (roleId) {
+          this.loadPermissionsForRole(userId, roleId, fallbackRoleName);
+        } else {
+          this.setPermissionsAndByKey([], userId || 0, 0, fallbackRoleName);
+        }
       }
     });
   }

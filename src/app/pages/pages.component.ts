@@ -37,8 +37,9 @@ export class PagesComponent implements OnInit {
       const isLoaded = this.permissionService.permissionsLoaded;
       const currentRole = this.permissionService.getCurrentUserRole();
       const hasPermissions = currentRole?.permissions && currentRole.permissions.length > 0;
+      const isSuperAdmin = this.permissionService.isSuperAdmin();
       
-      if (isLoaded && hasPermissions) {
+      if (isLoaded && (hasPermissions || isSuperAdmin)) {
         console.log('✅ Permissions loaded, menus will update');
         console.log('  - Permissions count:', currentRole?.permissions?.length || 0);
         console.log('  - Available resources:', currentRole?.permissions ? [...new Set(currentRole.permissions.map(p => p.key?.split('.')[0] || p.module?.toLowerCase()).filter(Boolean))] : []);
