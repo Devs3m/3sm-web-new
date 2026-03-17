@@ -37,6 +37,7 @@ export class VatComponent implements OnInit {
   }
   ngOnInit(): void {
     this.vatForm=this.fromBuilder.group({
+    "vatid":[0],
     "vatpercent":[""],
     "createddate":[new Date()],
     "updateddate":[new Date()],
@@ -100,9 +101,26 @@ export class VatComponent implements OnInit {
     });
    }
    editItem(item: any): void {
-    console.log("Editing:", item);
-    this.isFormOpen = true; // Open the form for editing
-    this.vatForm.patchValue(item); // Load item into form for editing
+    const row = item?.data ?? item;
+    const vatid = row?.vatid ?? row?.vatId ?? (row ? row.vatid : null);
+    if (!vatid) return;
+    this.isFormOpen = true;
+    this.vatservice.getDetailsById(vatid).subscribe({
+      next: (r) => {
+        if (!r) return;
+        this.vatForm.patchValue({
+          vatid: r.vatid,
+          vatpercent: r.vatpercent ?? '',
+          createddate: r.createddate ?? new Date(),
+          updateddate: r.updateddate ?? new Date(),
+          vatisactive: r.vatisactive ?? true,
+          createdby: r.createdby ?? 1,
+          updatedby: r.updatedby ?? 1,
+          userid: r.userid ?? 1
+        });
+      },
+      error: (err) => console.error('Error fetching VAT details:', err)
+    });
   }
   
   deleteItem(item: any): void {

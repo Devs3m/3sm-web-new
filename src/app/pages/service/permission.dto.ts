@@ -39,6 +39,7 @@ export interface UserPermissionsResponse {
   permissions: PermissionDto[];
   byKey: Record<string, boolean>;
   count?: number;
+  roleId?: number;
   roleName?: string;
 }
 

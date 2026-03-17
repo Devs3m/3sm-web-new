@@ -16,6 +16,10 @@ export class VatService {
 
   constructor(private http:HttpClient) { }
 
+  getDetailsById(vatid: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/vat/details/${vatid}`);
+  }
+
   getVatDetails():Observable<any>{
     console.log('Fetching Vat data from API');
     return this.http.get(`${this.apiUrl}/vat/list`);

@@ -15,6 +15,10 @@ export class GstService {
 
   constructor(private http:HttpClient) { }
 
+  getDetailsById(gstid: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/gst/details/${gstid}`);
+  }
+
   getGstDetails():Observable<any>{
     console.log('Fetching GST data from API');
     return this.http.get(`${this.apiUrl}/gst/list`);

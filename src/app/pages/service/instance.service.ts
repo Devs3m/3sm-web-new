@@ -17,6 +17,10 @@ export class InstanceService {
     return this.http.get(`${this.apiUrl}/instance/${instanceId}`);
   }
 
+  getDetailsById(instanceid: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/instance/details/${instanceid}`);
+  }
+
   getInstanceOrderby() {
     return this.http.get(`${this.apiUrl}/instance/instanceorderby`);
   }

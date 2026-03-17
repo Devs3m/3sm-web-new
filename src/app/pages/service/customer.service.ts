@@ -20,6 +20,10 @@ export class CustomerService {
     return this.http.get(`${this.apiUrl}/customer/${customerId}`);
   }
 
+  getDetailsById(customerid: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/customer/details/${customerid}`);
+  }
+
   getCustomerCounts(): Observable<{ totalCustomers: number; activeCustomers: number; deactiveCustomers: number }> {
     return this.http.get<{ totalCustomers: number; activeCustomers: number; deactiveCustomers: number }>(`${this.apiUrl}/customer/counts`);
   }

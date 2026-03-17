@@ -135,11 +135,22 @@ constructor(
    }
 
   editItem(item: any): void {
+    const row = item?.data ?? item;
+    const userroleid = row?.userroleid ?? row?.userroleId ?? (row ? row.userroleid : null);
+    if (!userroleid) return;
     this.isFormOpen = true;
     this.isEditMode = true;
-    this.userroleForm.patchValue({
-      ...item,
-      userroleisactive: item.userroleisactive ? 'true' : 'false'
+    this.userroleservice.getDetailsById(userroleid).subscribe({
+      next: (r) => {
+        if (!r) return;
+        this.userroleForm.patchValue({
+          ...r,
+          userroleisactive: r.userroleisactive ? 'true' : 'false',
+          accountid: r.accountid ?? this.authService.getAccountId() ?? 1,
+          instanceid: r.instanceid ?? this.authService.getInstanceId() ?? 1
+        });
+      },
+      error: (err) => console.error('Error fetching userrole details:', err)
     });
   }
 

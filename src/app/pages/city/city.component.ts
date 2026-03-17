@@ -109,16 +109,25 @@ export class CityComponent implements OnInit {
       });
   }
   editItem(item: any): void {
+    const row = item?.data ?? item;
+    const cityid = row?.cityid ?? row?.cityId ?? (row ? row.cityid : null);
+    if (!cityid) return;
     this.isEditMode = true;
     this.isFormOpen = true;
-    this.cityForm.patchValue({
-      cityid: item.cityid ?? item.cityId ?? 0,
-      cityname: item.cityname ?? item.cityName ?? '',
-      citystate: item.citystate ?? item.cityState ?? '',
-      citycountry: item.citycountry ?? item.cityCountry ?? '',
-      isactive: item.isactive ?? item.isActive ?? true,
-      createddate: item.createddate ?? item.createdDate,
-      updateddate: item.updateddate ?? item.updatedDate ?? new Date(),
+    this.cityservice.getDetailsById(cityid).subscribe({
+      next: (r) => {
+        if (!r) return;
+        this.cityForm.patchValue({
+          cityid: r.cityid ?? 0,
+          cityname: r.cityname ?? '',
+          citystate: r.citystate ?? '',
+          citycountry: r.citycountry ?? '',
+          isactive: r.isactive ?? true,
+          createddate: r.createddate ?? new Date(),
+          updateddate: r.updateddate ?? new Date(),
+        });
+      },
+      error: (err) => console.error('Error fetching city details:', err)
     });
   }
   

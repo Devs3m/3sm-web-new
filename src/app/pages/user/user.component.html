@@ -3,13 +3,16 @@
     <div class="form-container" [class.open]="isFormOpen">
         <p style="font-size: larger;">{{ isEditMode ? 'Edit User' : 'Add User' }}</p>
         <button (click)="restuserForm()" class="close-btn">&times;</button>
+        <div *ngIf="errorMessage" class="error-message" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
+          {{ errorMessage }}
+        </div>
         <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">Instance</mat-label>
             <select matNativeControl formControlName="instanceid"
                     (change)="onInstanceSelectionChange($event)">
-              <option [value]="0" disabled>Select Instance</option>
+              <option value="" selected disabled>Select Instance</option>
               <option *ngFor="let item of instanceList" [value]="item.instanceid">
                 {{ item.instancename }}
               </option>
@@ -26,7 +29,13 @@
             <mat-label style="color:black">User Mobile</mat-label>
             <span style="color:black" matTextPrefix>+91 &nbsp;</span>
             <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
-            formControlName="usermobile">     
+            formControlName="usermobile">
+            <mat-error *ngIf="userForm.get('usermobile')?.hasError('required') && userForm.get('usermobile')?.touched">
+              User Mobile is required
+            </mat-error>
+            <mat-error *ngIf="userForm.get('usermobile')?.hasError('pattern') && userForm.get('usermobile')?.touched">
+              Enter a valid 10-digit mobile number
+            </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
@@ -63,6 +72,9 @@
                 {{ item.cityname }}
               </option>
             </select>
+            <mat-error *ngIf="userForm.get('usercity')?.hasError('required') && userForm.get('usercity')?.touched">
+              City is required
+            </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field">
@@ -85,10 +97,11 @@
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">User Role</mat-label>
-            <select matNativeControl formControlName="userroleid">
+            <select matNativeControl formControlName="userrole"
+                    (change)="onRoleSelectionChange($event)">
               <option value="" disabled>Select Role</option>
-              <option *ngFor="let item of userroleDropdownItems" [value]="item.userroleid">
-                {{ item.userrolename }}
+              <option *ngFor="let item of userroleDropdownItems" [value]="(item.userrolename || item.userroleName || '')">
+                {{ item.userrolename || item.userroleName }}
               </option>
             </select>
         </mat-form-field>
@@ -181,10 +194,10 @@
       
         
         <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
-          <a *appHasPermission="'user:update'" (click)="editItem(data.data)" style="cursor: pointer;">
+          <a *appHasPermission="'user:update'" (click)="editItem(data.data || data.row?.data || data)" style="cursor: pointer;">
             <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
           </a>
-          <a *appHasPermission="'user:delete'" (click)="deleteItem(data.data)" style="cursor: pointer;">
+          <a *appHasPermission="'user:delete'" (click)="deleteItem(data.data || data.row?.data || data)" style="cursor: pointer;">
             <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
           </a>
         </div>

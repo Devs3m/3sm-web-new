@@ -41,7 +41,6 @@ export class InstanceComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const accountId = this.authService.getAccountId() ?? 1;
     this.instanceForm = this.fromBuilder.group({
       instancename: ["", [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
       ownername: ["", [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
@@ -68,7 +67,7 @@ export class InstanceComponent implements OnInit {
       instancevatno: [""],
       instancefssaino: [""],
       instanceid: [0],
-      accountid: [accountId],
+      accountid: [''],
       cityid: [1]
     })
     this.getInstanceDetails();
@@ -239,13 +238,24 @@ export class InstanceComponent implements OnInit {
     }
   }
   editItem(item: any): void {
+    const row = item?.data ?? item;
+    const instanceid = row?.instanceid ?? row?.instanceId ?? (typeof row === 'object' ? row?.instanceid : null);
+    if (!instanceid) return;
     this.isFormOpen = true;
     this.isEditMode = true;
-    this.instanceForm.patchValue({
-      ...item,
-      instanceisactive: item.instanceisactive === true || item.instanceisactive === 'true' || item.instanceisactive === 1 ? 'true' : 'false'
+    this.instanceservice.getDetailsById(instanceid).subscribe({
+      next: (data) => {
+        if (!data) return;
+        const r = data;
+        this.instanceForm.patchValue({
+          ...r,
+          instanceisactive: r.instanceisactive === true || r.instanceisactive === 'true' || r.instanceisactive === 1 ? 'true' : 'false',
+          accountid: r.accountid ?? '',
+          cityid: r.cityid ?? 1
+        });
+      },
+      error: (err) => console.error('Error fetching instance details:', err)
     });
-    console.log('Edit Item:', item);
   }
 
   deleteItem(item: any): void {
@@ -299,9 +309,8 @@ export class InstanceComponent implements OnInit {
     this.getDropDownValue();
     this.getDropdownAccountValue();
     
-    const accountId = this.authService.getAccountId() ?? 1;
     this.instanceForm.patchValue({
-      accountid: accountId,
+      accountid: '',
       instancecity: '',
       instancestate: '',
       instancecountry: '',

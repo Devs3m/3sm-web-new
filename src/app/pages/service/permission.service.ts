@@ -70,6 +70,9 @@ export class PermissionService {
     return this.isPermissionsLoaded;
   }
   
+  /** Role ID for Super Admin (roleId 1 = full permissions). */
+  private static readonly SUPER_ADMIN_ROLE_ID = 1;
+
   /** Normalize role name for comparison; aligns with backend ("Super Admin" / "SuperAdmin" → "superadmin"). */
   private normalizeRoleName(roleName: string | undefined | null): string {
     if (!roleName || typeof roleName !== 'string') return '';
@@ -155,11 +158,14 @@ export class PermissionService {
 
     const userId = user.userId || user.userid || user.user_id || user.id;
     const roleId = user.roleId || user.roleid || user.role_id || user.userroleid || user.userRoleId;
+    const numericRoleId = roleId != null ? Number(roleId) : 0;
     const fallbackRoleName = user.role || user.roleName || user.rolename || user.role_name || user.userrolename || user.userRoleName;
 
-    // SuperAdmin: skip API (endpoints may not exist); hasPermission uses isSuperAdmin() for full access
+    // SuperAdmin: roleId 1 or role name "Super Admin" – skip API; hasPermission uses isSuperAdmin() for full access
     const roleNorm = this.normalizeRoleName(fallbackRoleName);
-    if (roleNorm === 'superadmin' || roleNorm.startsWith('superadmin') || roleNorm.includes('superadmin')) {
+    const isSuperAdminByRoleId = numericRoleId === PermissionService.SUPER_ADMIN_ROLE_ID;
+    const isSuperAdminByName = roleNorm === 'superadmin' || roleNorm.startsWith('superadmin') || roleNorm.includes('superadmin');
+    if (isSuperAdminByRoleId || isSuperAdminByName) {
       this.currentUserRole = { userId, roleId: roleId || 0, roleName: fallbackRoleName || 'SuperAdmin', permissions: [] };
       this.isPermissionsLoaded = true;
       this.byKey = {};
@@ -168,6 +174,34 @@ export class PermissionService {
       return;
     }
 
+    // When role name is missing (e.g. backend doesn't send it for Super Admin), fetch by roleId so sidebar shows User/User Role
+    if ((!fallbackRoleName || fallbackRoleName.trim() === '') && roleId) {
+      this.getRoleDetails(roleId).subscribe({
+        next: (roleDetails: any) => {
+          const name = roleDetails?.userrolename || roleDetails?.roleName || roleDetails?.rolename || roleDetails?.name || '';
+          const fetchedNorm = this.normalizeRoleName(name);
+          const isSuperAdminById = numericRoleId === PermissionService.SUPER_ADMIN_ROLE_ID;
+          const isSuperAdminByName = fetchedNorm === 'superadmin' || fetchedNorm.startsWith('superadmin') || fetchedNorm.includes('superadmin');
+          if (isSuperAdminById || isSuperAdminByName) {
+            this.currentUserRole = { userId, roleId: roleId || 0, roleName: name || 'SuperAdmin', permissions: [] };
+            this.isPermissionsLoaded = true;
+            this.byKey = {};
+            this.cachedIsSuperAdmin = true;
+            this.permissionResultCache.clear();
+            return;
+          }
+          // Not Super Admin; continue to load permissions via API
+          this.loadCurrentUserPermissionsAfterRoleCheck(userId, roleId, fallbackRoleName || name);
+        },
+        error: () => this.loadCurrentUserPermissionsAfterRoleCheck(userId, roleId, fallbackRoleName)
+      });
+      return;
+    }
+
+    this.loadCurrentUserPermissionsAfterRoleCheck(userId, roleId, fallbackRoleName);
+  }
+
+  private loadCurrentUserPermissionsAfterRoleCheck(userId: number | undefined, roleId: number | undefined, fallbackRoleName: string | undefined): void {
     const applyResponse = (response: any, roleName?: string) => {
       const uid = response?.userId ?? userId;
       const rid = response?.roleId ?? roleId;
@@ -560,7 +594,27 @@ export class PermissionService {
 
   /** List of permissions in unified shape (for menus, grouping). */
   getPermissions(): PermissionDto[] {
+    // Super Admin has no stored permissions array; return full list so dashboard/UI can show "all permissions"
+    if (this.isSuperAdmin()) {
+      return this.getSuperAdminPermissionDtoList();
+    }
     return this.currentUserRole?.permissions ? [...this.currentUserRole.permissions] : [];
+  }
+
+  /** Build full PermissionDto list from templates so Super Admin sees all permissions in dashboard/UI. */
+  private getSuperAdminPermissionDtoList(): PermissionDto[] {
+    const templates = this.getPermissionTemplates();
+    const list: PermissionDto[] = [];
+    Object.keys(templates).forEach(resourceKey => {
+      const perms = templates[resourceKey] || [];
+      perms.forEach(p => {
+        const dto = toPermissionDto({ ...p, resource: p.resource || resourceKey });
+        if (dto) {
+          list.push({ ...dto, allowed: true });
+        }
+      });
+    });
+    return list;
   }
 
   /** Group permissions by module (e.g. sidebar). */
@@ -706,11 +760,38 @@ export class PermissionService {
     console.log('===========================');
   }
 
-  // Check if current user is Super Admin (with caching). Aligns with backend normalizeRoleName.
+  // Check if current user is Super Admin (with caching). Role ID 1 or role name "Super Admin".
   isSuperAdmin(): boolean {
     const now = Date.now();
     if (this.cachedIsSuperAdmin !== null && (now - this.lastSuperAdminCheckTime < 5000)) {
       return this.cachedIsSuperAdmin;
+    }
+
+    // Check by role ID first (userrole/roleId 1 = Super Admin)
+    let roleId: number | undefined = this.currentUserRole?.roleId != null ? Number(this.currentUserRole.roleId) : undefined;
+    if (roleId === undefined) {
+      const user = this.authService.getUser();
+      if (user) {
+        const rid = user.roleId ?? user.roleid ?? user.role_id ?? user.userroleid ?? user.userRoleId;
+        if (rid != null) roleId = Number(rid);
+      }
+    }
+    if (roleId === undefined) {
+      try {
+        const userDataStr = localStorage.getItem('userData');
+        if (userDataStr) {
+          const userData = JSON.parse(userDataStr);
+          const rid = userData.roleId ?? userData.roleid ?? userData.userroleid ?? userData.userRoleId;
+          if (rid != null) roleId = Number(rid);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    if (roleId === PermissionService.SUPER_ADMIN_ROLE_ID) {
+      this.cachedIsSuperAdmin = true;
+      this.lastSuperAdminCheckTime = now;
+      return true;
     }
 
     let roleName = this.currentUserRole?.roleName;
@@ -760,28 +841,41 @@ export class PermissionService {
   }
 
   // Set role name in currentUserRole (used when role name is loaded from other sources)
+  // IMPORTANT: Never create currentUserRole with empty permissions - it would overwrite
+  // permissions loaded from login. Only update roleName when currentUserRole already exists,
+  // or when we can restore permissions from loginPermissions cache.
   setRoleName(roleName: string): void {
     if (!roleName || roleName.trim() === '') {
       return;
     }
-    
+
     if (this.currentUserRole) {
       this.currentUserRole.roleName = roleName;
-    } else {
-      // Create currentUserRole if it doesn't exist
-      const user = this.authService.getUser();
-      const userId = user?.userId || user?.userid || user?.user_id || user?.id || 0;
-      const roleId = user?.roleId || user?.roleid || user?.role_id || user?.userroleid || user?.userRoleId || 0;
-      
-      this.currentUserRole = {
-        userId: userId,
-        roleId: roleId,
-        roleName: roleName,
-        permissions: []
-      };
+      this.cachedIsSuperAdmin = null;
+      return;
     }
-    
-    // Clear Super Admin cache when role name changes
+
+    // currentUserRole is null - do NOT create with permissions: [] as that would block menus.
+    // Try to restore from loginPermissions cache first (in case constructor hasn't run or cache was used)
+    const loginPermissions = localStorage.getItem('loginPermissions');
+    if (loginPermissions) {
+      try {
+        const data = JSON.parse(loginPermissions);
+        if (data.permissions && Array.isArray(data.permissions) && data.permissions.length > 0 && data.user) {
+          this.setPermissionsFromLogin(data.permissions, data.user);
+          const role = this.currentUserRole as UserRole | null;
+          if (role) {
+            role.roleName = roleName;
+          }
+          this.cachedIsSuperAdmin = null;
+          return;
+        }
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    // No permissions available - do not create empty role. Let loadCurrentUserPermissions handle it.
     this.cachedIsSuperAdmin = null;
   }
 }

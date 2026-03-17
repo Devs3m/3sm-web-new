@@ -22,6 +22,10 @@ export class ProductService {
 
   constructor(private http:HttpClient) { }
 
+  getDetailsById(productid: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/product/details/${productid}`);
+  }
+
   getProductDetails():Observable<any>{
     return this.http.get(`${this.apiUrl}/product/list`);
   

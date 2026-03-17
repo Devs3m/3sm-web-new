@@ -144,20 +144,29 @@ export class GstComponent implements OnInit {
     });
    }
    editItem(item: any): void {
+    const row = item?.data ?? item;
+    const gstid = row?.gstid ?? row?.gstId ?? (row ? row.gstid : null);
+    if (!gstid) return;
     this.isEditMode = true;
     this.isFormOpen = true;
-    const id = item.gstid ?? item.gstId ?? item.id ?? 0;
-    this.gstForm.patchValue({
-      gstid: id,
-      totalgstpercent: item.totalgstpercent ?? item.totalGstPercent ?? '',
-      igstpercent: item.igstpercent ?? item.igstPercent ?? '',
-      cgstpercent: item.cgstpercent ?? item.cgstPercent ?? '',
-      sgstpercent: item.sgstpercent ?? item.sgstPercent ?? '',
-      ugstpercent: item.ugstpercent ?? item.ugstPercent ?? '',
-      chesspercent: item.chesspercent ?? item.chessPercent ?? '',
-      isactive: item.gstisactive ?? item.isactive ?? item.gstIsActive ?? true,
-      createddate: item.createddate ?? item.createdDate,
-      updateddate: item.updateddate ?? item.updatedDate ?? new Date()
+    this.gstservice.getDetailsById(gstid).subscribe({
+      next: (r) => {
+        if (!r) return;
+        this.gstForm.patchValue({
+          gstid: r.gstid,
+          totalgstpercent: r.totalgstpercent ?? '',
+          igstpercent: r.igstpercent ?? '',
+          cgstpercent: r.cgstpercent ?? '',
+          sgstpercent: r.sgstpercent ?? '',
+          ugstpercent: r.ugstpercent ?? '',
+          chesspercent: r.chesspercent ?? '',
+          isactive: r.gstisactive ?? r.isactive ?? true,
+          createddate: r.createddate ?? new Date(),
+          updateddate: r.updateddate ?? new Date(),
+          userid: r.userid ?? 1
+        });
+      },
+      error: (err) => console.error('Error fetching GST details:', err)
     });
   }
   

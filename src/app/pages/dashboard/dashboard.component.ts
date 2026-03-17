@@ -26,10 +26,8 @@ export class DashboardComponent implements OnInit {
 
   isLoading = true;
 
-  // Highcharts
   Highcharts: typeof Highcharts = Highcharts;
   chartOptions: Highcharts.Options = {};
-  updateFlag = false;
 
   /** Current user's role name (e.g. Administrator). */
   get currentRoleName(): string {
@@ -46,7 +44,6 @@ export class DashboardComponent implements OnInit {
     return Object.keys(this.permissionsByModule).sort();
   }
 
-  // Last 3 months labels
   private get last3Months(): string[] {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const now = new Date();
@@ -153,8 +150,6 @@ export class DashboardComponent implements OnInit {
   private buildChart(salesList: any[]): void {
     const months = this.last3Months;
     const now = new Date();
-
-    // Build per-month buckets for last 3 months
     const buckets: { count: number; value: number }[] = months.map(() => ({ count: 0, value: 0 }));
 
     salesList.forEach((item: any) => {
@@ -162,7 +157,6 @@ export class DashboardComponent implements OnInit {
       if (!raw) return;
       const d = new Date(raw);
       if (isNaN(d.getTime())) return;
-
       for (let i = 0; i < 3; i++) {
         const offset = 2 - i;
         const target = new Date(now.getFullYear(), now.getMonth() - offset, 1);
@@ -199,7 +193,7 @@ export class DashboardComponent implements OnInit {
           title: { text: 'Sales Value (₹)', style: { color: '#27ae60' } },
           labels: {
             style: { color: '#27ae60' },
-            formatter: function () { return '₹' + (this.value as number).toLocaleString('en-IN'); }
+            formatter: function (this: any) { return '₹' + (typeof this.value === 'number' ? this.value : Number(this.value || 0)).toLocaleString('en-IN'); }
           },
           opposite: true,
           min: 0
@@ -207,9 +201,11 @@ export class DashboardComponent implements OnInit {
       ],
       tooltip: {
         shared: true,
-        formatter: function () {
-          let s = `<b>${this.x}</b><br/>`;
-          (this.points || []).forEach((p: any) => {
+        formatter: function (this: any) {
+          const x = this.x != null ? String(this.x) : '';
+          const pts = this.points ?? [];
+          let s = `<b>${x}</b><br/>`;
+          pts.forEach((p: any) => {
             s += `${p.series.name}: <b>${p.series.name.includes('Value') ? '₹' + p.y.toLocaleString('en-IN') : p.y}</b><br/>`;
           });
           return s;
@@ -237,7 +233,5 @@ export class DashboardComponent implements OnInit {
         } as Highcharts.SeriesSplineOptions
       ]
     };
-
-    this.updateFlag = true;
   }
 }

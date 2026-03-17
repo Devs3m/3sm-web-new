@@ -8,7 +8,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { DxDataGridModule, DxButtonModule } from 'devextreme-angular';
 import { DxChartModule } from 'devextreme-angular';
-import { HighchartsChartModule } from 'highcharts-angular';
 import { LoginComponent } from './login/login.component';
 import { LoginModule } from './login/login.module';
 import { InstanceService } from './pages/service/instance.service';
@@ -38,7 +37,6 @@ const routes: Routes = [
     DxDataGridModule,
     DxButtonModule,
     DxChartModule,
-    HighchartsChartModule,
     LoginModule,
     FormMaterialModule,
     CommonModule,

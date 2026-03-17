@@ -17,6 +17,10 @@ export class UserroleService {
     return this.http.delete(`${this.apiUrl}/userrole/userroledelete/${userroleid}`);
   }
 
+  getDetailsById(userroleid: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/userrole/details/${userroleid}`);
+  }
+
   getUserroleDetails():Observable<any>{
     return this.http.get(`${this.apiUrl}/userrole/list`);
   }

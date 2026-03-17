@@ -51,6 +51,21 @@ export class PagesComponent implements OnInit {
         console.warn('  - isLoaded:', isLoaded);
         console.warn('  - hasPermissions:', hasPermissions);
         console.warn('  - currentRole:', currentRole);
+        // Fallback: try to restore from loginPermissions in localStorage (stored by AuthService during login)
+        const loginPermissions = localStorage.getItem('loginPermissions');
+        if (loginPermissions && !hasPermissions) {
+          try {
+            const data = JSON.parse(loginPermissions);
+            if (data?.permissions && Array.isArray(data.permissions) && data.permissions.length > 0) {
+              this.permissionService.setPermissionsFromLogin(data.permissions, data.user);
+              localStorage.removeItem('loginPermissions');
+              this.cdr.detectChanges();
+              console.log('✅ Restored permissions from loginPermissions cache');
+            }
+          } catch (e) {
+            console.warn('Error parsing loginPermissions fallback:', e);
+          }
+        }
         clearInterval(checkPermissionsInterval);
       }
     }, 500);
@@ -95,7 +110,8 @@ export class PagesComponent implements OnInit {
     console.log('User object from auth service:', user);
     
     if (user) {
-      const roleName = user.roleName || 
+      const roleName = user.role ||
+                      user.roleName || 
                       user.rolename || 
                       user.role_name || 
                       user.userrolename || 

@@ -15,6 +15,10 @@ export class CityService {
 
   constructor(private http:HttpClient) { }
 
+  getDetailsById(cityid: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/city/details/${cityid}`);
+  }
+
   getCityDetails():Observable<any>{
     return this.http.get(`${this.apiUrl}/city/list`);
   

@@ -17,6 +17,10 @@ export class AccountService {
     return this.http.get(`${this.apiUrl}/account/${accountId}`);
   }
 
+  getDetailsById(accountid: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/account/details/${accountid}`);
+  }
+
   getAccountOrderby() {
     return this.http.get(`${this.apiUrl}/account/accountorderby`);
   }

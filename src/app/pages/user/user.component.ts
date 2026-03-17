@@ -1,10 +1,11 @@
-import { Component, ElementRef, OnInit, ViewChild  } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, ViewChild  } from '@angular/core';
 import { UserService } from '../service/user.service';
 import { InstanceService } from '../service/instance.service';
 import { UserroleService } from '../service/userrole.service';
 import { AuthService } from '../service/auth.service';
 import { PermissionService } from '../service/permission.service';
 import { FormBuilder, FormGroup, Validators  } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
@@ -37,6 +38,8 @@ export class UserComponent implements OnInit {
     activeUser: number = 0;
     deactiveUser: number = 0;
     private apiUrl = environment.apiUrl;
+    editingUserId: number | null = null;
+    errorMessage = '';
 
     constructor(
       private userservice: UserService,
@@ -45,17 +48,17 @@ export class UserComponent implements OnInit {
       private authService: AuthService,
       private permissionService: PermissionService,
       private fromBuilder: FormBuilder,
-      private http: HttpClient
+      private http: HttpClient,
+      private cdr: ChangeDetectorRef
     ) {}
 
 
   ngOnInit(): void {
     const accountId = this.authService.getAccountId() ?? 0;
-    const instanceId = this.authService.getInstanceId() ?? 0;
     const userId = this.authService.getUserId() ?? 1;
     this.userForm = this.fromBuilder.group({
       username: [""],
-      usermobile: ["", Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$")],
+      usermobile: ["", [Validators.required, Validators.pattern("^((\\+91-?)|0)?[0-9]{10}$")]],
       useremail: [""],
       userpassword: [""],
       verifypassword: [""],
@@ -76,7 +79,7 @@ export class UserComponent implements OnInit {
       createdby: [userId],
       updatedby: [userId],
       accountid: [accountId],
-      instanceid: [instanceId],
+      instanceid: [''],
       cityid: [1],
       userisactive: ["true"],
     });
@@ -100,23 +103,71 @@ export class UserComponent implements OnInit {
   }
 
   createUser(): void {
+    this.errorMessage = '';
+    if (!this.userForm.valid) {
+      this.errorMessage = 'Please fill all required fields (User Mobile, City).';
+      this.cdr.detectChanges();
+      return;
+    }
     const raw = this.userForm.getRawValue();
-    const roleId = raw.userroleid != null && raw.userroleid !== '' ? Number(raw.userroleid) : null;
-    const selectedRole = roleId != null ? this.userroleDropdownItems.find((r: any) => Number(r.userroleid) === roleId) : null;
-    const payload = {
+    const userrolename = raw.userrole != null && raw.userrole !== '' ? String(raw.userrole).trim() : null;
+    const rawRoleId = raw.userroleid != null && raw.userroleid !== '' ? Number(raw.userroleid) : null;
+    let selectedRole = userrolename
+      ? this.userroleDropdownItems.find((r: any) => this.toRoleName(r) === userrolename)
+      : null;
+    if (!selectedRole && rawRoleId != null) {
+      selectedRole = this.userroleDropdownItems.find((r: any) => this.toRoleId(r) === rawRoleId);
+    }
+    const roleId = selectedRole ? this.toRoleId(selectedRole) : rawRoleId;
+    const instanceId = raw.instanceid != null && raw.instanceid !== '' ? Number(raw.instanceid) : null;
+    const selectedInstance = instanceId != null ? this.instanceList.find((i: any) => Number(i.instanceid) === instanceId) : null;
+    if (!this.isEditMode && (!selectedInstance || !instanceId)) {
+      this.errorMessage = 'Please select an Instance.';
+      this.cdr.detectChanges();
+      return;
+    }
+    if (!roleId || !selectedRole) {
+      this.errorMessage = 'Please select a User Role.';
+      this.cdr.detectChanges();
+      return;
+    }
+    const payload: any = {
       ...raw,
-      userrole: selectedRole ? selectedRole.userrolename : (raw.userrole || ''),
-      userroleid: roleId ?? raw.userroleid,
+      userrole: this.toRoleName(selectedRole),
+      userroleid: roleId,
       userisactive: raw.userisactive == null || raw.userisactive === '' ? 'true' : raw.userisactive,
+      accountid: selectedInstance ? selectedInstance.accountid : (raw.accountid ?? 0),
+      instanceid: selectedInstance ? selectedInstance.instanceid : (instanceId ?? raw.instanceid ?? 0),
     };
-    delete (payload as any).verifypassword;
-    this.userservice.addUser(payload).subscribe(data => {
-      if (data) {
-        this.getUserDetails();
-        this.restuserForm();
-      }
-      console.log('User Details:', data);
-    });
+    delete payload.verifypassword;
+
+    if (this.isEditMode && this.editingUserId != null) {
+      payload.userid = this.editingUserId;
+      payload.updateddate = new Date();
+      if (!payload.userpassword) delete payload.userpassword; // Don't overwrite password when empty
+      payload.userroleid = roleId;
+      this.userservice.updateUser(payload).subscribe({
+        next: (data) => {
+          this.getUserDetails();
+          this.restuserForm();
+        },
+        error: (err) => {
+          this.errorMessage = err?.error?.message || err?.message || 'Error updating user. Please try again.';
+          this.cdr.detectChanges();
+        }
+      });
+    } else {
+      this.userservice.addUser(payload).subscribe({
+        next: (data) => {
+          this.getUserDetails();
+          this.restuserForm();
+        },
+        error: (err) => {
+          this.errorMessage = err?.error?.message || err?.message || 'Error adding user. Please try again.';
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   private byAccountId<T extends { accountid?: number; accountId?: number }>(list: T[], accountId: number): T[] {
@@ -171,6 +222,14 @@ export class UserComponent implements OnInit {
     });
   }
 
+  private toRoleId(r: any): number | null {
+    const v = r?.userroleid ?? r?.userroleId;
+    return v != null && v !== '' ? Number(v) : null;
+  }
+  private toRoleName(r: any): string {
+    return (r?.userrolename ?? r?.userroleName ?? '').trim();
+  }
+
   loadUserroleList(): void {
     this.userroleService.getDropdownItems().subscribe({
       next: (list) => {
@@ -210,31 +269,120 @@ export class UserComponent implements OnInit {
     console.log('Selected City',selectedValue)
     if (selectedItem) {
       this.userForm.patchValue({ 
-        cityid: selectedItem.cityId ,
-      companystate:selectedItem.citystate,
-    companycountry:selectedItem.citycountry}); // Update cityId in the form
-      console.log('Selected City ID:', selectedItem.cityId);
+        cityid: selectedItem.cityid ?? selectedItem.cityId,
+        userstate: selectedItem.citystate,
+        usercountry: selectedItem.citycountry,
+      });
+    }
+  }
+
+  onRoleSelectionChange(event: Event): void {
+    const userrolename = (event.target as HTMLSelectElement)?.value?.trim?.() ?? '';
+    const selectedRole = this.userroleDropdownItems.find((r: any) => this.toRoleName(r) === userrolename);
+    if (selectedRole) {
+      const id = this.toRoleId(selectedRole);
+      this.userForm.patchValue({ userroleid: id != null ? id : '' });
     }
   }
   editItem(item: any): void {
-    console.log("Editing:", item);
+    const row = item?.data ?? item;
+    const userid = row?.userid ?? row?.userId ?? (typeof row === 'object' ? row?.userid : null);
+    if (!userid) return;
+    this.editingUserId = Number(userid);
     this.isFormOpen = true;
     this.isEditMode = true;
-    const userisactive = item.userisactive === true || item.userisactive === 'true' || item.userisactive === 1 ? 'true' : 'false';
-    this.userForm.patchValue({ ...item, userisactive });
+    this.loadInstanceList();
+    forkJoin({
+      user: this.userservice.getUserDetailsById(Number(userid)),
+      roles: this.userroleService.getDropdownItems()
+    }).subscribe({
+      next: ({ user: row, roles }) => {
+        if (!row || typeof row !== 'object') return;
+        const userrolenameFromApi = (row.userrole2?.userrolename ?? row.userrole ?? '').toString().trim();
+        let roleId = this.toRoleId(row.userrole2) ?? this.toRoleId(row);
+        const instanceidRaw = row.instanceid ?? row.instance?.instanceid ?? null;
+        const userisactive = row.userisactive === true || row.userisactive === 'true' || row.userisactive === 1 ? 'true' : 'false';
+        const roleList = roles || [];
+        const activeRoles = roleList.filter(
+          (r: any) => r.userroleisactive === true || r.userroleisactive === 'true' || r.userroleisactive === 1
+        );
+        if (roleId == null && userrolenameFromApi) {
+          const matched = activeRoles.find((r: any) => this.toRoleName(r) === userrolenameFromApi);
+          roleId = matched ? this.toRoleId(matched) : null;
+        }
+        const roleInList = roleId != null && activeRoles.some((r: any) => this.toRoleId(r) === roleId);
+        const roleNameInList = activeRoles.some((r: any) => this.toRoleName(r) === userrolenameFromApi);
+        if (roleId != null && row.userrole2 && !roleInList) {
+          const roleFromUser = {
+            userroleid: row.userrole2.userroleid ?? row.userrole2.userroleId,
+            userrolename: this.toRoleName(row.userrole2) || userrolenameFromApi,
+            userroleisactive: true
+          };
+          this.userroleDropdownItems = [roleFromUser, ...activeRoles];
+        } else if (userrolenameFromApi && !roleNameInList) {
+          const roleFromApi = {
+            userroleid: roleId ?? '',
+            userrolename: userrolenameFromApi,
+            userroleisactive: true
+          };
+          this.userroleDropdownItems = [roleFromApi, ...activeRoles];
+        } else {
+          this.userroleDropdownItems = activeRoles;
+        }
+        const patch: Record<string, unknown> = {
+          username: row.username ?? '',
+          usermobile: row.usermobile ?? '',
+          useremail: row.useremail ?? '',
+          useraddress: row.useraddress ?? '',
+          usercity: row.usercity ?? '',
+          userstate: row.userstate ?? '',
+          usercountry: row.usercountry ?? '',
+          userpincode: row.userpincode ?? '',
+          userrole: userrolenameFromApi,
+          userroleid: roleId != null ? roleId : '',
+          instanceid: instanceidRaw != null && instanceidRaw !== '' ? instanceidRaw : '',
+          accountid: row.accountid ?? 0,
+          cityid: row.cityid ?? row.city?.cityid ?? 1,
+          userasaenddate: row.userasaenddate ? new Date(row.userasaenddate) : new Date(),
+          userasaamount: row.userasaamount ?? '',
+          userforgotpwquest: row.userforgotpwquest ?? '',
+          userforgotpwans: row.userforgotpwans ?? '',
+          userpassword: '',
+          verifypassword: '',
+          userisactive,
+          createddate: row.createddate ? new Date(row.createddate) : new Date(),
+          updateddate: row.updateddate ? new Date(row.updateddate) : new Date(),
+          createdby: row.createdby ?? 0,
+          updatedby: row.updatedby ?? 0,
+        };
+        this.userForm.patchValue(patch, { emitEvent: true });
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error fetching user details:', err)
+    });
   }
   
   deleteItem(item: any): void {
-    if (confirm(`Are you sure you want to delete ${item.username}?`)) {
-      this.userservice.deleteUser(item.userid).subscribe({
-        next:() => {
-        console.log("Deleted:", item);
-        this.getUserDetails(); // Refresh grid after delete
-      },
-
-      error: (err: any) => console.error('Error deleting Instance', err),
-    });
-  }
+    const row = item?.data ?? item;
+    const userid = row?.userid ?? row?.userId ?? null;
+    if (!userid) {
+      this.errorMessage = 'Invalid user data. Cannot delete.';
+      this.cdr.detectChanges();
+      return;
+    }
+    if (confirm(`Are you sure you want to delete ${row?.username ?? 'this user'}?`)) {
+      this.userservice.deleteUser(Number(userid)).subscribe({
+        next: () => {
+          this.getUserDetails();
+          this.errorMessage = '';
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          this.errorMessage = err?.error?.message || err?.message || 'Error deleting user. Please try again.';
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   onExporting(e: any) {
@@ -256,21 +404,50 @@ export class UserComponent implements OnInit {
    }
 
   toggleForm(): void {
+    this.errorMessage = '';
+    this.editingUserId = null;
     this.isFormOpen = true;
-    if (!this.isEditMode) {
+    this.isEditMode = false; // Add button always opens in add mode
       this.loadInstanceList();
       this.loadUserroleList();
-    }
+      // Full reset for add mode, then set only required defaults
+      this.userForm.reset();
+      const accountId = this.authService.getAccountId() ?? 0;
+      const userId = this.authService.getUserId() ?? 1;
+      this.userForm.patchValue({
+        username: '',
+        userpassword: '',
+        verifypassword: '',
+        userrole: '',
+        userroleid: '',
+        instanceid: '',
+        useraddress: '',
+        usercity: '',
+        userstate: '',
+        usercountry: '',
+        userpincode: '',
+        usermobile: '',
+        useremail: '',
+        cityid: 1,
+        accountid: accountId,
+        createdby: userId,
+        updatedby: userId,
+        userisactive: 'true',
+        createddate: new Date(),
+        updateddate: new Date(),
+      });
   }
 
   restuserForm(): void {
+    this.errorMessage = '';
+    this.editingUserId = null;
     this.isFormOpen = false;
     this.isEditMode = false;
     this.userForm.reset();
     const accountId = this.authService.getAccountId() ?? 0;
-    const instanceId = this.authService.getInstanceId() ?? 0;
-    this.userForm.patchValue({
-      instanceid: instanceId,
+      this.userForm.patchValue({
+        instanceid: '',
+        userroleid: '',
       cityid: 1,
       accountid: accountId,
       userisactive: 'true',

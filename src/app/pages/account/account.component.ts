@@ -250,6 +250,15 @@ export class AccountComponent implements OnInit {
       });
       
       if (this.isEditMode) {
+        // Ensure cityid is set from selected city when companycity has a value
+        const companycity = this.accountForm.get('companycity')?.value;
+        if (companycity && this.dropdownItems?.length) {
+          const selected = this.dropdownItems.find((item) => item.cityname === companycity);
+          if (selected) {
+            const cityid = selected.cityid ?? selected.cityId ?? 1;
+            this.accountForm.patchValue({ cityid });
+          }
+        }
         const formData = { ...this.accountForm.value };
         // Ensure accountid is included in the update
         if (!formData.accountid || formData.accountid === 0) {
@@ -300,6 +309,16 @@ export class AccountComponent implements OnInit {
   createAccount(): void {
     this.errorMessage = '';
     
+    // Ensure cityid is set from selected city when companycity has a value
+    const companycity = this.accountForm.get('companycity')?.value;
+    if (companycity && this.dropdownItems?.length) {
+      const selected = this.dropdownItems.find((item) => item.cityname === companycity);
+      if (selected) {
+        const cityid = selected.cityid ?? selected.cityId ?? 1;
+        this.accountForm.patchValue({ cityid });
+      }
+    }
+
     // Ensure createdby and updatedby are set to current user ID
     this.accountForm.patchValue({
       createdby: this.currentUserId,
@@ -344,6 +363,7 @@ export class AccountComponent implements OnInit {
   }
 
   getAccountDetails(): void {
+    // Super Admin: backend returns all accounts; others get only their account (backend enforces scope)
     const isSuperAdmin = this.permissionService.isSuperAdmin();
     const accountId = isSuperAdmin ? null : this.authService.getAccountId();
     this.accountservice.getAccountDetails().subscribe({
@@ -384,63 +404,62 @@ export class AccountComponent implements OnInit {
     console.log('Selected City Name:', selectedValue);
     const selectedItem = this.dropdownItems.find((item) => item.cityname === selectedValue);
     if (selectedItem) {
+      const cityid = selectedItem.cityid ?? selectedItem.cityId ?? 1;
       this.accountForm.patchValue({
-        cityid: selectedItem.cityId,
-        companystate: selectedItem.citystate,
-        companycountry: selectedItem.citycountry
+        cityid,
+        companystate: selectedItem.citystate ?? selectedItem.cityState ?? '',
+        companycountry: selectedItem.citycountry ?? selectedItem.cityCountry ?? ''
       });
-      console.log('Selected City ID:', selectedItem.cityId);
+      console.log('Selected City ID:', cityid);
     }
   }
 
   editItem(item: any): void {
-    console.log('Editing item:', item);
-    this.isFormOpen = true;
-    this.isEditMode = true;
-    this.errorMessage = '';
-    
-    if (!item || !item.accountid) {
-      console.error('Invalid item data for editing:', item);
+    const row = item?.data ?? item;
+    const accountid = row?.accountid ?? row?.accountId ?? (row ? row.accountid : null);
+    if (!accountid) {
       this.errorMessage = 'Invalid account data. Cannot edit.';
       return;
     }
-    
-    // Set accountid first before patching other values
-    // This ensures validators have the correct accountid to exclude from duplicate checks
-    this.accountForm.patchValue({
-      accountid: item.accountid
-    }, { emitEvent: false });
-    
-    // Now patch all other values
-    this.accountForm.patchValue({
-      companyname: item.companyname || '',
-      ownername: item.ownername || '',
-      ownermobile: item.ownermobile || '',
-      owneremail: item.owneremail || '',
-      companyaddress: item.companyaddress || '',
-      companycity: item.companycity || '',
-      companystate: item.companystate || '',
-      companycountry: item.companycountry || '',
-      companypincode: item.companypincode || '',
-      licensecount: item.licensecount || '',
-      accountimage: item.accountimage || null,
-      isactive: item.isactive === true || item.isactive === 'true' || item.isactive === 1 ? 'true' : 'false',
-      createddate: item.createddate || new Date(),
-      updateddate: new Date(),
-      createdby: item.createdby || 1,
-      updatedby: item.updatedby || 1,
-      cityid: item.cityid || 1
-    }, { emitEvent: false });
-    this.imagePreview = item.accountimage || null;
-    
-    console.log('Form values after patching:', this.accountForm.value);
-    console.log('Form valid:', this.accountForm.valid);
-    
-    // Mark form as untouched initially (user hasn't modified it yet)
-    // Only mark as touched if there are validation errors
-    if (this.accountForm.invalid) {
-      this.markFormGroupTouched();
-    }
+    this.isFormOpen = true;
+    this.isEditMode = true;
+    this.errorMessage = '';
+    this.accountservice.getDetailsById(accountid).subscribe({
+      next: (r) => {
+        if (!r) return;
+        this.accountForm.patchValue({
+          accountid: r.accountid
+        }, { emitEvent: false });
+        const cityid = r.cityid ?? r.city?.cityid ?? r.city?.cityId ?? 1;
+        this.accountForm.patchValue({
+          companyname: r.companyname || '',
+          ownername: r.ownername || '',
+          ownermobile: r.ownermobile || '',
+          owneremail: r.owneremail || '',
+          companyaddress: r.companyaddress || '',
+          companycity: r.companycity || '',
+          companystate: r.companystate || '',
+          companycountry: r.companycountry || '',
+          companypincode: r.companypincode || '',
+          licensecount: r.licensecount || '',
+          accountimage: r.accountimage || null,
+          isactive: r.isactive === true || r.isactive === 'true' || r.isactive === 1 ? 'true' : 'false',
+          createddate: r.createddate || new Date(),
+          updateddate: new Date(),
+          createdby: r.createdby || 1,
+          updatedby: r.updatedby || 1,
+          cityid
+        }, { emitEvent: false });
+        this.imagePreview = r.accountimage || null;
+        if (this.accountForm.invalid) {
+          this.markFormGroupTouched();
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching account details:', err);
+        this.errorMessage = 'Error fetching account details. Please try again.';
+      }
+    });
   }
 
   deleteItem(item: any): void {

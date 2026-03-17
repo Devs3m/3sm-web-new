@@ -54,13 +54,17 @@ export class SaleseditComponent implements OnInit {
     this.initializeForm();
     this.loadProducts();
 
-    const invoicenoParam = this.route.snapshot.paramMap.get('invoiceno');
-    if (invoicenoParam && !isNaN(+invoicenoParam) && +invoicenoParam > 0) {
-      this.invoiceno = +invoicenoParam;
-      this.loadSalesSummaryWithCustomers(this.invoiceno);
-    } else {
-      this.errorMessage = 'Invalid invoice number. Cannot edit.';
-    }
+    this.route.paramMap.subscribe((params) => {
+      const invoicenoParam = params.get('invoiceno');
+      if (invoicenoParam && !isNaN(+invoicenoParam) && +invoicenoParam > 0) {
+        this.invoiceno = +invoicenoParam;
+        this.errorMessage = '';
+        this.loadSalesSummaryWithCustomers(this.invoiceno);
+      } else {
+        this.invoiceno = null;
+        this.errorMessage = invoicenoParam ? 'Invalid invoice number. Cannot edit.' : 'Invoice number is missing.';
+      }
+    });
   }
 
   private loadProducts(): void {
@@ -340,9 +344,14 @@ export class SaleseditComponent implements OnInit {
   /** Load summary first, then load customer list (needed for dropdown + address enrichment) */
   private loadSalesSummaryWithCustomers(invoiceno: number): void {
     this.isLoading = true;
+    this.errorMessage = '';
     this.salesService.getSalesSummaryByInvoice(invoiceno).subscribe({
       next: (summary: any) => {
         this.isLoading = false;
+        if (summary == null) {
+          this.errorMessage = 'Invoice not found.';
+          return;
+        }
         this.populateFormFromSummary(summary, invoiceno);
         // Load customer list for the dropdown; also use it to enrich missing address
         this.salesService.getCustomers().pipe(catchError(() => of([]))).subscribe({
@@ -388,7 +397,9 @@ export class SaleseditComponent implements OnInit {
   }
 
   private populateFormFromSummary(data: any, invoiceno: number): void {
+    if (data == null) return;
     const s = data?.summary ?? data;
+    if (s == null) return;
     const details =
       data?.details ?? data?.items ?? data?.salesdetails ?? data?.salesdetail ??
       data?.sales_details ?? s?.details ?? s?.items ?? s?.salesdetails ??

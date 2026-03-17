@@ -168,33 +168,43 @@ export class CustomerComponent implements OnInit {
   }
 
   editItem(item: any): void {
-    if (!item || !item.customerid) {
+    const row = item?.data ?? item;
+    const customerid = row?.customerid ?? row?.customerId ?? (row ? row.customerid : null);
+    if (!customerid) {
       this.errorMessage = 'Invalid customer data. Cannot edit.';
       return;
     }
     this.isFormOpen = true;
     this.isEditMode = true;
     this.errorMessage = '';
-
-    this.customerForm.patchValue({
-      customerid: item.customerid,
-      customername: item.customername || '',
-      customermobile: item.customermobile || '',
-      customeremail: item.customeremail || '',
-      customeraddress: item.customeraddress || '',
-      customercity: item.customercity || '',
-      customerstate: item.customerstate || '',
-      customercountry: item.customercountry || '',
-      customerpincode: item.customerpincode || '',
-      accountid: item.accountid ?? this.authService.getAccountId() ?? 1,
-      instanceid: item.instanceid ?? this.authService.getInstanceId() ?? 1,
-      cityid: item.cityid || 1,
-      isactive: item.isactive === true || item.isactive === 'true' || item.isactive === 1 ? 'true' : 'false',
-      createddate: item.createddate || new Date(),
-      updateddate: new Date(),
-      createdby: item.createdby || 1,
-      updatedby: this.currentUserId
-    }, { emitEvent: false });
+    this.customerService.getDetailsById(customerid).subscribe({
+      next: (r) => {
+        if (!r) return;
+        this.customerForm.patchValue({
+          customerid: r.customerid,
+          customername: r.customername || '',
+          customermobile: r.customermobile || '',
+          customeremail: r.customeremail || '',
+          customeraddress: r.customeraddress || '',
+          customercity: r.customercity || '',
+          customerstate: r.customerstate || '',
+          customercountry: r.customercountry || '',
+          customerpincode: r.customerpincode || '',
+          accountid: r.accountid ?? this.authService.getAccountId() ?? 1,
+          instanceid: r.instanceid ?? this.authService.getInstanceId() ?? 1,
+          cityid: r.cityid || 1,
+          isactive: r.isactive === true || r.isactive === 'true' || r.isactive === 1 ? 'true' : 'false',
+          createddate: r.createddate || new Date(),
+          updateddate: new Date(),
+          createdby: r.createdby || 1,
+          updatedby: this.currentUserId
+        }, { emitEvent: false });
+      },
+      error: (err) => {
+        console.error('Error fetching customer details:', err);
+        this.errorMessage = 'Error fetching customer details. Please try again.';
+      }
+    });
   }
 
   deleteItem(item: any): void {

@@ -70,31 +70,53 @@ export class AuthService {
     return token ? !helper.isTokenExpired(token) : false;
   }
 
-  // Get logged-in user data
+  // Get logged-in user data (merges JWT with userData so roleId/role are never lost)
   getUser() {
     const token = localStorage.getItem('token');
     if (!token) return null;
-    
+
     const decodedToken = new JwtHelperService().decodeToken(token);
-    
-    // If token doesn't have user info, try to get from localStorage
-    if (!decodedToken || Object.keys(decodedToken).length <= 2) {
-      const storedUserData = localStorage.getItem('userData');
-      if (storedUserData) {
-        try {
-          return JSON.parse(storedUserData);
-        } catch (e) {
-        }
-      }
-      
-      // Fallback: create user object from stored email
-      const userEmail = localStorage.getItem('userEmail');
-      if (userEmail) {
-        return { email: userEmail };
+    const storedUserData = localStorage.getItem('userData');
+    let userData: Record<string, unknown> | null = null;
+    if (storedUserData) {
+      try {
+        userData = JSON.parse(storedUserData);
+      } catch {
+        /* ignore */
       }
     }
-    
-    return decodedToken;
+
+    // If token doesn't have user info, prefer userData entirely
+    if (!decodedToken || Object.keys(decodedToken).length <= 2) {
+      if (userData) return userData;
+      const userEmail = localStorage.getItem('userEmail');
+      if (userEmail) return { email: userEmail };
+      return null;
+    }
+
+    // Merge: use JWT as base, overlay userData for missing/null critical fields
+    const merged = { ...decodedToken };
+    if (userData) {
+      const keys = ['id', 'userId', 'roleId', 'role', 'roleName', 'email', 'username', 'accountid', 'instanceid'];
+      for (const k of keys) {
+        const jv = (merged as Record<string, unknown>)[k];
+        const uv = (userData as Record<string, unknown>)[k];
+        if ((jv === undefined || jv === null || jv === '') && uv !== undefined && uv !== null && uv !== '') {
+          (merged as Record<string, unknown>)[k] = uv;
+        }
+      }
+      // Also support roleid/userroleid (backend may use different casing)
+      const ud = userData as Record<string, unknown>;
+      const roleId = merged.roleId ?? merged.roleid ?? ud['roleId'] ?? ud['roleid'] ?? ud['userroleid'];
+      if (roleId !== undefined && roleId !== null) merged.roleId = roleId;
+      const uid = merged.userId ?? merged.userid ?? merged.id ?? merged.sub ?? ud['id'] ?? ud['userId'] ?? ud['userid'];
+      if (uid !== undefined && uid !== null) {
+        merged.userId = uid;
+        merged.userid = uid;
+        merged.id = uid;
+      }
+    }
+    return merged;
   }
 
   // Get account ID from logged-in user (from JWT token)

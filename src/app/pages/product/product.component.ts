@@ -300,73 +300,50 @@ export class ProductComponent implements OnInit {
     }
   }
   editItem(item: any): void {
-    console.log("Editing:", item);
-    this.isFormOpen = true;
-    this.isEditMode = true;
-    this.errorMessage = '';
-    
-    // Get the productid first
-    const productId = item.productid || item.productId;
-    
+    const row = item?.data ?? item;
+    const productId = row?.productid ?? row?.productId ?? (typeof row === 'object' ? row?.productid : null);
     if (!productId || productId === 0) {
-      console.error('Invalid product ID for editing:', productId);
       this.errorMessage = 'Invalid product data. Cannot edit.';
       return;
     }
-    
-    // Handle productisactive conversion
-    const isActive = item.productisactive !== undefined 
-      ? (item.productisactive === true || item.productisactive === 'true' || item.productisactive === 1)
-      : true;
-    
-    // Convert gstid and taxid to numbers to match dropdown option values
-    const gstId = item.gstid ? Number(item.gstid) : null;
-    const taxId = item.taxid ? Number(item.taxid) : null;
-    
-    console.log('Editing product - GST ID:', gstId, 'Type:', typeof gstId);
-    console.log('Available GST items:', this.gstDropdownItems.map(g => ({ id: g.gstid, type: typeof g.gstid })));
-    
-    // Patch all form values, ensuring productid is preserved
-    this.productForm.patchValue({
-      ...item,
-      productid: productId, // Explicitly set productid again to ensure it's not overwritten
-      productisactive: isActive,
-      gstid: gstId,
-      taxid: taxId
-    }, { emitEvent: false });
-    
-    // Use setTimeout to ensure dropdown is ready and value is set correctly
-    setTimeout(() => {
-      // Verify the gstid matches an option in the dropdown
-      if (gstId !== null) {
-        const matchingGst = this.gstDropdownItems.find(g => Number(g.gstid) === Number(gstId));
-        if (matchingGst) {
-          this.productForm.patchValue({
-            gstid: Number(matchingGst.gstid)
-          }, { emitEvent: false });
-          console.log('GST ID matched and set:', Number(matchingGst.gstid));
-        } else {
-          console.warn('GST ID not found in dropdown:', gstId);
-        }
+    this.isFormOpen = true;
+    this.isEditMode = true;
+    this.errorMessage = '';
+    this.productservice.getDetailsById(productId).subscribe({
+      next: (r) => {
+        if (!r) return;
+        const isActive = r.productisactive !== undefined 
+          ? (r.productisactive === true || r.productisactive === 'true' || r.productisactive === 1)
+          : true;
+        const gstId = r.gstid ? Number(r.gstid) : null;
+        const taxId = r.taxid ? Number(r.taxid) : null;
+        this.productForm.patchValue({
+          ...r,
+          productid: productId,
+          productisactive: isActive,
+          gstid: gstId,
+          taxid: taxId
+        }, { emitEvent: false });
+        setTimeout(() => {
+          if (gstId !== null) {
+            const matchingGst = this.gstDropdownItems.find(g => Number(g.gstid) === Number(gstId));
+            if (matchingGst) {
+              this.productForm.patchValue({ gstid: Number(matchingGst.gstid) }, { emitEvent: false });
+            }
+          }
+          if (taxId !== null) {
+            const matchingTax = this.taxDropdownItems.find(t => Number(t.vatid) === Number(taxId));
+            if (matchingTax) {
+              this.productForm.patchValue({ taxid: Number(matchingTax.vatid) }, { emitEvent: false });
+            }
+          }
+        }, 100);
+      },
+      error: (err) => {
+        console.error('Error fetching product details:', err);
+        this.errorMessage = 'Error fetching product details. Please try again.';
       }
-      
-      // Verify the taxid matches an option in the dropdown
-      if (taxId !== null) {
-        const matchingTax = this.taxDropdownItems.find(t => Number(t.vatid) === Number(taxId));
-        if (matchingTax) {
-          this.productForm.patchValue({
-            taxid: Number(matchingTax.vatid)
-          }, { emitEvent: false });
-          console.log('Tax ID matched and set:', Number(matchingTax.vatid));
-        } else {
-          console.warn('Tax ID not found in dropdown:', taxId);
-        }
-      }
-    }, 100);
-    
-    console.log('Form values after patching:', this.productForm.value);
-    console.log('Product ID in form:', this.productForm.get('productid')?.value);
-    console.log('GST ID in form:', this.productForm.get('gstid')?.value);
+    });
   }
   
   deleteItem(item: any): void {

@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { PagesComponent } from './pages.component';
 import { RoleGuard } from './gaurds/role.guard';
-// import { HighchartComponent } from './highchart/highchart.component';
 
 const routes: Routes = [
   { path: '', component:PagesComponent,
@@ -92,7 +91,6 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { permission: { resource: 'customer', action: 'view' } }
       },
-      // {path:'highchart',component:HighchartComponent},
     ]
   }
  

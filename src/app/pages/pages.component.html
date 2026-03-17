@@ -118,12 +118,6 @@
          mat-list-item routerLink='vat' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">money</mat-icon>Vat
       </a>
-      
-      <!-- Highchart - show if user has ANY dashboard/highchart permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('dashboard') || permissionService.hasAnyPermissionForResource('highchart')" 
-         mat-list-item routerLink='highchart' href="#" class="aligned-list-item">
-        <mat-icon class="aligned-icon">High Chart</mat-icon>Highcharts
-      </a>
 
     </mat-nav-list>
   </mat-sidenav>
