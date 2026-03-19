@@ -64,6 +64,8 @@ export class SalesComponent implements OnInit {
   errorMessage: string = '';
   currentUserId: number = 1;
   invoiceNumber: string = '';
+  /** Decode display: same encoding as API (account*1e10+instance*1e6+sequence). Show only sequence in UI. */
+  private static readonly INVOICE_NO_LEGACY_THRESHOLD = 1e6;
   /** When editing a salessummary, the invoiceno being edited (for update API) */
   editingInvoiceno: number | null = null;
 
@@ -110,7 +112,8 @@ export class SalesComponent implements OnInit {
       this.errorMessage = 'Invalid invoice. Cannot download PDF.';
       return;
     }
-    this.salesService.getSalesPrintData(invoiceno).subscribe({
+    const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+    this.salesService.getSalesPrintData(invoiceno, accountId, instanceId).subscribe({
       next: (data: any) => {
         const s = data?.salessummary ?? data?.summary ?? data;
         const details = data?.salesdetails ?? data?.details ?? data?.items ?? data?.salesdetail ?? data?.sales_details ?? s?.salesdetails ?? s?.details ?? s?.items ?? s?.salesdetail ?? s?.sales_details ?? [];
@@ -188,7 +191,7 @@ export class SalesComponent implements OnInit {
     y += 8;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Invoice No: ${invoiceno}`, left, y);
+    doc.text(`Invoice No: ${this.getDisplayInvoiceNo(invoiceno) || invoiceno}`, left, y);
     doc.text(`Date: ${dateStr}`, right - 40, y);
     y += 12;
 
@@ -319,15 +322,20 @@ export class SalesComponent implements OnInit {
     doc.text(`Payment Method: ${summary.paymenttype ?? summary.payment_type ?? '-'}`, left, y);
     doc.text(`Payment Status: ${summary.paymentstatus === true || summary.paymentstatus === 'Paid' ? 'Paid' : (summary.paymentstatus || '-')}`, left, y + 6);
 
-    doc.save(`Invoice-${invoiceno}.pdf`);
+    doc.save(`Invoice-${this.getDisplayInvoiceNo(invoiceno) || invoiceno}.pdf`);
   }
 
   /** Delete from sales summary table */
   deleteSummaryItem(item: any): void {
-    const invoiceno = item?.invoiceno != null ? item.invoiceno : null;
-    if (invoiceno == null) return;
+    const row = item?.data ?? item;
+    const invoiceno = row?.invoiceno != null ? row.invoiceno : (item?.invoiceno != null ? item.invoiceno : null);
+    if (invoiceno == null || invoiceno === 0) {
+      this.errorMessage = 'Invalid invoice number. Cannot delete.';
+      return;
+    }
     if (!confirm('Are you sure you want to delete this sales record?')) return;
-    this.salesService.deleteSalesSummary(invoiceno).subscribe({
+    const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+    this.salesService.deleteSalesSummary(invoiceno, accountId, instanceId).subscribe({
       next: () => {
         this.getSalesSummaryDetails();
         this.getSalesSummaryListData();
@@ -341,7 +349,8 @@ export class SalesComponent implements OnInit {
 
   /** Load one salessummary by invoiceno and populate form (salesadd edit) */
   loadSalesSummaryForEdit(invoiceno: number): void {
-    this.salesService.getSalesSummaryByInvoice(invoiceno).subscribe({
+    const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+    this.salesService.getSalesSummaryByInvoice(invoiceno, accountId, instanceId).subscribe({
       next: (data: any) => {
         this.populateFormFromSummary(data, invoiceno);
         this.enrichCustomerAddressIfNeeded();
@@ -624,16 +633,62 @@ export class SalesComponent implements OnInit {
     this.invoiceNumber = `INV-${year}-${random}`;
   }
 
+  /** For grid: show only sequence (hide account/instance) in Invoice No column. */
+  invoiceNoCellValue = (rowData: any): string => {
+    const v = rowData?.invoiceno ?? rowData?.invoiceNo;
+    return this.getDisplayInvoiceNoSequenceOnly(v);
+  };
+
+  /** Invoice number with only the sequence part (for listing; hides account and instance). */
+  getDisplayInvoiceNoSequenceOnly(invoiceno: number | null | undefined): string {
+    if (invoiceno == null) return '';
+    const n = Number(invoiceno);
+    if (!Number.isFinite(n) || n < 0) return '';
+    const seq = n < SalesComponent.INVOICE_NO_LEGACY_THRESHOLD ? n : (n % 1e6) || 1;
+    return SalesComponent.formatSequencePart(seq);
+  }
+
+  /** Format sequence as 6 digits with comma: 1 → "000,001". */
+  private static formatSequencePart(sequence: number): string {
+    const s = String(Math.max(0, Math.floor(sequence))).padStart(6, '0');
+    return s.length <= 3 ? s : s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  /** Decode stored invoiceno and format as "49,07,000,001" (account, instance 2-digit, sequence 6-digit with comma). */
+  getDisplayInvoiceNo(invoiceno: number | null | undefined): string {
+    if (invoiceno == null) return this.invoiceNumber || '';
+    const n = Number(invoiceno);
+    if (!Number.isFinite(n) || n < 0) return '';
+    const seqPart = SalesComponent.formatSequencePart(n < SalesComponent.INVOICE_NO_LEGACY_THRESHOLD ? n : (n % 1e6) || 1);
+    if (n < SalesComponent.INVOICE_NO_LEGACY_THRESHOLD) return `00,00,${seqPart}`;
+    const instanceId = Math.floor(n / 1e6) % 10000;
+    const accountId = Math.floor(n / 1e10);
+    return `${accountId},${String(instanceId).padStart(2, '0')},${seqPart}`;
+  }
+
+  /** Display value for Invoice No field (sequence only; form still holds encoded value for payload). */
+  get invoiceDisplayValue(): string {
+    const v = this.salesForm?.get('invoiceno')?.value;
+    return this.getDisplayInvoiceNo(v) || this.invoiceNumber || '';
+  }
+
+  /** Current user's account and instance (for scoping invoice get/delete/print when unique per account+instance). */
+  private getCurrentAccountAndInstance(): { accountId: number; instanceId: number } {
+    const user = this.authService.getUser() as any;
+    return {
+      accountId: user?.accountid ?? user?.accountId ?? 1,
+      instanceId: user?.instanceid ?? user?.instanceId ?? 1,
+    };
+  }
+
   /** Load next invoice number from API (GET next-invoice-no) and set on form (sales add) */
   loadNextInvoiceNumber(): void {
-    const user = this.authService.getUser() as any;
-    const accountId = user?.accountid ?? user?.accountId ?? 1;
-    const instanceId = user?.instanceid ?? user?.instanceId ?? 1;
+    const { accountId, instanceId } = this.getCurrentAccountAndInstance();
     this.salesService.getNextInvoiceNo(accountId, instanceId).subscribe({
       next: (res) => {
         if (this.salesForm && res?.nextInvoiceNo != null) {
           this.salesForm.patchValue({ invoiceno: res.nextInvoiceNo }, { emitEvent: false });
-          this.invoiceNumber = String(res.nextInvoiceNo);
+          this.invoiceNumber = this.getDisplayInvoiceNo(res.nextInvoiceNo);
           this.cdr.detectChanges();
         }
       }
@@ -1306,6 +1361,7 @@ export class SalesComponent implements OnInit {
             next: (res) => {
               if (this.salesForm && res?.nextInvoiceNo != null) {
                 this.salesForm.patchValue({ invoiceno: res.nextInvoiceNo }, { emitEvent: false });
+                this.invoiceNumber = this.getDisplayInvoiceNo(res.nextInvoiceNo);
                 this.cdr.detectChanges();
               }
             }

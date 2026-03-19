@@ -27,8 +27,7 @@
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">User Mobile</mat-label>
-            <span style="color:black" matTextPrefix>+91 &nbsp;</span>
-            <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
+            <input maxlength="10" matInput placeholder="Enter 10-digit mobile number" class="mat-input-element custom-placeholder"
             formControlName="usermobile">
             <mat-error *ngIf="userForm.get('usermobile')?.hasError('required') && userForm.get('usermobile')?.touched">
               User Mobile is required
@@ -97,10 +96,9 @@
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">User Role</mat-label>
-            <select matNativeControl formControlName="userrole"
-                    (change)="onRoleSelectionChange($event)">
+            <select matNativeControl formControlName="userroleid">
               <option value="" disabled>Select Role</option>
-              <option *ngFor="let item of userroleDropdownItems" [value]="(item.userrolename || item.userroleName || '')">
+              <option *ngFor="let item of userroleDropdownItems" [value]="(item.userroleid ?? item.userroleId)">
                 {{ item.userrolename || item.userroleName }}
               </option>
             </select>
@@ -184,7 +182,16 @@
         [showBorders]="true" (onExporting)="onExporting($event)"
         title="User" >
 
-        <dxi-column dataField="userid"[allowSorting]="true" [sortOrder]="'asc'"caption="User ID" [width]="130"></dxi-column>
+        <dxi-column
+          dataField="userid"
+          caption="User ID"
+          [width]="130"
+          [allowSorting]="true"
+          [dataType]="'number'"
+          [calculateSortValue]="userIdSortValue"
+          [sortOrder]="'desc'"
+          [sortIndex]="0">
+        </dxi-column>
         <dxi-column dataField="username" caption="User Name"></dxi-column>
         <dxi-column dataField="usermobile" caption="User Mobile" [width]="150"></dxi-column>
         <dxi-column dataField="useremail" caption="User Email" [width]="250"></dxi-column>

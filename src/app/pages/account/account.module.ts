@@ -25,6 +25,6 @@ import { SharedModule } from '../shared/shared.module';
     DxChartModule,
     SharedModule
   ],
-    providers: [InstanceService]
+  providers: [InstanceService]
 })
 export class AccountModule { }

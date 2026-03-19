@@ -17,8 +17,10 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 400px;
   text-align: center;
-  height:600px;
+  height:650px;
   align-items: top;
+  display: flex;
+  flex-direction: column;
   
 }
 
@@ -36,6 +38,11 @@
   font-size: 1.2rem;
   font-weight: normal;
   
+}
+
+.forgot-section {
+  /* Tighten header-to-form spacing in forgot-password steps */
+  margin-top: -1rem;
 }
 
 .form-group {
@@ -82,6 +89,97 @@
   background-color: #202224;
 }
 
+.error-message {
+  color: #c62828;
+  font-size: 0.9rem;
+  margin: 0.5rem 0 1rem;
+  padding: 0.5rem;
+  background-color: rgba(198, 40, 40, 0.08);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.success-message {
+  color: #2e7d32;
+  font-size: 0.9rem;
+  margin: 0.5rem 0 1rem;
+  padding: 0.5rem;
+  background-color: rgba(46, 125, 50, 0.1);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.forgot-link, .back-link {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.forgot-link a, .back-link a {
+  color: #1a5caa;
+  text-decoration: none;
+}
+
+.forgot-link a:hover, .back-link a:hover {
+  text-decoration: underline;
+}
+
+.link-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #1a5caa;
+  cursor: pointer;
+  font: inherit;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.forgot-section .forgot-title {
+  color: #555;
+  font-size: 1.1rem;
+  margin-top: 0.25rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.footer {
+  margin-top: auto; /* keep footer pinned to bottom */
+  padding-top: 0.75rem;
+}
+
+.footer-compact {
+  padding-top: 0.25rem;
+}
+
+.footer-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0; /* no space between label and link */
+  line-height: 1.1;
+}
+
+.footer-label {
+  margin: 0;
+  padding: 0;
+}
+
+.footer-link {
+  margin: 0;
+  padding: 0;
+}
+
+.forgot-question-text {
+  font-weight: 500;
+  color: #333;
+  margin: 0.25rem 0;
+  padding: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
 
 /*@import url(../../styles.css);
 

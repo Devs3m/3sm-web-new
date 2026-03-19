@@ -207,9 +207,24 @@
         [showBorders]="true" (onExporting)="onExporting($event)"
         title="Instance" >
 
-        <dxi-column dataField="instanceid" [allowSorting]="true" [sortOrder]="'asc'"caption="Instance ID" [width]="130"></dxi-column>
+        <dxi-column
+          dataField="instanceid"
+          caption="Instance ID"
+          [width]="130"
+          [allowSorting]="true"
+          [dataType]="'number'"
+          [calculateSortValue]="instanceIdSortValue"
+          [sortOrder]="'desc'"
+          [sortIndex]="0">
+        </dxi-column>
         <dxi-column dataField="instancename" caption="Instance Name"></dxi-column>
-        <dxi-column dataField="accountid" caption="Company Name"></dxi-column>
+        <dxi-column dataField="accountid" caption="Company Name">
+          <dxo-lookup
+            [dataSource]="dropdownAccountItems"
+            valueExpr="accountid"
+            displayExpr="companyname">
+          </dxo-lookup>
+        </dxi-column>
         <dxi-column dataField="ownername" caption="Owner Name"></dxi-column>
         <dxi-column dataField="ownermobile" caption="Owner Mobile" [width]="150"></dxi-column>
         <dxi-column dataField="owneremail" caption="Owner Email" [width]="250"></dxi-column>

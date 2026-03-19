@@ -70,8 +70,17 @@
         title="City" 
         [showBorders]="true" (onExporting)="onExporting($event)">
     
-        <dxi-column dataField="cityid"[allowSorting]="true" [sortOrder]="'asc'"caption="City ID" [width]="130"></dxi-column>
-        <dxi-column dataField="cityname" caption="City Name" [width]="250"></dxi-column>>
+        <dxi-column
+          dataField="cityid"
+          caption="City ID"
+          [width]="130"
+          [allowSorting]="true"
+          [dataType]="'number'"
+          [calculateSortValue]="cityIdSortValue"
+          [sortOrder]="'desc'"
+          [sortIndex]="0">
+        </dxi-column>
+        <dxi-column dataField="cityname" caption="City Name" [width]="250"></dxi-column>
         <dxi-column dataField="createddate" caption="Created Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="250"></dxi-column>
         <dxi-column dataField="updateddate" caption="Updated Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="250"></dxi-column>
         <dxi-column dataField="isactive" caption="Active" [width]="200"></dxi-column>

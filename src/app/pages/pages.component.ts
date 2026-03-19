@@ -104,7 +104,6 @@ export class PagesComponent implements OnInit {
 
   getUserRoleFallback(): void {
     console.log('getUserRoleFallback called');
-    
     // Fallback: try to get from user object
     const user = this.authService.getUser();
     console.log('User object from auth service:', user);
@@ -122,8 +121,6 @@ export class PagesComponent implements OnInit {
       if (roleName && roleName.trim() !== '') {
         this.userRole = roleName;
         console.log('✅ User role set from user object:', this.userRole);
-        // Update permission service with the role name
-        this.updatePermissionServiceRoleName(roleName);
       } else if (user.roleId || user.roleid || user.userroleid || user.userRoleId) {
         // If we have roleId but not role name, fetch it
         const roleId = user.roleId || user.roleid || user.userroleid || user.userRoleId;
@@ -234,17 +231,12 @@ export class PagesComponent implements OnInit {
           } else if (roleName) {
             // If role name is directly in user object
             this.userRole = roleName;
-            // Also update permission service if role name is found
-            this.updatePermissionServiceRoleName(this.userRole);
           } else {
             console.warn('No roleId or roleName found in user object');
             console.log('Available user properties:', Object.keys(user));
             console.log('Full user object:', user);
           }
-          
-          // Store user data for future use
-          localStorage.setItem('userData', JSON.stringify(user));
-          
+
         } else {
           console.warn('User not found in API with email:', email);
         }
@@ -260,7 +252,6 @@ export class PagesComponent implements OnInit {
     if (!roleId) {
       return;
     }
-    
     // Use permission service to get role details
     this.permissionService.getRoleDetails(roleId).subscribe({
       next: (roleDetails: any) => {
@@ -273,8 +264,6 @@ export class PagesComponent implements OnInit {
           if (roleName && roleName.trim() !== '') {
             this.userRole = roleName;
             console.log('✅ Role name fetched from API:', this.userRole);
-            // Update permission service with the role name
-            this.updatePermissionServiceRoleName(roleName);
           }
         }
       },

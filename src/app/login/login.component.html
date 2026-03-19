@@ -9,9 +9,9 @@
     <div class="project-name">
       <h2>Connecting People</h2>
     </div>
-    
-  	<form class="login-form" [formGroup]="loginForm" >
 
+    <!-- Login form -->
+    <form *ngIf="forgotStep === 'login'" class="login-form" [formGroup]="loginForm" (ngSubmit)="login()">
       <div class="form-group">
         <label for="email">Email:</label>
         <input type="email" id="email" class="form-control" formControlName="email" placeholder="Enter your email"
@@ -20,24 +20,83 @@
           Valid email is required
         </small>
       </div>
-      
       <div class="form-group">
         <label for="password">Password:</label>
-          <input type="password" id="password" class="form-control" formControlName="password"
-            placeholder="Enter your password" required />
-          <small *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-            Password is required
-          </small>
+        <input type="password" id="password" class="form-control" formControlName="password"
+          placeholder="Enter your password" required />
+        <small *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Password is required
+        </small>
       </div>
-      
-      <!--Submit Button -->
-      <button type="submit" class="login-button" [disabled]="loginForm.invalid" (click)="login()">Login</button>
-    
+      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+      <button type="submit" class="login-button" [disabled]="loginForm.invalid">Login</button>
+      <p class="forgot-link">
+        <button type="button" class="link-button" (click)="showForgotPassword()">Forgot password?</button>
+      </p>
     </form>
+
+    <!-- Forgot password – step 1: enter email to get question -->
+    <div *ngIf="forgotStep === 'forgot-email'" class="login-form forgot-section">
+      <h3 class="forgot-title">Forgot password</h3>
+      <div class="form-group">
+        <label for="forgot-email">Email:</label>
+        <input type="email" id="forgot-email" class="form-control" [(ngModel)]="forgotEmail"
+          placeholder="Enter your email" />
+      </div>
+      <p *ngIf="forgotErrorMessage" class="error-message">{{ forgotErrorMessage }}</p>
+      <button type="button" class="login-button" (click)="getForgotQuestion()">Get security question</button>
+      <p class="back-link"><button type="button" class="link-button" (click)="backToLogin()">Back to login</button></p>
+    </div>
+
+    <!-- Forgot password – step 2: show question + collect answer only -->
+    <div *ngIf="forgotStep === 'forgot-answer'" class="login-form forgot-section">
+      <h3 class="forgot-title">Security question</h3>
+      <div class="form-group" *ngIf="forgotQuestion">
+        <label>Security question:</label>
+        <p class="forgot-question-text">{{ forgotQuestion }}</p>
+      </div>
+      <form [formGroup]="forgotAnswerForm">
+        <div class="form-group">
+          <label for="forgot-answer">Your answer:</label>
+          <input type="text" id="forgot-answer" class="form-control" formControlName="answer" placeholder="Enter your answer" />
+        </div>
+      </form>
+      <p *ngIf="forgotErrorMessage" class="error-message">{{ forgotErrorMessage }}</p>
+      <button type="button" class="login-button" [disabled]="forgotAnswerForm.invalid" (click)="validateForgotAnswer()">
+        Verify answer
+      </button>
+      <p class="back-link"><button type="button" class="link-button" (click)="backToLogin()">Back to login</button></p>
+    </div>
+
+    <!-- Forgot password – step 3: show change password only after answer is correct -->
+    <div *ngIf="forgotStep === 'forgot-reset'" class="login-form forgot-section">
+      <h3 class="forgot-title">Reset password</h3>
+      <form [formGroup]="forgotResetForm">
+        <div class="form-group">
+          <label for="new-password">New password:</label>
+          <input type="password" id="new-password" class="form-control" formControlName="newPassword"
+            placeholder="Enter new password" />
+        </div>
+        <div class="form-group">
+          <label for="confirm-password">Confirm password:</label>
+          <input type="password" id="confirm-password" class="form-control" formControlName="confirmPassword"
+            placeholder="Confirm new password" />
+          <small *ngIf="forgotResetForm.hasError('passwordMismatch') && forgotResetForm.get('confirmPassword')?.touched">
+            Passwords do not match
+          </small>
+        </div>
+      </form>
+      <p *ngIf="forgotErrorMessage" class="error-message">{{ forgotErrorMessage }}</p>
+      <p *ngIf="forgotSuccessMessage" class="success-message">{{ forgotSuccessMessage }}</p>
+      <button type="button" class="login-button" [disabled]="forgotResetForm.invalid || forgotSuccessMessage"
+        (click)="submitResetPassword()">Change password</button>
+      <p class="back-link"><button type="button" class="link-button" (click)="backToLogin()">Back to login</button></p>
+    </div>
     
-    <div class="footer">
-      <br>
-      <p>Powered By</p> <a href="https://connectsite.in">www.connectsite.in</a>
+    <div class="footer" [class.footer-compact]="forgotStep === 'forgot-answer'">
+      <div class="footer-line">
+        <span class="footer-label">Powered By</span><a class="footer-link" href="https://connectsite.in">www.connectsite.in</a>
+      </div>
     </div>
   </div>
 

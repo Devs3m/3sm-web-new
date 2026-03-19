@@ -10,8 +10,11 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private router: Router) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Skip adding token for login endpoint
-    if (req.url.includes('/auth/login')) {
+    // Skip adding token for public auth endpoints (no auth required)
+    if (req.url.includes('/auth/login') ||
+        req.url.includes('/auth/forgot-password-question') ||
+        req.url.includes('/auth/forgot-password-validate') ||
+        req.url.includes('/auth/forgot-password-reset')) {
       return next.handle(req);
     }
 

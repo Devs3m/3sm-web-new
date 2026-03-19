@@ -31,6 +31,12 @@ export class InstanceComponent implements OnInit {
   activeInstance: number = 0;
   deactiveInstance: number = 0;
   dropdownAccountItems: any[]=[];
+  /** Ensure numeric sorting in DevExtreme when instanceid comes as string/bigint. */
+  instanceIdSortValue = (rowData: any): number => {
+    const v = rowData?.instanceid ?? rowData?.instanceId ?? 0;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
 
   constructor(
     private instanceservice: InstanceService,
@@ -62,7 +68,7 @@ export class InstanceComponent implements OnInit {
       updateddate: [new Date()],
       createdby: [1],
       updatedby: [1],
-      instanceisactive: ["", Validators.required],
+      instanceisactive: ["true", Validators.required],
       instancegstno: [""],
       instancevatno: [""],
       instancefssaino: [""],
@@ -98,9 +104,6 @@ export class InstanceComponent implements OnInit {
         this.createInstance();
       }
       console.log('Select Status:', this.instanceForm.value.instanceisactive);
-      setTimeout(() => {
-        window.location.reload(); // Reloads after 1 second
-      }, 100);
     } else {
       console.error('Form is Invalid');
     }
@@ -134,7 +137,11 @@ export class InstanceComponent implements OnInit {
       next: (apidata: any) => {
         const raw = Array.isArray(apidata) ? apidata : [];
         const filtered = accountId != null ? this.byAccountId(raw, accountId) : raw;
-        this.instance = filtered.sort((a: any, b: any) => b.createddate - a.createddate);
+        this.instance = filtered.sort((a: any, b: any) => {
+          const aId = Number(a?.instanceid ?? a?.instanceId ?? 0);
+          const bId = Number(b?.instanceid ?? b?.instanceId ?? 0);
+          return bId - aId; // descending by instanceid
+        });
         this.apiData = [...this.instance];
         this.totalInstance = filtered.length;
         this.activeInstance = filtered.filter((i: any) => i.instanceisactive === true || i.instanceisactive === 'true' || i.instanceisactive === 1).length;
@@ -148,7 +155,11 @@ export class InstanceComponent implements OnInit {
   getInstanceOrderby(): void {
     this.instanceservice.getInstanceOrderby().subscribe({
       next: (apidata: any) => {
-        this.instance = apidata.sort((a: any, b: any) => b.createddate - a.createddate);
+        this.instance = (Array.isArray(apidata) ? apidata : []).sort((a: any, b: any) => {
+          const aId = Number(a?.instanceid ?? a?.instanceId ?? 0);
+          const bId = Number(b?.instanceid ?? b?.instanceId ?? 0);
+          return bId - aId; // descending by instanceid
+        });
 
         console.log('Sorted Account Orderby Details:', this.instance);
         this.instanceservice.getInstanceOrderby().subscribe((data) => {
@@ -314,7 +325,7 @@ export class InstanceComponent implements OnInit {
       instancecity: '',
       instancestate: '',
       instancecountry: '',
-      instanceisactive: '',
+      instanceisactive: 'true',
       createddate: new Date(),
       updateddate: new Date(),
       instanceid: 0,

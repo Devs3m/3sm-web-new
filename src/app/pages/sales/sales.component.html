@@ -101,7 +101,8 @@
             <div class="invoice-meta-fields">
               <mat-form-field appearance="outline" class="invoice-meta-field">
                 <mat-label>Invoice No.</mat-label>
-                <input matInput formControlName="invoiceno" placeholder="Invoice #">
+                <input matInput [value]="invoiceDisplayValue" readonly placeholder="Invoice #">
+                <input type="hidden" formControlName="invoiceno">
               </mat-form-field>
               <mat-form-field appearance="outline" class="invoice-meta-field">
                 <mat-label>Date</mat-label>
@@ -330,7 +331,7 @@
         title="Sales Summary"
         (onExporting)="onExporting($event)">
         <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx', 'pdf']"></dxo-export>
-        <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150"></dxi-column>
+        <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150" [calculateCellValue]="invoiceNoCellValue"></dxi-column>
         <dxi-column dataField="customername" caption="Customer Name"></dxi-column> 
         <dxi-column dataField="tdisaper" caption="Dis %" [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
         <dxi-column dataField="grandtotal" caption="Grand Total" alignment="right" [width]="130"

@@ -48,12 +48,15 @@ export class GstComponent implements OnInit {
     "chesspercent":[""],
     "createddate":[new Date()],
     "updateddate":[new Date()],
-    "isactive":[""],
+    "isactive":["true"],
     "createdby":[1],
     "updatedby":[1],
     "username":["",Validators.required],
     "userid":[1],
-    })
+    });
+    this.gstForm.get('totalgstpercent')?.valueChanges.subscribe((value) => {
+      this.onTotalGstPercentChange(value);
+    });
     this.getGstDetails();
     this.getDropDownValue();
     {
@@ -69,6 +72,19 @@ export class GstComponent implements OnInit {
     }
 
   }
+  /** When Total GST % is entered: IGST = same; CGST/SGST/UGST = 50% of total each */
+  onTotalGstPercentChange(value: unknown): void {
+    const num = value === '' || value == null ? NaN : Number(value);
+    if (!Number.isFinite(num)) return;
+    const half = num / 2;
+    this.gstForm.patchValue({
+      igstpercent: num,
+      cgstpercent: half,
+      sgstpercent: half,
+      ugstpercent: half
+    }, { emitEvent: false });
+  }
+
   onSubmit():void{
     if(this.gstForm.valid){
       console.log('Select Status:',this.gstForm.value.gstisactive);

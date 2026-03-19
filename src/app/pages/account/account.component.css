@@ -127,8 +127,9 @@ body {
   color:#337ab7;
 }
 ::ng-deep .dx-datagrid .dx-row > td {
- vertical-align: middle !important;
+  vertical-align: middle !important;
 }
+
 .close-btn {
   background: transparent;
   box-shadow: none;

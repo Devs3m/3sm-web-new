@@ -160,7 +160,7 @@ body {
   position: fixed;
   top: 0;
   right: -100%;
-  width: 500px;
+  width: 800px;
   height: 100vh;
   background: white;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
@@ -187,11 +187,24 @@ body {
   margin-bottom: 20px;
   padding-bottom: 15px;
   border-bottom: 2px solid #e0e0e0;
+  flex-wrap: nowrap;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .permission-header h3 {
   margin: 0;
   color: #333;
+  font-size: 1.25rem;
+  white-space: nowrap;
+  flex: 0 1 auto;
+}
+
+.permission-header .close-btn {
+  margin-left: 0;
+  margin-top: 0;
+  flex-shrink: 0;
+  cursor: pointer;
 }
 
 .permission-body {
@@ -211,15 +224,23 @@ body {
   margin-bottom: 10px;
 }
 
-.resource-header h4 {
+.resource-header h4,
+.resource-title {
   margin: 0;
   color: #2196F3;
   font-weight: 600;
+  text-transform: capitalize;
 }
 
 .permission-list {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+.permission-list-cols-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -247,13 +268,35 @@ body {
   cursor: pointer;
 }
 
+.permission-item-text {
+  text-transform: capitalize;
+}
+
+.permission-selected-count {
+  margin-top: 20px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
 .permission-footer {
   display: flex;
   gap: 10px;
   padding-top: 15px;
   border-top: 2px solid #e0e0e0;
+  margin-top: 20px;
+  text-align: center;
 }
 
 .permission-footer button {
-  flex: 1;
+  flex: 0 1 auto;
+}
+
+/* Save button: match user edit form Update button (mat-raised-button primary) */
+.permission-save-btn {
+  padding: 0 24px;
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 36px;
+  line-height: 36px;
 }

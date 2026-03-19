@@ -123,12 +123,6 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field">
-        <mat-label style="color:black">Product Image</mat-label>
-        <input matInput placeholder="Product Image" class="mat-input-element custom-placeholder"
-          formControlName="productimage">
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Product Description</mat-label>
         <input matInput placeholder="Product Description" class="mat-input-element custom-placeholder"
           formControlName="productdescription">
@@ -163,6 +157,29 @@
           Active status is required
         </mat-error>
       </mat-form-field>
+
+      <!-- Product Image Upload (last field) -->
+      <div class="image-upload-field form-field">
+        <label class="image-upload-label">Product Image</label>
+        <div class="image-upload-area" (click)="imageInput.click()">
+          <ng-container *ngIf="!imagePreview">
+            <mat-icon class="upload-icon">add_photo_alternate</mat-icon>
+            <span class="upload-text">Click to upload image</span>
+            <span class="upload-hint">PNG, JPG, GIF up to 2MB</span>
+          </ng-container>
+          <ng-container *ngIf="imagePreview">
+            <img [src]="imagePreview" class="image-preview" alt="Product">
+            <button
+              type="button"
+              class="remove-image-btn"
+              (click)="$event.stopPropagation(); removeImage()"
+              title="Remove image">
+              <mat-icon>close</mat-icon>
+            </button>
+          </ng-container>
+        </div>
+        <input #imageInput type="file" accept="image/*" style="display:none" (change)="onImageSelected($event)">
+      </div>
 
 
       <div class="form-submit">
@@ -213,13 +230,22 @@
     title="Product"
     [showBorders]="true" (onExporting)="onExporting($event)">
 
-      <dxi-column dataField="productid" [allowSorting]="true" [sortOrder]="'asc'" caption="Product ID" [width]="100"></dxi-column>
+      <dxi-column
+        dataField="productid"
+        caption="Product ID"
+        [allowSorting]="true"
+        [dataType]="'number'"
+        [calculateSortValue]="productIdSortValue"
+        [sortOrder]="'desc'"
+        [sortIndex]="0"
+        [width]="100">
+      </dxi-column>
       <dxi-column dataField="productname" caption="Product Name" [width]="200"></dxi-column>
       <dxi-column dataField="producthsncode" caption="HSN Code" [width]="120"></dxi-column>
       <dxi-column dataField="productmanufacturer" caption="Manufacturer" [width]="180"></dxi-column>
       <dxi-column dataField="productpackqty" caption="Packing" [width]="100"></dxi-column>
       <dxi-column dataField="productcategory" caption="Category" [width]="150"></dxi-column>
-      <dxi-column dataField="Sub Category" caption="Sub Category %" [width]="100"></dxi-column>
+      <dxi-column dataField="productsubcategory" caption="Sub Category" [width]="130"></dxi-column>
       <dxi-column dataField="productisactive" caption="Active" [width]="100"></dxi-column>
       <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
 

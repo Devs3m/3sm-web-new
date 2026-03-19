@@ -1,10 +1,10 @@
 import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { exportDataGrid } from 'devextreme/excel_exporter';
 import { AccountService } from '../service/account.service';
 import { AuthService } from '../service/auth.service';
 import { PermissionService } from '../service/permission.service';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
-import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Observable, of } from 'rxjs';
@@ -33,6 +33,14 @@ export class AccountComponent implements OnInit {
   errorMessage: string = '';
   currentUserId: number = 1;
   imagePreview: string | null = null;
+
+  /** Column-wise filter values for PrimeNG table */
+  filterAccountId = '';
+  filterCompanyName = '';
+  filterOwnerName = '';
+  filterOwnerMobile = '';
+  filterOwnerEmail = '';
+  filterIsActive = '';
 
   constructor(
     private accountservice: AccountService,
@@ -478,21 +486,19 @@ export class AccountComponent implements OnInit {
     }
   }
 
-  onExporting(e: any) {
+  onExporting(e: any): void {
     const workbook = new Workbook();
     const worksheet = workbook.addWorksheet('Accounts Data');
-
     exportDataGrid({
       component: e.component,
-      worksheet: worksheet,
+      worksheet,
       autoFilterEnabled: true,
     }).then(() => {
       workbook.xlsx.writeBuffer().then((buffer) => {
-        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        saveAs(blob, "AccountsData.xlsx");
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, 'AccountsData.xlsx');
       });
     });
-
     e.cancel = true;
   }
 

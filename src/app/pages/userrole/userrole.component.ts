@@ -32,6 +32,12 @@ data: { id: number; companyName: string; city: string; isActive: boolean }[] = [
 apiData:any[] =[];
 longText: any;
 totalUserrole:number=0;
+/** Numeric sort for userroleid (string/bigint safe). */
+userroleIdSortValue = (rowData: any): number => {
+  const v = rowData?.userroleid ?? rowData?.userroleId ?? 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
 activeUserrole:number=0;
 deactiveUserrole:number=0;
 selectedRoleId: number = 0;
@@ -120,10 +126,14 @@ constructor(
   getUserroleDetails():void {
     this.userroleservice.getUserroleDetails().subscribe({
       next:(apidata:any) => {
-        this.userrole=apidata.sort((a: any, b: any) => b.createddate - a.createddate);
-        this.userroleservice.getUserroleDetails().subscribe((data) => {
-          this.apiData=data;
+        const raw = Array.isArray(apidata) ? apidata : [];
+        this.userrole = raw.sort((a: any, b: any) => {
+          const aId = this.userroleIdSortValue(a);
+          const bId = this.userroleIdSortValue(b);
+          return bId - aId;
         });
+        this.apiData = [...this.userrole];
+        this.cdr.detectChanges();
       }
     });
   }
@@ -163,17 +173,24 @@ constructor(
       return;
     }
 
-    this.selectedRoleId = item.userroleid;
-    this.selectedRoleName = item.userrolename;
+    const row = item?.data ?? item;
+    const roleId = Number(row?.userroleid ?? row?.userroleId ?? 0);
+    const roleName = row?.userrolename ?? row?.userroleName ?? 'Role';
+
+    this.selectedRoleId = roleId;
+    this.selectedRoleName = roleName;
     this.rolePermissions = [];
     this.isPermissionConfigOpen = true;
     this.cdr.detectChanges();
-    setTimeout(() => this.cdr.detectChanges(), 100);
-    
+
     // First, load all available permissions from backend (these have IDs)
     this.loadAllAvailablePermissions(() => {
-      // After permissions are loaded, load existing role permissions
-      this.loadRolePermissions(item.userroleid);
+      // After permissions are loaded, load existing role permissions so checkboxes show current state
+      if (roleId && !Number.isNaN(roleId)) {
+        this.loadRolePermissions(roleId);
+      } else {
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -193,10 +210,13 @@ constructor(
         }
         this.allAvailablePermissions = permissions;
         
-        // Create lookup map: "resource:action:field" -> Permission with ID
+        // Create lookup map: "resource:action:field" (lowercase) -> Permission with ID (so role permissions resolve)
         this.permissionLookup.clear();
         permissions.forEach(p => {
-          const key = `${p.resource}:${p.action}${p.field ? `:${p.field}` : ''}`;
+          const r = (p.resource ?? '').toString().toLowerCase();
+          const a = (p.action ?? '').toString().toLowerCase();
+          const f = p.field ? `:${(p.field).toString().toLowerCase()}` : '';
+          const key = `${r}:${a}${f}`;
           this.permissionLookup.set(key, p);
         });
         
@@ -237,47 +257,46 @@ constructor(
     this.userroleservice.getRolePermissions(roleId).subscribe({
       next: (response: any) => {
         let permissionsArray: any[] = [];
-        
-        // Handle different response formats
+
+        // Handle different response formats (backend returns { roleId, permissions, count })
         if (Array.isArray(response)) {
           permissionsArray = response;
-        } else if (response && typeof response === 'object' && 'permissions' in response) {
-          permissionsArray = response.permissions || [];
+        } else if (response && typeof response === 'object' && response.permissions) {
+          permissionsArray = Array.isArray(response.permissions) ? response.permissions : [];
         }
-        
-        // Map permissions - backend returns in frontend-friendly format with resource, action, field
-        // Backend automatically parses permissioncode into these fields via transformPermissionToFrontendFormat()
+
+        // Map permissions - backend returns resource, action, field (and permissionname)
+        // Normalize resource/action/field to lowercase so hasPermission matches template items and lookup works
         this.rolePermissions = permissionsArray.map((p: any) => {
-          // Backend already provides resource, action, field in frontend-friendly format
-          // If permission doesn't have ID, try to find it from lookup using resource:action:field
-          let permissionId = p.id || p.permissionid || p.permissionId;
-          if (!permissionId && p.resource && p.action) {
-            const lookupKey = `${p.resource}:${p.action}${p.field ? `:${p.field}` : ''}`;
-            const foundPermission = this.permissionLookup.get(lookupKey);
-            if (foundPermission && foundPermission.id) {
-              permissionId = foundPermission.id;
-            }
+          const resource = (p.resource ?? '').toString().toLowerCase();
+          const action = (p.action ?? '').toString().toLowerCase();
+          const fieldRaw = p.field ?? null;
+          const field = fieldRaw != null ? (fieldRaw).toString().toLowerCase() : null;
+          let permissionId = p.id ?? p.permissionid ?? p.permissionId;
+          if (permissionId == null && resource && action) {
+            const lookupKey = `${resource}:${action}${field ? `:${field}` : ''}`;
+            const found = this.permissionLookup.get(lookupKey);
+            if (found?.id) permissionId = found.id;
           }
-          
-          // Return permission in frontend format (already in this format from backend)
           return {
             id: permissionId,
-            name: p.name || `${p.resource} ${p.action}`,
-            resource: p.resource, // Already parsed from permissioncode by backend
-            action: p.action, // Already parsed from permissioncode by backend
-            field: p.field, // Already parsed from permissioncode by backend
+            name: p.name ?? p.permissionname ?? `${resource} ${action}`.trim(),
+            resource,
+            action,
+            field: fieldRaw,
             description: p.description
           };
         });
         this.cdr.detectChanges();
       },
       error: (err) => {
-        if (err.status === 403) {
+        if (err?.status === 403) {
           alert('Access denied. Only Super Admin can view role permissions.');
           this.closePermissionConfig();
           return;
         }
         this.rolePermissions = [];
+        this.cdr.detectChanges();
       }
     });
   }
@@ -308,13 +327,16 @@ constructor(
   }
 
   hasPermission(permission: Permission): boolean {
-    const hasPerm = this.rolePermissions.some(p => {
-      const resourceMatch = p.resource === permission.resource;
-      const actionMatch = p.action === permission.action;
-      const fieldMatch = !permission.field || !p.field || p.field === permission.field;
+    const res = (permission?.resource ?? '').toString().toLowerCase();
+    const act = (permission?.action ?? '').toString().toLowerCase();
+    const fld = (permission?.field ?? '').toString().toLowerCase();
+    return this.rolePermissions.some(p => {
+      const resourceMatch = (p.resource ?? '').toString().toLowerCase() === res;
+      const actionMatch = (p.action ?? '').toString().toLowerCase() === act;
+      const pField = (p.field ?? '').toString().toLowerCase();
+      const fieldMatch = !fld || !pField || pField === fld;
       return resourceMatch && actionMatch && fieldMatch;
     });
-    return hasPerm;
   }
 
   saveRolePermissions(): void {
@@ -465,8 +487,12 @@ constructor(
   }
   
   deleteItem(item: any): void {
-    if (confirm(`Are you sure you want to delete ${item.userrolename || item.companyname}?`)) {
-      this.userroleservice.deleteUserrole(item.userroleid).subscribe({
+    const row = item?.data ?? item;
+    const id = row?.userroleid ?? row?.userroleId;
+    const name = row?.userrolename ?? row?.userroleName ?? row?.companyname ?? 'this role';
+    if (!id) return;
+    if (confirm(`Are you sure you want to delete ${name}?`)) {
+      this.userroleservice.deleteUserrole(id).subscribe({
         next: () => this.getUserroleDetails(),
         error: () => {}
       });

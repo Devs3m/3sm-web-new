@@ -24,7 +24,16 @@ export class CustomerComponent implements OnInit {
   activeCustomers: number = 0;
   deactiveCustomers: number = 0;
   errorMessage: string = '';
+  /** Shown when delete fails with 409 (customer still referenced by sales, etc.) */
+  deleteCautionMessage: string = '';
   currentUserId: number = 1;
+
+  /** Ensure numeric sorting in DevExtreme when customerid comes as string/bigint. */
+  customerIdSortValue = (rowData: any): number => {
+    const v = rowData?.customerid ?? rowData?.customerId ?? 0;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
 
   constructor(
     private customerService: CustomerService,
@@ -163,6 +172,7 @@ export class CustomerComponent implements OnInit {
     this.isFormOpen = true;
     this.isEditMode = false;
     this.errorMessage = '';
+    this.deleteCautionMessage = '';
     this.getCurrentUserId();
     this.initializeForm();
   }
@@ -177,6 +187,7 @@ export class CustomerComponent implements OnInit {
     this.isFormOpen = true;
     this.isEditMode = true;
     this.errorMessage = '';
+    this.deleteCautionMessage = '';
     this.customerService.getDetailsById(customerid).subscribe({
       next: (r) => {
         if (!r) return;
@@ -208,18 +219,41 @@ export class CustomerComponent implements OnInit {
   }
 
   deleteItem(item: any): void {
-    if (confirm(`Are you sure you want to delete ${item.customername}?`)) {
-      this.customerService.deleteCustomer(item.customerid).subscribe({
+    const row = item?.data ?? item;
+    const id = row?.customerid ?? row?.customerId;
+    const name = row?.customername ?? row?.customerName ?? 'this customer';
+    if (!id && id !== 0) {
+      this.errorMessage = 'Invalid customer data. Cannot delete.';
+      return;
+    }
+    if (confirm(`Are you sure you want to delete ${name}?`)) {
+      this.deleteCautionMessage = '';
+      this.customerService.deleteCustomer(id).subscribe({
         next: () => {
+          this.errorMessage = '';
+          this.deleteCautionMessage = '';
           this.loadCustomers();
           this.loadCounts();
         },
         error: (err) => {
           console.error('Error deleting customer:', err);
-          this.errorMessage = 'Error deleting customer. Please try again.';
+          if (err?.status === 409) {
+            this.deleteCautionMessage =
+              err?.error?.message ??
+              'This customer cannot be deleted because they are linked to sales or other records. Remove or reassign those records first.';
+            this.errorMessage = '';
+          } else {
+            this.deleteCautionMessage = '';
+            this.errorMessage =
+              err?.error?.message ?? err?.message ?? 'Error deleting customer. Please try again.';
+          }
         }
       });
     }
+  }
+
+  dismissDeleteCaution(): void {
+    this.deleteCautionMessage = '';
   }
 
   onSubmit(): void {
@@ -267,6 +301,7 @@ export class CustomerComponent implements OnInit {
     this.isFormOpen = false;
     this.isEditMode = false;
     this.errorMessage = '';
+    this.deleteCautionMessage = '';
     this.getCurrentUserId();
     const accountId = this.authService.getAccountId() ?? 1;
     const instanceId = this.authService.getInstanceId() ?? 1;

@@ -72,7 +72,16 @@
       title="User Role"  
       [showBorders]="true" (onExporting)="onExporting($event)">
   
-      <dxi-column dataField="userroleid"[allowSorting]="true" [sortOrder]="'asc'"caption="Userrole ID" [width]="130"></dxi-column>
+      <dxi-column
+        dataField="userroleid"
+        caption="Userrole ID"
+        [width]="130"
+        [allowSorting]="true"
+        [dataType]="'number'"
+        [calculateSortValue]="userroleIdSortValue"
+        [sortOrder]="'desc'"
+        [sortIndex]="0">
+      </dxi-column>
       <dxi-column dataField="userrolename" caption="Userrole Name" [width]="250"></dxi-column>
       <dxi-column dataField="createddate" caption="Created Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="250"></dxi-column>
       <dxi-column dataField="updateddate" caption="Updated Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="250"></dxi-column>
@@ -103,7 +112,7 @@
          [style.z-index]="isPermissionConfigOpen ? '10000' : 'auto'">
       <div class="permission-config-content">
         <div class="permission-header">
-          <h3>Configure Permissions - {{ selectedRoleName }}</h3>
+          <h3>Configure Permissions</h3>
           <button (click)="closePermissionConfig()" class="close-btn">&times;</button>
         </div>
         
@@ -113,30 +122,30 @@
           </div>
           <div *ngFor="let resource of permissionResourceKeys" class="permission-resource-group">
             <div class="resource-header">
-              <h4 style="text-transform: capitalize; margin: 10px 0;">{{ resource }}</h4>
+              <h4 class="resource-title">{{ resource }}</h4>
               <div>
                 <button mat-button (click)="selectAllPermissions(resource)" style="margin-right: 10px; font-size: 12px;">Select All</button>
                 <button mat-button (click)="deselectAllPermissions(resource)" style="font-size: 12px;">Deselect All</button>
               </div>
             </div>
-            <div class="permission-list">
+            <div class="permission-list permission-list-cols-4">
               <label *ngFor="let permission of permissionTemplates[resource]" 
                      class="permission-item"
                      [class.selected]="hasPermission(permission)">
                 <input type="checkbox" 
                        [checked]="hasPermission(permission)"
                        (change)="togglePermission(permission)">
-                <span>{{ permission.name || permission.resource + ' ' + permission.action }}</span>
+                <span class="permission-item-text">{{ permission.name || permission.resource + ' ' + permission.action }}</span>
               </label>
             </div>
           </div>
-          <div *ngIf="rolePermissions.length > 0" style="margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+          <div *ngIf="rolePermissions.length > 0" class="permission-selected-count">
             <small>Selected: {{ rolePermissions.length }} permission(s)</small>
           </div>
         </div>
         
         <div class="permission-footer">
-          <button mat-raised-button color="primary" (click)="saveRolePermissions()">Save Permissions</button>
+          <button class="permission-save-btn" mat-raised-button color="black" (click)="saveRolePermissions()">Save</button>
           <button mat-button (click)="closePermissionConfig()">Cancel</button>
         </div>
       </div>

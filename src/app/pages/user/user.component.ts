@@ -40,6 +40,12 @@ export class UserComponent implements OnInit {
     private apiUrl = environment.apiUrl;
     editingUserId: number | null = null;
     errorMessage = '';
+    /** Ensure numeric sorting in DevExtreme when userid comes as string/bigint. */
+    userIdSortValue = (rowData: any): number => {
+      const v = rowData?.userid ?? rowData?.userId ?? 0;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
 
     constructor(
       private userservice: UserService,
@@ -276,14 +282,6 @@ export class UserComponent implements OnInit {
     }
   }
 
-  onRoleSelectionChange(event: Event): void {
-    const userrolename = (event.target as HTMLSelectElement)?.value?.trim?.() ?? '';
-    const selectedRole = this.userroleDropdownItems.find((r: any) => this.toRoleName(r) === userrolename);
-    if (selectedRole) {
-      const id = this.toRoleId(selectedRole);
-      this.userForm.patchValue({ userroleid: id != null ? id : '' });
-    }
-  }
   editItem(item: any): void {
     const row = item?.data ?? item;
     const userid = row?.userid ?? row?.userId ?? (typeof row === 'object' ? row?.userid : null);
@@ -298,6 +296,7 @@ export class UserComponent implements OnInit {
     }).subscribe({
       next: ({ user: row, roles }) => {
         if (!row || typeof row !== 'object') return;
+        // Prefer userrole2.userrolename (e.g. SuperAdmin) over top-level userrole (e.g. Administrator)
         const userrolenameFromApi = (row.userrole2?.userrolename ?? row.userrole ?? '').toString().trim();
         let roleId = this.toRoleId(row.userrole2) ?? this.toRoleId(row);
         const instanceidRaw = row.instanceid ?? row.instance?.instanceid ?? null;
@@ -310,22 +309,29 @@ export class UserComponent implements OnInit {
           const matched = activeRoles.find((r: any) => this.toRoleName(r) === userrolenameFromApi);
           roleId = matched ? this.toRoleId(matched) : null;
         }
-        const roleInList = roleId != null && activeRoles.some((r: any) => this.toRoleId(r) === roleId);
-        const roleNameInList = activeRoles.some((r: any) => this.toRoleName(r) === userrolenameFromApi);
-        if (roleId != null && row.userrole2 && !roleInList) {
+        // When API provides userrole2, use its userrolename for display and ensure dropdown shows it (not top-level userrole)
+        if (roleId != null && row.userrole2) {
           const roleFromUser = {
             userroleid: row.userrole2.userroleid ?? row.userrole2.userroleId,
             userrolename: this.toRoleName(row.userrole2) || userrolenameFromApi,
             userroleisactive: true
           };
-          this.userroleDropdownItems = [roleFromUser, ...activeRoles];
-        } else if (userrolenameFromApi && !roleNameInList) {
+          const rest = activeRoles.filter((r: any) => this.toRoleId(r) !== roleId);
+          this.userroleDropdownItems = [roleFromUser, ...rest];
+        } else if (userrolenameFromApi && roleId != null) {
           const roleFromApi = {
-            userroleid: roleId ?? '',
+            userroleid: roleId,
             userrolename: userrolenameFromApi,
             userroleisactive: true
           };
-          this.userroleDropdownItems = [roleFromApi, ...activeRoles];
+          const rest = activeRoles.filter((r: any) => this.toRoleId(r) !== roleId);
+          this.userroleDropdownItems = [roleFromApi, ...rest];
+        } else if (userrolenameFromApi) {
+          const matched = activeRoles.find((r: any) => this.toRoleName(r) === userrolenameFromApi);
+          const roleFromApi = matched
+            ? null
+            : { userroleid: roleId ?? '', userrolename: userrolenameFromApi, userroleisactive: true };
+          this.userroleDropdownItems = roleFromApi ? [roleFromApi, ...activeRoles] : activeRoles;
         } else {
           this.userroleDropdownItems = activeRoles;
         }
@@ -339,7 +345,8 @@ export class UserComponent implements OnInit {
           usercountry: row.usercountry ?? '',
           userpincode: row.userpincode ?? '',
           userrole: userrolenameFromApi,
-          userroleid: roleId != null ? roleId : '',
+          // Native <select> option values are strings; patch as string so selection matches.
+          userroleid: roleId != null ? String(roleId) : '',
           instanceid: instanceidRaw != null && instanceidRaw !== '' ? instanceidRaw : '',
           accountid: row.accountid ?? 0,
           cityid: row.cityid ?? row.city?.cityid ?? 1,

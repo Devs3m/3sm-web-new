@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ProductService } from '../service/product.service';
 import { AuthService } from '../service/auth.service';
 import { PermissionService } from '../service/permission.service';
@@ -36,6 +36,15 @@ export class ProductComponent implements OnInit {
   errorMessage: string = '';
   currentUserId: number = 1; // Default to 1 if user not found
   private apiUrl = environment.apiUrl;
+  @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
+  imagePreview: string | null = null;
+
+  /** Ensure numeric sorting in DevExtreme when productid comes as string/bigint. */
+  productIdSortValue = (rowData: any): number => {
+    const v = rowData?.productid ?? rowData?.productId ?? 0;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
 
   constructor(
     private productservice: ProductService,
@@ -44,7 +53,8 @@ export class ProductComponent implements OnInit {
     private authService: AuthService,
     private permissionService: PermissionService,
     private gstService: GstService,
-    private vatService: VatService
+    private vatService: VatService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -95,6 +105,40 @@ export class ProductComponent implements OnInit {
     this.getDropDownValue();
     this.loadGstDropdown();
     this.loadTaxDropdown();
+  }
+
+  onImageSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage = 'Please select a valid image file.';
+      return;
+    }
+
+    // Keep payload small for base64-in-varchar storage.
+    if (file.size > 2 * 1024 * 1024) {
+      this.errorMessage = 'Image size must be less than 2MB.';
+      return;
+    }
+
+    this.errorMessage = '';
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      this.imagePreview = base64;
+      this.productForm.patchValue({ productimage: base64 });
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeImage(): void {
+    this.imagePreview = null;
+    this.productForm.patchValue({ productimage: '' });
+    if (this.imageInput) {
+      this.imageInput.nativeElement.value = '';
+    }
   }
 
 
@@ -266,7 +310,7 @@ export class ProductComponent implements OnInit {
       next: (apidata: any) => {
         const raw = Array.isArray(apidata) ? apidata : [];
         const filtered = accountId != null ? this.byAccountId(raw, accountId) : raw;
-        this.product = filtered.sort((a: any, b: any) => b.productid - a.productid);
+        this.product = filtered.sort((a: any, b: any) => this.productIdSortValue(b) - this.productIdSortValue(a));
         this.apiData = [...this.product];
         this.totalProduct = filtered.length;
         this.activeProduct = filtered.filter((p: any) => p.productisactive === true || p.productisactive === 'true' || p.productisactive === 1).length;
@@ -312,6 +356,7 @@ export class ProductComponent implements OnInit {
     this.productservice.getDetailsById(productId).subscribe({
       next: (r) => {
         if (!r) return;
+        this.imagePreview = r.productimage || null;
         const isActive = r.productisactive !== undefined 
           ? (r.productisactive === true || r.productisactive === 'true' || r.productisactive === 1)
           : true;
@@ -381,12 +426,15 @@ export class ProductComponent implements OnInit {
   toggleForm(): void {
     this.isFormOpen = true;
     this.isEditMode = false;
+    this.imagePreview = null;
+    this.productForm.patchValue({ productimage: '' }, { emitEvent: false });
   }
 
   restproductForm(): void {
     this.isFormOpen = false;
     this.isEditMode = false;
     this.errorMessage = '';
+    this.imagePreview = null;
     
     // Get current values from logged-in user
     const accountId = this.authService.getAccountId();
@@ -443,7 +491,10 @@ export class ProductComponent implements OnInit {
           const isActive = item.gstisactive === true || item.gstisactive === 'true' || item.gstisactive === 1;
           const hasTotalGst = item.totalgstpercent !== null && item.totalgstpercent !== undefined && item.totalgstpercent !== '';
           return isActive && hasTotalGst;
-        });
+        }).map((item: any) => ({
+          ...item,
+          gstid: item.gstid != null ? Number(item.gstid) : item.gstid
+        }));
         console.log('Loaded GST dropdown items:', this.gstDropdownItems.length);
         console.log('GST Dropdown Items:', this.gstDropdownItems);
         // Log first item to check structure
@@ -464,7 +515,11 @@ export class ProductComponent implements OnInit {
     this.vatService.getVatDetails().subscribe({
       next: (data: any[]) => {
         // Filter only active Tax entries
-        this.taxDropdownItems = (data || []).filter((item: any) => item.vatisactive === true || item.vatisactive === 'true');
+        this.taxDropdownItems = (data || []).filter((item: any) => item.vatisactive === true || item.vatisactive === 'true')
+          .map((item: any) => ({
+            ...item,
+            vatid: item.vatid != null ? Number(item.vatid) : item.vatid
+          }));
         console.log('Loaded Tax dropdown items:', this.taxDropdownItems.length);
       },
       error: (err) => {
@@ -487,7 +542,7 @@ export class ProductComponent implements OnInit {
         // Set both gstid and productgstpercent (total GST) from API
         // Always include productid to preserve it during edit mode
         const patchData: any = {
-          gstid: selectedGst.gstid,
+          gstid: selectedGst.gstid != null ? Number(selectedGst.gstid) : null,
           productgstpercent: selectedGst.totalgstpercent || ''
         };
         
@@ -525,7 +580,7 @@ export class ProductComponent implements OnInit {
         // Preserve productid and other form values when updating Tax
         const currentProductId = this.productForm.get('productid')?.value;
         this.productForm.patchValue({
-          taxid: selectedTax.vatid,
+          taxid: selectedTax.vatid != null ? Number(selectedTax.vatid) : null,
           producttaxpercent: selectedTax.vatpercent || ''
         }, { emitEvent: false });
         // Restore productid if it was set (for edit mode)

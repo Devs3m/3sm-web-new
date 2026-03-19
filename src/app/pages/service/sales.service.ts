@@ -68,13 +68,13 @@ export class SalesService {
 
   /**
    * GET /salessummary/next-invoice-no?accountid=X&instanceid=Y
-   * Returns { nextInvoiceNo: number } (MAX(invoiceno)+1 for that account+instance, or 1 if none).
+   * Returns { nextInvoiceNo: number; displayInvoiceNo?: number } (encoded value + sequence for UI).
    * Use on sales page load to set the default "Invoice #" for the new invoice form.
    */
-  getNextInvoiceNo(accountId: number, instanceId: number): Observable<{ nextInvoiceNo: number }> {
+  getNextInvoiceNo(accountId: number, instanceId: number): Observable<{ nextInvoiceNo: number; displayInvoiceNo?: number }> {
     const params = { accountid: String(accountId), instanceid: String(instanceId) };
-    return this.http.get<{ nextInvoiceNo: number }>(`${this.apiUrl}/salessummary/next-invoice-no`, { params }).pipe(
-      catchError(() => of({ nextInvoiceNo: 1 }))
+    return this.http.get<{ nextInvoiceNo: number; displayInvoiceNo?: number }>(`${this.apiUrl}/salessummary/next-invoice-no`, { params }).pipe(
+      catchError(() => of({ nextInvoiceNo: 1, displayInvoiceNo: 1 }))
     );
   }
 
@@ -83,9 +83,12 @@ export class SalesService {
     return this.http.post<SaveSalessummaryResponse>(`${this.apiUrl}/salessummary/save`, dto);
   }
 
-  /** Get one salessummary by invoiceno (for edit) */
-  getSalesSummaryByInvoice(invoiceno: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/salessummary/edit/${invoiceno}`);
+  /** Get one salessummary by invoiceno (for edit). Pass accountId/instanceId to scope when invoice no is unique per account+instance. */
+  getSalesSummaryByInvoice(invoiceno: number, accountId?: number, instanceId?: number): Observable<any> {
+    const params: Record<string, string> = {};
+    if (accountId != null) params['accountid'] = String(accountId);
+    if (instanceId != null) params['instanceid'] = String(instanceId);
+    return this.http.get(`${this.apiUrl}/salessummary/edit/${invoiceno}`, { params });
   }
 
   /** Update salessummary + salesdetail in one transaction (PUT /salessummary/update) */
@@ -93,14 +96,20 @@ export class SalesService {
     return this.http.put<SaveSalessummaryResponse>(`${this.apiUrl}/salessummary/update`, dto);
   }
 
-  /** Delete salessummary (and cascade salesdetail if DB supports) */
-  deleteSalesSummary(invoiceno: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/salessummary/${invoiceno}`);
+  /** Delete salessummary. Pass accountId/instanceId to scope when invoice no is unique per account+instance. */
+  deleteSalesSummary(invoiceno: number, accountId?: number, instanceId?: number): Observable<any> {
+    const params: Record<string, string> = {};
+    if (accountId != null) params['accountid'] = String(accountId);
+    if (instanceId != null) params['instanceid'] = String(instanceId);
+    return this.http.delete(`${this.apiUrl}/salessummary/salessummarydelete/${invoiceno}`, { params });
   }
 
-  /** GET /salessummary/salesprint/:invoiceno – returns JSON: { salessummary, salesdetails, instance, customer }. */
-  getSalesPrintData(invoiceno: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/salessummary/salesprint/${invoiceno}`);
+  /** GET /salessummary/salesprint/:invoiceno – returns JSON: { salessummary, salesdetails, instance, customer }. Pass accountId/instanceId to scope when invoice no is unique per account+instance. */
+  getSalesPrintData(invoiceno: number, accountId?: number, instanceId?: number): Observable<any> {
+    const params: Record<string, string> = {};
+    if (accountId != null) params['accountid'] = String(accountId);
+    if (instanceId != null) params['instanceid'] = String(instanceId);
+    return this.http.get(`${this.apiUrl}/salessummary/salesprint/${invoiceno}`, { params });
   }
 
   /** GET /salessummary/salesprint/:invoiceno as PDF blob (if backend supports it). */

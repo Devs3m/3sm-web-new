@@ -30,6 +30,13 @@ export class CityComponent implements OnInit {
   activeCity:number=0;
   deactiveCity:number =0;
   private apiUrl = environment.apiUrl;
+
+  /** Numeric sort when cityid is string/bigint from API */
+  cityIdSortValue = (rowData: any): number => {
+    const v = rowData?.cityid ?? rowData?.cityId ?? 0;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
  
   constructor(private cityservice:CityService,
               private fromBuilder:FormBuilder,

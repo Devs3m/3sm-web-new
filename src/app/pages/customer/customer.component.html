@@ -107,6 +107,17 @@
     </form>
   </div>
 
+  <div *ngIf="deleteCautionMessage" class="customer-delete-caution" role="alert">
+    <span class="material-symbols-outlined customer-delete-caution__icon" aria-hidden="true">warning</span>
+    <div class="customer-delete-caution__text">
+      <strong>Caution</strong>
+      <p>{{ deleteCautionMessage }}</p>
+    </div>
+    <button type="button" class="customer-delete-caution__dismiss" (click)="dismissDeleteCaution()" aria-label="Dismiss">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
   <!-- Stats Cards + Add Button -->
   <div class="example-card">
     <mat-card>
@@ -146,7 +157,16 @@
       (onExporting)="onExporting($event)"
       title="Customers">
 
-      <dxi-column dataField="customerid" caption="ID" [width]="80" [allowSorting]="true" sortOrder="desc"></dxi-column>
+      <dxi-column
+        dataField="customerid"
+        caption="ID"
+        [width]="80"
+        [allowSorting]="true"
+        [dataType]="'number'"
+        [calculateSortValue]="customerIdSortValue"
+        [sortOrder]="'desc'"
+        [sortIndex]="0">
+      </dxi-column>
       <dxi-column dataField="customername" caption="Customer Name"></dxi-column>
       <dxi-column dataField="customermobile" caption="Mobile" [width]="150"></dxi-column>
       <dxi-column dataField="customeremail" caption="Email" [width]="220"></dxi-column>

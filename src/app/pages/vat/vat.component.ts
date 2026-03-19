@@ -41,7 +41,7 @@ export class VatComponent implements OnInit {
     "vatpercent":[""],
     "createddate":[new Date()],
     "updateddate":[new Date()],
-    "vatisactive":[""],
+    "vatisactive":["true"],
     "createdby":[1],
     "updatedby":[1],
     "userid":[1],

@@ -1,3 +1,56 @@
+/* Delete blocked (409): visible above list when form is closed */
+.customer-delete-caution {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 12px 0 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #e65100;
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  color: #5d4037;
+  box-shadow: 0 2px 8px rgba(230, 81, 0, 0.12);
+}
+
+.customer-delete-caution__icon {
+  font-size: 28px;
+  color: #e65100;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.customer-delete-caution__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.customer-delete-caution__text strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+  color: #bf360c;
+}
+
+.customer-delete-caution__text p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.customer-delete-caution__dismiss {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #5d4037;
+  border-radius: 4px;
+  line-height: 0;
+}
+
+.customer-delete-caution__dismiss:hover {
+  background: rgba(230, 81, 0, 0.12);
+}
 
 .form-container {          /*Form Container with form fields inside*/
   max-width: 100%;

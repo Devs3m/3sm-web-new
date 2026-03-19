@@ -42,19 +42,51 @@ export class AuthService {
   login(credentials: { email: string; password: string }): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
+        // Normalize role fields so backend `role/roleId` are always mapped to `userrolename/userroleid` too.
+        const rawUser = response.user;
+        const normalizedUser = rawUser
+          ? {
+              ...rawUser,
+              // Map role → userrolename, keeping existing value if already present
+              userrolename:
+                (rawUser as any).userrolename ??
+                (rawUser as any).userroleName ??
+                rawUser.role ??
+                rawUser.roleName ??
+                (rawUser as any).rolename,
+              // Map roleId → userroleid (numeric if possible), keeping existing value if already present
+              userroleid:
+                (rawUser as any).userroleid ??
+                (rawUser as any).userroleId ??
+                (rawUser.roleId != null ? Number(rawUser.roleId) : undefined),
+              // Also ensure role/roleId exist using userrole* if backend changes naming later
+              role:
+                rawUser.role ??
+                rawUser.roleName ??
+                (rawUser as any).userrolename ??
+                (rawUser as any).userroleName ??
+                (rawUser as any).rolename,
+              roleId:
+                rawUser.roleId ??
+                (rawUser as any).roleid ??
+                (rawUser as any).userroleid ??
+                (rawUser as any).userroleId,
+            }
+          : undefined;
+
         if (response.token) {
           localStorage.setItem('token', response.token);
         }
         if (credentials.email) {
           localStorage.setItem('userEmail', credentials.email);
         }
-        if (response.user) {
-          localStorage.setItem('userData', JSON.stringify(response.user));
+        if (normalizedUser) {
+          localStorage.setItem('userData', JSON.stringify(normalizedUser));
         }
         if (response.permissions && Array.isArray(response.permissions) && response.permissions.length > 0) {
           localStorage.setItem('loginPermissions', JSON.stringify({
             permissions: response.permissions,
-            user: response.user,
+            user: normalizedUser ?? response.user,
             timestamp: Date.now()
           }));
         }
@@ -174,6 +206,30 @@ export class AuthService {
   // Fetch user details from API by email
   fetchUserDetailsByEmail(email: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/user-by-email?email=${encodeURIComponent(email)}`);
+  }
+
+  /** Get security question for forgot password (by email). */
+  getForgotPasswordQuestion(email: string): Observable<{ question: string }> {
+    return this.http.get<{ question: string }>(
+      `${this.apiUrl}/forgot-password-question?email=${encodeURIComponent(email)}`
+    );
+  }
+
+  /** Validate security answer (no password change yet). */
+  validateForgotPasswordAnswer(email: string, answer: string): Observable<{ valid: boolean }> {
+    return this.http.post<{ valid: boolean }>(`${this.apiUrl}/forgot-password-validate`, {
+      email,
+      answer
+    });
+  }
+
+  /** Verify answer and set new password. */
+  resetPassword(email: string, answer: string, newPassword: string): Observable<{ success: boolean; message?: string }> {
+    return this.http.post<{ success: boolean; message?: string }>(`${this.apiUrl}/forgot-password-reset`, {
+      email,
+      answer,
+      newPassword
+    });
   }
 
   // Logout user
