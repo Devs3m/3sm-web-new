@@ -1,5 +1,5 @@
 <ng-container>
-<section class="sales-container" [class.form-mode]="isFormOpen" [class.sales-add-customer-popup-open]="showAddCustomerModal">
+<section class="inventorysales-container" [class.form-mode]="isFormOpen" [class.inventorysales-add-customer-popup-open]="showAddCustomerModal">
 
   <!-- Invoice Form -->
   <div class="invoice-form-container" [class.active]="isFormOpen">
@@ -106,7 +106,7 @@
                 <mat-icon>receipt</mat-icon>
                 <h3>Invoice Info</h3>
               </span>
-              <button *ngIf="isFormOpen && isSalesAddPage" type="button" class="back-btn" (click)="goBackToSales()">
+              <button *ngIf="isFormOpen && isInventorySalesAddPage" type="button" class="back-btn" (click)="goBackToInventorySales()">
                 <mat-icon>arrow_back</mat-icon>
                 Back
               </button>
@@ -169,7 +169,9 @@
             <table class="items-table">
               <colgroup>
                 <col class="col-desc">
-                <col class="col-hsn">
+                <col class="col-batch" *ngIf="!hideBatchNoAndExpiry">
+                <col class="col-expiry" *ngIf="!hideBatchNoAndExpiry">
+                <col class="col-hsn" *ngIf="hideBatchNoAndExpiry">
                 <col class="col-qty">
                 <col class="col-rate">
                 <col class="col-disc">
@@ -180,7 +182,9 @@
               <thead>
                 <tr>
                   <th class="th-desc">DESCRIPTION</th>
-                  <th class="th-hsn">HSN/SAC</th>
+                  <th class="th-batch" *ngIf="!hideBatchNoAndExpiry">BATCH NO</th>
+                  <th class="th-expiry" *ngIf="!hideBatchNoAndExpiry">EXPIRY</th>
+                  <th class="th-hsn" *ngIf="hideBatchNoAndExpiry">HSN/SAC</th>
                   <th class="th-qty">QTY</th>
                   <th class="th-rate">RATE (₹)</th>
                   <th class="th-disc">DISC %</th>
@@ -197,9 +201,10 @@
                              #descInput
                              placeholder="Search product..."
                              [matAutocomplete]="auto">
-                      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onProductSelect(i, $event)">
-                        <mat-option *ngFor="let product of (filteredProducts[i] || productOptions)" [value]="product.productname">
-                          {{ product.productname }}
+                      <mat-autocomplete #auto="matAutocomplete" class="inventory-product-autocomplete" (optionSelected)="onProductSelect(i, $event)" [displayWith]="getProductDisplayFn()">
+                        <mat-option *ngFor="let product of (filteredProducts[i] || productOptions)" [value]="product"
+                            [class.expiring-soon]="isExpiringWithin30Days(product)">
+                          <span class="product-option-single-line">{{ getProductOptionLabel(product) }}</span>
                         </mat-option>
                       </mat-autocomplete>
                       <mat-error *ngIf="item.get('description')?.hasError('required') && item.get('description')?.touched">
@@ -207,7 +212,13 @@
                       </mat-error>
                     </mat-form-field>
                   </td>
-                  <td class="readonly-cell cell-hsn">
+                  <td class="readonly-cell cell-batch" *ngIf="!hideBatchNoAndExpiry">
+                    {{ item.get('batchno')?.value || '—' }}
+                  </td>
+                  <td class="readonly-cell cell-expiry" *ngIf="!hideBatchNoAndExpiry">
+                    {{ item.get('expirydate')?.value ? (item.get('expirydate')?.value | date:'dd-MM-yyyy':'UTC') : '—' }}
+                  </td>
+                  <td class="readonly-cell cell-hsn" *ngIf="hideBatchNoAndExpiry">
                     {{ item.get('hsnSac')?.value || '—' }}
                   </td>
                   <td class="cell-qty">
@@ -320,7 +331,7 @@
     <div class="example-card">
       <mat-card>
         <mat-card-header>
-          <mat-card-title>Service Sales&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalSales}}</mat-card-title>
+          <mat-card-title>Product Sales&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalSales}}</mat-card-title>
         </mat-card-header>
       </mat-card>
 
@@ -333,7 +344,7 @@
 
     <div class="pos-relative">
       <div class="btn-pos-list">
-        <button *appHasPermission="'sales:create'" routerLink="/pages/salesadd" class="add-btn">
+        <button *appHasPermission="'sales:create'" routerLink="/pages/inventorysalesadd" class="add-btn">
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
@@ -343,9 +354,9 @@
         [allowColumnResizing]="true"
         [showBorders]="true"
         [headerFilter]="{ visible: true }"
-        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search service sales summary...' }"
+        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search product sales summary...' }"
         [paging]="{ pageSize: 15 }"
-        title="Service Sales Summary"
+        title="Product Sales Summary"
         (onExporting)="onExporting($event)">
         <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx', 'pdf']"></dxo-export>
         <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150" [calculateCellValue]="invoiceNoCellValue"></dxi-column>

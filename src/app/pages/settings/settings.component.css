@@ -1,0 +1,203 @@
+/* Same structure as account page */
+.settings-container {
+  position: relative;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.settings-content {
+  max-width: 100%;
+  margin: 15px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
+  background-color: #fff;
+  margin-top: 1% !important;
+  min-height: 200px !important;
+  width: 1237px !important;
+  box-sizing: border-box;
+}
+
+.settings-header {
+  margin-bottom: 20px;
+}
+
+.settings-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.settings-header h1 mat-icon {
+  font-size: 26px;
+  width: 26px;
+  height: 26px;
+  color: #337ab7;
+}
+
+.settings-section-card {
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
+}
+
+.settings-section-card mat-card-header {
+  padding: 16px 20px;
+  background-color: #f5f5f5 !important;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.settings-section-card mat-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.settings-section-card mat-card-subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #666;
+}
+
+.settings-section-card mat-card-content {
+  padding: 20px;
+  color: #333;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.setting-subsection {
+  padding: 16px;
+  margin-bottom: 20px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.setting-subsection:last-of-type {
+  margin-bottom: 0;
+}
+
+.subsection-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.subsection-title mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #337ab7;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.setting-row.nested {
+  margin-left: 20px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-left: 3px solid #337ab7;
+  align-items: center;
+  max-width: 100%;
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+
+.setting-row.nested .setting-label {
+  flex-shrink: 0;
+}
+
+.setting-row.nested .days-input {
+  flex-shrink: 0;
+}
+
+.setting-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.setting-label mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #337ab7;
+}
+
+.setting-hint {
+  font-size: 12px;
+  color: #666;
+  margin: -8px 0 16px 0;
+  line-height: 1.5;
+}
+
+.days-input {
+  width: 72px;
+  min-width: 72px;
+  max-width: 72px;
+  flex-shrink: 0;
+}
+
+/* Fix alignment for hide product expiring value textbox */
+.setting-row.nested .days-input {
+  align-self: center;
+  margin-left: 16px;
+}
+
+.setting-row.nested .days-input .mat-mdc-text-field-wrapper {
+  padding-bottom: 0;
+}
+
+.setting-row.nested .days-input input.mat-mdc-input-element {
+  text-align: left;
+  box-sizing: border-box;
+  padding: 6px 8px;
+}
+
+.form-submit {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.form-submit .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-submit .btn-primary mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.saved-message {
+  margin-left: 16px;
+  font-size: 14px;
+  color: #2e7d32;
+  font-weight: 500;
+  vertical-align: middle;
+}
+

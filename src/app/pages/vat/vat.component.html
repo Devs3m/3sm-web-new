@@ -65,8 +65,8 @@
 
       <dxi-column dataField="vatid"[allowSorting]="true" [sortOrder]="'asc'"caption="Vat ID" [width]="130"></dxi-column>
       <dxi-column dataField="vatpercent" caption="VAT%" [width]="230"></dxi-column>
-      <dxi-column dataField="createddate" caption="Created Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="230"></dxi-column>
-      <dxi-column dataField="updateddate" caption="Updated Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="230"></dxi-column>
+      <dxi-column dataField="createddate" caption="Created Date" [width]="230" [calculateCellValue]="createdDateCellValue"></dxi-column>
+      <dxi-column dataField="updateddate" caption="Updated Date" [width]="230" [calculateCellValue]="updatedDateCellValue"></dxi-column>
       <dxi-column dataField="vatisactive" caption="Active" [width]="230"></dxi-column>
       <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="230"></dxi-column>
     

@@ -47,8 +47,8 @@
   </mat-toolbar>
 
 <mat-sidenav-container>
-  <mat-sidenav mode="side" opened>
-    <mat-nav-list style="width: 2ovh;">
+  <mat-sidenav mode="side" opened style="width: 170px;">
+    <mat-nav-list style="width: 100%;">
       <!-- Dashboard - always visible if authenticated -->
       <a mat-list-item routerLink='dashboard' href="#" class="aligned-list-item"><mat-icon
           class="aligned-icon">dashboard</mat-icon>Dashboard</a>
@@ -89,10 +89,16 @@
         <mat-icon class="aligned-icon">fastfood</mat-icon>Product
       </a>
       
-      <!-- Sales - show if user has ANY sales permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('sales')" 
+      <!-- Service Sales - show if user has sales permission and (instance uses Sales page, all pages, or super admin) -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('sales') && (instanceSalestype === null || instanceSalestype === 'sales' || instanceSalestype === 'all')" 
          mat-list-item routerLink='sales' href="#" class="aligned-list-item">
-        <mat-icon class="aligned-icon">point_of_sale</mat-icon>Sales
+        <mat-icon class="aligned-icon">point_of_sale</mat-icon>Service Sales
+      </a>
+      
+      <!-- Product Sales - show if user has sales permission and (instance uses Product Sales page, all pages, or super admin) -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('sales') && (instanceSalestype === null || instanceSalestype === 'inventory_sales' || instanceSalestype === 'all')" 
+         mat-list-item routerLink='inventorysales' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">inventory_2</mat-icon>Product Sales
       </a>
       
       <!-- Customer - show if user has ANY customer permission -->
@@ -117,6 +123,27 @@
       <a *ngIf="permissionService.hasAnyPermissionForResource('vat')" 
          mat-list-item routerLink='vat' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">money</mat-icon>Vat
+      </a>
+
+      <!-- Reports - expandable submenu -->
+      <mat-expansion-panel *ngIf="permissionService.hasAnyPermissionForResource('sales')" class="reports-panel">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon class="aligned-icon">assessment</mat-icon>
+            <span>Reports</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-nav-list>
+          <a mat-list-item routerLink='product-ledger' href="#" class="aligned-list-item sub-item">
+            <mat-icon class="aligned-icon">receipt_long</mat-icon>Product Ledger
+          </a>
+        </mat-nav-list>
+      </mat-expansion-panel>
+
+      <!-- Settings - visible when authenticated -->
+      <a *ngIf="authService.isAuthenticated()" 
+         mat-list-item routerLink='settings' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">settings</mat-icon>Settings
       </a>
 
     </mat-nav-list>

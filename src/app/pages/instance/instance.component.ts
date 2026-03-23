@@ -72,6 +72,7 @@ export class InstanceComponent implements OnInit {
       instancegstno: [""],
       instancevatno: [""],
       instancefssaino: [""],
+      salestype: ["sales", Validators.required],
       instanceid: [0],
       accountid: [''],
       cityid: [1]
@@ -262,7 +263,8 @@ export class InstanceComponent implements OnInit {
           ...r,
           instanceisactive: r.instanceisactive === true || r.instanceisactive === 'true' || r.instanceisactive === 1 ? 'true' : 'false',
           accountid: r.accountid ?? '',
-          cityid: r.cityid ?? 1
+          cityid: r.cityid ?? 1,
+          salestype: r.salestype ?? 'sales'
         });
       },
       error: (err) => console.error('Error fetching instance details:', err)
@@ -326,6 +328,7 @@ export class InstanceComponent implements OnInit {
       instancestate: '',
       instancecountry: '',
       instanceisactive: 'true',
+      salestype: 'sales',
       createddate: new Date(),
       updateddate: new Date(),
       instanceid: 0,

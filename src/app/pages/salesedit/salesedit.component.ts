@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { SalesService } from '../service/sales.service';
 import { AuthService } from '../service/auth.service';
+import { SettingsService } from '../service/settings.service';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SaveSalessummaryDto, SalesDetailItemDto } from '../sales/models/save-salessummary.dto';
 
@@ -31,6 +32,8 @@ export class SaleseditComponent implements OnInit {
     }, 50);
   }
 
+  private static readonly INVOICE_NO_LEGACY_THRESHOLD = 1e6;
+
   salesForm!: FormGroup;
   customerOptions: any[] = [];
   productOptions: any[] = [];
@@ -40,10 +43,25 @@ export class SaleseditComponent implements OnInit {
   invoiceno: number | null = null;
   isLoading = false;
 
+  /** Invoice number display (sequence only, hide account/instance). */
+  get invoiceDisplayValue(): string {
+    const v = this.salesForm?.get('invoiceno')?.value ?? this.invoiceno;
+    return this.getDisplayInvoiceNoSequenceOnly(v);
+  }
+
+  private getDisplayInvoiceNoSequenceOnly(invoiceno: number | null | undefined): string {
+    if (invoiceno == null) return '';
+    const n = Number(invoiceno);
+    if (!Number.isFinite(n) || n < 0) return '';
+    const seq = n < SaleseditComponent.INVOICE_NO_LEGACY_THRESHOLD ? n : (n % 1e6) || 1;
+    return String(Math.max(0, Math.floor(seq))).padStart(6, '0');
+  }
+
   constructor(
     private salesService: SalesService,
     private formBuilder: FormBuilder,
     private authService: AuthService,
+    private settingsService: SettingsService,
     private cdr: ChangeDetectorRef,
     private router: Router,
     private route: ActivatedRoute
@@ -206,9 +224,12 @@ export class SaleseditComponent implements OnInit {
     const quantity = parseFloat(item.get('quantity')?.value || 0);
     const rate = parseFloat(item.get('rate')?.value || 0);
     const discountPct = parseFloat(item.get('discountPct')?.value || 0);
+    const gstPercent = parseFloat(item.get('gstPercent')?.value || 0);
     const grossAmount = quantity * rate;
     const discountValue = (grossAmount * discountPct) / 100;
-    const amount = grossAmount - discountValue;
+    const taxableBase = grossAmount - discountValue;
+    const gstInclusive = this.settingsService.getSalesSettings().gstInclusive;
+    const amount = gstInclusive ? taxableBase : taxableBase * (1 + gstPercent / 100);
     item.patchValue({ amount: amount.toFixed(2) }, { emitEvent: false });
     this.calculateTotals();
   }
@@ -219,8 +240,21 @@ export class SaleseditComponent implements OnInit {
     this.items.controls.forEach((item) => {
       const amount = parseFloat(item.get('amount')?.value || 0);
       const gstPercent = parseFloat(item.get('gstPercent')?.value || 0);
-      subtotal += amount;
-      totalGst += (amount * gstPercent) / 100;
+      const gstInclusive = this.settingsService.getSalesSettings().gstInclusive;
+      let taxable: number;
+      let gstAmount: number;
+      if (gstPercent > 0 && gstInclusive) {
+        taxable = amount / (1 + gstPercent / 100);
+        gstAmount = amount - taxable;
+      } else if (gstPercent > 0 && !gstInclusive) {
+        taxable = amount / (1 + gstPercent / 100);
+        gstAmount = amount - taxable;
+      } else {
+        taxable = amount;
+        gstAmount = 0;
+      }
+      subtotal += taxable;
+      totalGst += gstAmount;
     });
     const grandtotal = subtotal + totalGst;
     this.salesForm.patchValue(
@@ -312,7 +346,7 @@ export class SaleseditComponent implements OnInit {
         customerstate: selectedCustomer.customerstate || '',
         customercountry: selectedCustomer.customercountry || '',
         customerpincode: selectedCustomer.customerpincode || '',
-        customergstin: selectedCustomer.customergstin || '',
+        customergstin: selectedCustomer.customergstno || selectedCustomer.customergstin || '',
       });
     }
   }
@@ -352,6 +386,8 @@ export class SaleseditComponent implements OnInit {
           this.errorMessage = 'Invoice not found.';
           return;
         }
+        const details = summary?.details ?? summary?.items ?? summary?.salesdetails ?? summary?.salesdetail ?? [];
+        console.log('[SalesEdit] API response', { invoiceno, detailCount: Array.isArray(details) ? details.length : 0, raw: summary });
         this.populateFormFromSummary(summary, invoiceno);
         // Load customer list for the dropdown; also use it to enrich missing address
         this.salesService.getCustomers().pipe(catchError(() => of([]))).subscribe({
@@ -389,7 +425,7 @@ export class SaleseditComponent implements OnInit {
         customerstate: cust.customerstate ?? cust.state ?? '',
         customercountry: cust.customercountry ?? cust.country ?? '',
         customerpincode: cust.customerpincode ?? cust.pincode ?? '',
-        customergstin: cust.customergstin ?? cust.gstin ?? '',
+        customergstin: cust.customergstno ?? cust.customergstin ?? cust.gstin ?? '',
       },
       { emitEvent: false }
     );
@@ -404,6 +440,7 @@ export class SaleseditComponent implements OnInit {
       data?.details ?? data?.items ?? data?.salesdetails ?? data?.salesdetail ??
       data?.sales_details ?? s?.details ?? s?.items ?? s?.salesdetails ??
       s?.salesdetail ?? s?.sales_details ?? [];
+    console.log('[SalesEdit] populateFormFromSummary', { detailListLength: Array.isArray(details) ? details.length : 0, details });
 
     while (this.items.length > 0) this.items.removeAt(0);
 
@@ -416,7 +453,9 @@ export class SaleseditComponent implements OnInit {
         const rate = parseFloat(d.salemrp ?? d.sale_mrp ?? d.rate ?? 0) || 0;
         const discPct = parseFloat(d.saledisper ?? d.sale_dis_per ?? d.discountPct ?? 0) || 0;
         const gstPct = parseFloat(d.salegstper ?? d.sale_gst_per ?? d.gstPercent ?? 0) || 0;
-        const amount = parseFloat(d.saleamount ?? d.sale_amount ?? d.salesubtotal ?? d.sale_subtotal ?? d.amount ?? 0) || 0;
+        const lineTotal = parseFloat(d.salegrandtotal ?? d.sale_grand_total ?? d.grandtotal ?? 0) || 0;
+        const taxableVal = parseFloat(d.saleamount ?? d.sale_amount ?? d.salesubtotal ?? d.sale_subtotal ?? 0) || 0;
+        const amount = lineTotal > 0 ? lineTotal : (taxableVal > 0 && gstPct > 0 ? taxableVal * (1 + gstPct / 100) : taxableVal);
         this.items.push(
           this.formBuilder.group({
             productid: [d.productid ?? d.product_id ?? null],
@@ -507,6 +546,7 @@ export class SaleseditComponent implements OnInit {
     const now = new Date().toISOString().split('T')[0];
     const invoiceno = this.invoiceno ?? (typeof v.invoiceno === 'number' ? v.invoiceno : 0);
 
+    const gstInclusive = this.settingsService.getSalesSettings().gstInclusive;
     const items: SalesDetailItemDto[] = this.items.controls
       .filter(
         (ctrl) =>
@@ -520,11 +560,20 @@ export class SaleseditComponent implements OnInit {
         const gstPct = Number(i.gstPercent) || 0;
         const grossAmount = qty * rate;
         const discAmount = (grossAmount * discPct) / 100;
-        const subtotal = grossAmount - discAmount;
-        const gstAmount = (subtotal * gstPct) / 100;
+        const taxableBase = grossAmount - discAmount;
+        let subtotal: number;
+        let gstAmount: number;
+        if (gstInclusive && gstPct > 0) {
+          subtotal = taxableBase / (1 + gstPct / 100);
+          gstAmount = taxableBase - subtotal;
+        } else {
+          subtotal = taxableBase;
+          gstAmount = (subtotal * gstPct) / 100;
+        }
         const cgst = gstAmount / 2;
         const sgst = gstAmount / 2;
         const grandtotal = subtotal + gstAmount;
+        const round2 = (n: number) => Math.round(n * 100) / 100;
         return {
           productid: i.productid ?? 0,
           productname: i.description || '',
@@ -533,14 +582,14 @@ export class SaleseditComponent implements OnInit {
           salemrp: String(rate),
           saledisper: discPct || null,
           salegstper: Math.round(gstPct),
-          saleamount: Math.round(subtotal),
-          salegrossamount: Math.round(grossAmount),
-          saltotaldisc: Math.round(discAmount) || null,
-          salesubtotal: Math.round(subtotal),
-          saletotalcgst: Math.round(cgst),
-          saletotalsgst: Math.round(sgst),
-          saletotalgst: Math.round(gstAmount),
-          salegrandtotal: Math.round(grandtotal),
+          saleamount: round2(subtotal),
+          salegrossamount: round2(grossAmount),
+          saltotaldisc: discAmount ? round2(discAmount) : null,
+          salesubtotal: round2(subtotal),
+          saletotalcgst: round2(cgst),
+          saletotalsgst: round2(sgst),
+          saletotalgst: round2(gstAmount),
+          salegrandtotal: round2(grandtotal),
         };
       });
 

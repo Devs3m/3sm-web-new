@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AuthService } from './service/auth.service';
 import { UserService } from './service/user.service';
 import { PermissionService } from './service/permission.service';
+import { InstanceService } from './service/instance.service';
 
 @Component({
   selector: 'app-pages',
@@ -15,11 +16,14 @@ export class PagesComponent implements OnInit {
   userName: string = '';
   userEmail: string = '';
   userRole: string = '';
+  /** 'sales' | 'inventory_sales' | 'all' from current instance; null = loading or super admin (show both) */
+  instanceSalestype: 'sales' | 'inventory_sales' | 'all' | null = null;
 
   constructor(
     public authService: AuthService,
     private userService: UserService,
     public permissionService: PermissionService,
+    private instanceService: InstanceService,
     private cdr: ChangeDetectorRef
   ) {} // Inject AuthService here
 
@@ -27,6 +31,7 @@ export class PagesComponent implements OnInit {
     this.getLoggedInUser();
     this.fetchUserDetailsFromAPI();
     this.getUserRole();
+    this.loadInstanceSalestype();
     
     // Wait for permissions to load before showing menus
     // Check periodically for permissions to be loaded
@@ -43,7 +48,7 @@ export class PagesComponent implements OnInit {
         console.log('✅ Permissions loaded, menus will update');
         console.log('  - Permissions count:', currentRole?.permissions?.length || 0);
         console.log('  - Available resources:', currentRole?.permissions ? [...new Set(currentRole.permissions.map(p => p.key?.split('.')[0] || p.module?.toLowerCase()).filter(Boolean))] : []);
-        // Force change detection to update menu visibility
+        if (isSuperAdmin) this.instanceSalestype = null;
         this.cdr.detectChanges();
         clearInterval(checkPermissionsInterval);
       } else if (permissionCheckCount >= maxPermissionChecks) {
@@ -87,6 +92,29 @@ export class PagesComponent implements OnInit {
         clearInterval(checkRoleInterval);
       }
     }, 500);
+  }
+
+  /** Fetch current instance salestype to control which sales menu (Service Sales vs Product Sales) to show */
+  loadInstanceSalestype(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const instanceId = this.authService.getInstanceId();
+    if (isSuperAdmin || !instanceId) {
+      this.instanceSalestype = null;
+      return;
+    }
+    this.instanceService.getDetailsById(instanceId).subscribe({
+      next: (instance) => {
+        if (this.permissionService.isSuperAdmin()) return;
+        const st = instance?.salestype;
+        this.instanceSalestype = st === 'inventory_sales' ? 'inventory_sales' : st === 'all' ? 'all' : 'sales';
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        if (this.permissionService.isSuperAdmin()) return;
+        this.instanceSalestype = 'sales';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   getUserRole(): void {

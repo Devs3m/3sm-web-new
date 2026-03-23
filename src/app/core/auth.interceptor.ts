@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { AuthService } from '../pages/service/auth.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(private router: Router) {}
+  constructor(private injector: Injector) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Skip adding token for public auth endpoints (no auth required)
@@ -32,13 +32,9 @@ export class AuthInterceptor implements HttpInterceptor {
       });
       return next.handle(cloned).pipe(
         catchError((error: HttpErrorResponse) => {
-          // Handle 401 Unauthorized errors
+          // Handle 401 Unauthorized (token expired or invalid) - auto logout
           if (error.status === 401) {
-            // Clear token and redirect to login
-            localStorage.removeItem('token');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userData');
-            this.router.navigate(['/login']);
+            this.injector.get(AuthService).logout();
           }
           return throwError(() => error);
         })

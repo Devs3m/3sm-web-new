@@ -1,4 +1,81 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Inventory sales product dropdown - single line (overlay outside component) */
+.inventory-product-autocomplete {
+  min-width: 400px !important;
+  max-width: 90vw !important;
+}
+.inventory-product-autocomplete .mdc-list-item__primary-text {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  display: block !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+.inventory-product-autocomplete .mdc-list-item__primary-text,
+.inventory-product-autocomplete .mdc-list-item__primary-text * {
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+.inventory-product-autocomplete .product-option-single-line {
+  white-space: nowrap !important;
+  display: inline-block !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.inventory-product-autocomplete .mat-mdc-option .mat-mdc-option__primary-text,
+.inventory-product-autocomplete .mat-mdc-option .mdc-list-item__primary-text,
+.inventory-product-autocomplete .mat-mdc-option .mdc-list-item__content {
+  white-space: nowrap !important;
+  flex-wrap: nowrap !important;
+  display: block !important;
+  width: auto !important;
+  min-width: 100% !important;
+}
+.inventory-product-autocomplete .mat-mdc-option .mat-mdc-option__primary-text,
+.inventory-product-autocomplete .mat-mdc-option .mdc-list-item__primary-text {
+  overflow: visible !important;
+}
+
+/* Settings page: toggle green when on, red when off */
+app-settings .mat-mdc-slide-toggle {
+  --mdc-switch-selected-track-color: #2e7d32;
+  --mdc-switch-selected-handle-color: #4caf50;
+  --mdc-switch-selected-hover-track-color: #388e3c;
+  --mdc-switch-selected-focus-track-color: #2e7d32;
+  --mdc-switch-selected-pressed-track-color: #1b5e20;
+  --mdc-switch-unselected-track-color: #c62828;
+  --mdc-switch-unselected-handle-color: #ef5350;
+  --mdc-switch-unselected-hover-track-color: #b71c1c;
+  --mdc-switch-unselected-focus-track-color: #c62828;
+  --mdc-switch-unselected-pressed-track-color: #8e0000;
+}
+/* Fallback: direct track styling (selected=green, unselected=red) */
+app-settings .mat-mdc-slide-toggle .mdc-switch--selected .mdc-switch__track::after {
+  background-color: #2e7d32 !important;
+}
+app-settings .mat-mdc-slide-toggle .mdc-switch--selected .mdc-switch__shadow {
+  background-color: #4caf50 !important;
+}
+app-settings .mat-mdc-slide-toggle .mdc-switch--unselected .mdc-switch__track::before {
+  background-color: #c62828 !important;
+}
+app-settings .mat-mdc-slide-toggle .mdc-switch--unselected .mdc-switch__shadow {
+  background-color: #ef5350 !important;
+}
+
+/* Highlight products expiring within 30 days */
+.inventory-product-autocomplete .mat-mdc-option.expiring-soon {
+  background-color: #ffebee !important;
+}
+.inventory-product-autocomplete .mat-mdc-option.expiring-soon:hover,
+.inventory-product-autocomplete .mat-mdc-option.expiring-soon.mat-mdc-option-active {
+  background-color: #ffcdd2 !important;
+}
+
 :root {
   --primary-color: #1a5caa;
   --white: #fff;
@@ -39,7 +116,8 @@ mat-toolbar {
   display: flex;
   align-items: center; /* Vertically aligns the items */
   text-decoration: none; /* Removes the underline from the link */
-  width: 110px;
+  width: 100%;
+  white-space: nowrap;
 }
 
 .aligned-icon {
@@ -299,6 +377,16 @@ box-shadow: gray;
 }
 .print-icon {
   color: #c62828;
+}
+
+/* Mat Datepicker calendar overlay - ensure visible above other content */
+.cdk-overlay-container {
+  z-index: 1050 !important;
+}
+
+.cdk-overlay-pane .mat-datepicker-content,
+.mat-datepicker-content {
+  z-index: 1050 !important;
 }
 
 /* Mat Autocomplete panel - white background, black text */

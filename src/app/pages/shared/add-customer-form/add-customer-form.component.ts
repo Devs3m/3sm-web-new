@@ -45,6 +45,7 @@ export class AddCustomerFormComponent implements OnInit {
       customerstate: [''],
       customercountry: [''],
       customerpincode: [''],
+      customergstno: [''],
       accountid: [accountId],
       instanceid: [instanceId],
       cityid: [null],

@@ -53,6 +53,7 @@ export class CustomerFormComponent implements OnInit {
       customerstate: [''],
       customercountry: [''],
       customerpincode: [''],
+      customergstno: [''],
       accountid: [accountId],
       instanceid: [instanceId],
       cityid: [null],

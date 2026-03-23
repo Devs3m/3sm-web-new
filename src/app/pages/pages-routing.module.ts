@@ -86,10 +86,33 @@ const routes: Routes = [
         data: { permission: { resource: 'sales', action: 'update' } }
       },
       { 
+        path: 'inventorysales', 
+        loadChildren: () => import(`./inventorysales/inventorysales.module`).then(m => m.InventorysalesModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'sales', action: 'view' } }
+      },
+      { 
+        path: 'inventorysalesadd', 
+        loadChildren: () => import(`./inventorysales/inventorysales.module`).then(m => m.InventorysalesModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'sales', action: 'view' } }
+      },
+      { 
         path: 'customer', 
         loadChildren: () => import(`./customer/customer.module`).then(m => m.CustomerModule),
         canActivate: [RoleGuard],
         data: { permission: { resource: 'customer', action: 'view' } }
+      },
+      { 
+        path: 'product-ledger', 
+        loadChildren: () => import(`./product-ledger/product-ledger.module`).then(m => m.ProductLedgerModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'sales', action: 'view' } }
+      },
+      { 
+        path: 'settings', 
+        loadChildren: () => import(`./settings/settings.module`).then(m => m.SettingsModule),
+        canActivate: [RoleGuard]
       },
     ]
   }

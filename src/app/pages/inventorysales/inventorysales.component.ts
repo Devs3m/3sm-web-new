@@ -2,7 +2,7 @@ import { Component, ElementRef, HostListener, OnInit, ViewChild, ViewChildren, Q
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { of } from 'rxjs';
 import { filter, catchError } from 'rxjs/operators';
-import { SalesService } from '../service/sales.service';
+import { InventorysalesService } from '../service/inventorysales.service';
 import { CustomerService } from '../service/customer.service';
 import { AuthService } from '../service/auth.service';
 import { PermissionService } from '../service/permission.service';
@@ -17,15 +17,15 @@ import { Workbook } from 'exceljs';
 import jsPDF from 'jspdf';
 import { FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
 import { environment } from '../../../environments/environment';
-import { SaveSalessummaryDto, SalesDetailItemDto } from './models/save-salessummary.dto';
+import { SaveInventorysummaryDto, InventoryDetailItemDto } from './models/save-inventorysummary.dto';
 import { formatDateUtcDdSlashMmSlashYyyy } from '../service/date-utils';
 
 @Component({
-  selector: 'app-sales',
-  templateUrl: './sales.component.html',
-  styleUrls: ['./sales.component.css'],
+  selector: 'app-inventorysales',
+  templateUrl: './inventorysales.component.html',
+  styleUrls: ['./inventorysales.component.css'],
 })
-export class SalesComponent implements OnInit {
+export class InventorysalesComponent implements OnInit {
   @ViewChild('formSection') formSection!: ElementRef;
   @ViewChild('customerSelect') customerSelect!: ElementRef;
   @ViewChildren('qtyInput') qtyInputs!: QueryList<ElementRef>;
@@ -86,12 +86,17 @@ export class SalesComponent implements OnInit {
   // Add New Customer modal (uses shared app-add-customer-form)
   showAddCustomerModal = false;
 
+  /** When true, batch no and expiry columns are hidden (setting: hideBatchNoAndExpiryInProductSales) */
+  get hideBatchNoAndExpiry(): boolean {
+    return !!this.settingsService.getSalesSettings().hideBatchNoAndExpiryInProductSales;
+  }
+
   get allowDecimalQty(): boolean {
     return !!this.settingsService.getSalesSettings().allowDecimalQtyInSales;
   }
 
   constructor(
-    private salesService: SalesService,
+    private inventorysalesService: InventorysalesService,
     private customerService: CustomerService,
     private formBuilder: FormBuilder,
     private http: HttpClient,
@@ -105,23 +110,23 @@ export class SalesComponent implements OnInit {
     private route: ActivatedRoute
   ) { }
 
-  get isSalesAddPage(): boolean {
-    return this.router.url.includes('salesadd');
+  get isInventorySalesAddPage(): boolean {
+    return this.router.url.includes('inventorysalesadd');
   }
 
-  goBackToSales(): void {
+  goBackToInventorySales(): void {
     this.editingInvoiceno = null;
-    this.router.navigate(['/pages/sales']);
+    this.router.navigate(['/pages/inventorysales']);
   }
 
-  /** Edit from sales summary table: go to salesedit/:invoiceno */
+  /** Edit from inventory sales summary table: go to inventorysalesadd?invoiceno=X */
   editSummaryItem(item: any): void {
     const invoiceno = item?.invoiceno != null ? item.invoiceno : null;
     if (invoiceno == null) {
       this.errorMessage = 'Invalid invoice. Cannot edit.';
       return;
     }
-    this.router.navigate(['/pages/salesedit', invoiceno]);
+    this.router.navigate(['/pages/inventorysalesadd'], { queryParams: { invoiceno } });
   }
 
   /** Download invoice PDF using salesprint API data (salessummary, salesdetails, instance, customer). */
@@ -132,10 +137,10 @@ export class SalesComponent implements OnInit {
       return;
     }
     const { accountId, instanceId } = this.getCurrentAccountAndInstance();
-    this.salesService.getSalesPrintData(invoiceno, accountId, instanceId).subscribe({
+    this.inventorysalesService.getInventoryPrintData(invoiceno, accountId, instanceId).subscribe({
       next: (data: any) => {
-        const s = data?.salessummary ?? data?.summary ?? data;
-        const details = data?.salesdetails ?? data?.details ?? data?.items ?? data?.salesdetail ?? data?.sales_details ?? s?.salesdetails ?? s?.details ?? s?.items ?? s?.salesdetail ?? s?.sales_details ?? [];
+        const s = data?.inventorysummary ?? data?.salessummary ?? data?.summary ?? data;
+        const details = data?.inventorydetails ?? data?.salesdetails ?? data?.details ?? data?.items ?? data?.salesdetail ?? data?.sales_details ?? s?.details ?? s?.items ?? [];
         const instanceFromApi = data?.instance ?? data?.salessummary?.instance ?? data?.summary?.instance ?? s?.instance;
         const customerFromApi = data?.customer ?? data?.salessummary?.customer ?? s?.customer;
 
@@ -171,7 +176,7 @@ export class SalesComponent implements OnInit {
         };
 
         if (!customerFromApi && (s?.customerid ?? s?.customer_id)) {
-          this.salesService.getCustomerById(s.customerid ?? s.customer_id).pipe(catchError(() => of(null))).subscribe((cust: any) => {
+          this.inventorysalesService.getCustomerById(s.customerid ?? s.customer_id).pipe(catchError(() => of(null))).subscribe((cust: any) => {
             if (cust) {
               Object.assign(s, {
                 customeraddress: s.customeraddress ?? cust.customeraddress ?? cust.address ?? '',
@@ -179,7 +184,8 @@ export class SalesComponent implements OnInit {
                 customerstate: s.customerstate ?? cust.customerstate ?? cust.state ?? '',
                 customerpincode: s.customerpincode ?? cust.customerpincode ?? cust.pincode ?? '',
                 customermobile: s.customermobile ?? cust.customermobile ?? cust.customermobileno ?? cust.mobile ?? '',
-                customeremail: s.customeremail ?? cust.customeremail ?? cust.email ?? ''
+                customeremail: s.customeremail ?? cust.customeremail ?? cust.email ?? '',
+                customergstno: s.customergstno ?? cust.customergstno ?? cust.customergstin ?? cust.gstin ?? ''
               });
             }
             doPdfWithInstance();
@@ -288,8 +294,13 @@ export class SalesComponent implements OnInit {
 
     y = Math.max(yLeft, yRight) + 8;
 
-    const colW = [8, 50, 18, 14, 22, 16, 16, 28];
-    const headers = ['S.No', 'Description', 'HSN', 'Qty', 'Rate', 'Disc %', 'GST %', 'Amount'];
+    const hideBatchExpiry = this.hideBatchNoAndExpiry;
+    const colW = hideBatchExpiry
+      ? [8, 50, 16, 12, 18, 14, 14, 24]  // S.No, Description, HSN, Qty, Rate, Disc %, GST %, Amount
+      : [8, 34, 16, 16, 16, 12, 18, 14, 14, 24];
+    const headers = hideBatchExpiry
+      ? ['S.No', 'Description', 'HSN', 'Qty', 'Rate', 'Disc %', 'GST %', 'Amount']
+      : ['S.No', 'Description', 'Batch', 'Expiry', 'HSN', 'Qty', 'Rate', 'Disc %', 'GST %', 'Amount'];
     doc.setDrawColor(0, 0, 0);
     doc.rect(left, y, colW.reduce((a, b) => a + b, 0), 8);
     doc.setFont('helvetica', 'bold');
@@ -299,17 +310,32 @@ export class SalesComponent implements OnInit {
     doc.setFont('helvetica', 'normal');
     y += 10;
 
+    const formatDateDdMmYyyy = (val: any): string => {
+      if (!val) return '-';
+      const d = val instanceof Date ? val : new Date(val);
+      if (isNaN(d.getTime())) return '-';
+      const dd = String(d.getUTCDate()).padStart(2, '0');
+      const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const yyyy = d.getUTCFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+    };
+
     doc.setFontSize(8);
+    const descMaxLen = hideBatchExpiry ? 42 : 28;
     details.forEach((d: any, idx: number) => {
       if (y > 260) { doc.addPage(); y = 20; }
       const productname = String(d.productname ?? d.product_name ?? d.description ?? '-');
+      const batchno = String(d.batchno ?? d.batch_no ?? '');
       const hsn = String(d.salehsn ?? d.sale_hsn ?? d.hsnSac ?? '-');
+      const expirydate = formatDateDdMmYyyy(d.expirydate ?? d.expiry_date ?? null);
       const qty = Number(d.saleqty ?? d.sale_qty ?? d.quantity ?? 0) || 0;
       const rate = parseFloat(String(d.salemrp ?? d.sale_mrp ?? d.rate ?? 0)) || 0;
       const disc = parseFloat(String(d.saledisper ?? d.sale_dis_per ?? d.discountPct ?? 0)) || 0;
       const gst = parseFloat(String(d.salegstper ?? d.sale_gst_per ?? d.gstPercent ?? 0)) || 0;
       const lineTotal = parseFloat(String(d.salegrandtotal ?? d.sale_grand_total ?? d.amount ?? 0)) || 0;
-      const row = [String(idx + 1), productname.substring(0, 35), hsn, String(qty), this.formatExact(rate), this.formatExact(disc, 1), this.formatExact(gst, 1), this.formatExact(lineTotal)];
+      const row = hideBatchExpiry
+        ? [String(idx + 1), productname.substring(0, descMaxLen), hsn, String(qty), this.formatExact(rate), this.formatExact(disc, 1), this.formatExact(gst, 1), this.formatExact(lineTotal)]
+        : [String(idx + 1), productname.substring(0, 28), batchno || '-', expirydate, hsn, String(qty), this.formatExact(rate), this.formatExact(disc, 1), this.formatExact(gst, 1), this.formatExact(lineTotal)];
       x = left;
       row.forEach((val, i) => { doc.text(val, x + 2, y + 4); x += colW[i]; });
       y += 6;
@@ -327,33 +353,34 @@ export class SalesComponent implements OnInit {
     const tdisFinal = tdis > 0 ? tdis : (sumFromDetailsDisc > 0 ? sumFromDetailsDisc : 0);
     const subtotal = tgrossFinal - tdisFinal;
     const totalLeft = left + colW.slice(0, -1).reduce((a, b) => a + b, 0);
+    const amountColW = colW[colW.length - 1];
     doc.setFont('helvetica', 'bold');
     doc.text('Gross Amount:', totalLeft - 50, y);
-    doc.text(`Rs.${this.formatExact(tgrossFinal)}`, totalLeft + colW[7] - 22, y);
+    doc.text(`Rs.${this.formatExact(tgrossFinal)}`, totalLeft + amountColW - 22, y);
     y += 6;
     doc.setFont('helvetica', 'normal');
     doc.text('Total Discount:', totalLeft - 50, y);
-    doc.text(`Rs.${this.formatExact(tdisFinal)}`, totalLeft + colW[7] - 22, y);
+    doc.text(`Rs.${this.formatExact(tdisFinal)}`, totalLeft + amountColW - 22, y);
     y += 6;
     doc.text('Subtotal:', totalLeft - 50, y);
-    doc.text(`Rs.${this.formatExact(subtotal)}`, totalLeft + colW[7] - 22, y);
+    doc.text(`Rs.${this.formatExact(subtotal)}`, totalLeft + amountColW - 22, y);
     y += 6;
     doc.setFont('helvetica', 'bold');
     doc.text('Total GST:', totalLeft - 50, y);
-    doc.text(`Rs.${this.formatExact(totalgst)}`, totalLeft + colW[7] - 22, y);
+    doc.text(`Rs.${this.formatExact(totalgst)}`, totalLeft + amountColW - 22, y);
     y += 8;
     doc.setDrawColor(0, 0, 0);
-    doc.rect(totalLeft - 55, y - 5, colW[7] + 55, 12);
+    doc.rect(totalLeft - 55, y - 5, amountColW + 55, 12);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.text('Grand Total:', totalLeft - 50, y + 3);
-    doc.text(`Rs.${this.formatExact(grandtotal)}`, totalLeft + colW[7] - 22, y + 3);
+    doc.text(`Rs.${this.formatExact(grandtotal)}`, totalLeft + amountColW - 22, y + 3);
     y += 12;
     if (tdisFinal > 0) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.text('Your Savings:', totalLeft - 50, y + 3);
-      doc.text(`Rs.${this.formatExact(tdisFinal)}`, totalLeft + colW[7] - 22, y + 3);
+      doc.text(`Rs.${this.formatExact(tdisFinal)}`, totalLeft + amountColW - 22, y + 3);
       y += 8;
     }
     y += 4;
@@ -375,7 +402,7 @@ export class SalesComponent implements OnInit {
     }
     if (!confirm('Are you sure you want to delete this sales record?')) return;
     const { accountId, instanceId } = this.getCurrentAccountAndInstance();
-    this.salesService.deleteSalesSummary(invoiceno, accountId, instanceId).subscribe({
+    this.inventorysalesService.deleteInventorySummary(invoiceno, accountId, instanceId).subscribe({
       next: () => {
         this.getSalesSummaryDetails();
         this.getSalesSummaryListData();
@@ -390,10 +417,11 @@ export class SalesComponent implements OnInit {
   /** Load one salessummary by invoiceno and populate form (salesadd edit) */
   loadSalesSummaryForEdit(invoiceno: number): void {
     const { accountId, instanceId } = this.getCurrentAccountAndInstance();
-    this.salesService.getSalesSummaryByInvoice(invoiceno, accountId, instanceId).subscribe({
+    this.inventorysalesService.getInventorySummaryByInvoice(invoiceno, accountId, instanceId).subscribe({
       next: (data: any) => {
-        const details = data?.details ?? data?.items ?? data?.salesdetails ?? data?.salesdetail ?? [];
-        console.log('[Sales Edit] API response', { invoiceno, detailCount: Array.isArray(details) ? details.length : 0, raw: data });
+        this.isLoadingInvoiceForEdit = false;
+        const details = data?.details ?? data?.inventorydetails ?? data?.items ?? [];
+        console.log('[InventorySales Edit] API response', { invoiceno, detailCount: Array.isArray(details) ? details.length : 0, raw: data });
         this.populateFormFromSummary(data, invoiceno);
         this.enrichCustomerAddressIfNeeded();
         this.cdr.detectChanges();
@@ -404,6 +432,7 @@ export class SalesComponent implements OnInit {
         }, 50);
       },
       error: (err: any) => {
+        this.isLoadingInvoiceForEdit = false;
         this.errorMessage = err?.error?.message || err?.message || 'Failed to load invoice for editing.';
       }
     });
@@ -436,7 +465,7 @@ export class SalesComponent implements OnInit {
     if (list.length > 0) {
       applyCustomer(list);
     } else {
-      this.salesService.getCustomers().subscribe({
+      this.inventorysalesService.getCustomers().subscribe({
         next: (opts: any[]) => {
           this.customerOptions = opts;
           applyCustomer(Array.isArray(opts) ? opts : []);
@@ -448,8 +477,8 @@ export class SalesComponent implements OnInit {
   /** Map API salessummary + details response into the sales form */
   private populateFormFromSummary(data: any, invoiceno: number): void {
     const s = data?.summary ?? data;
-    const details = data?.details ?? data?.items ?? data?.salesdetails ?? data?.salesdetail ?? data?.sales_details ?? s?.details ?? s?.items ?? s?.salesdetails ?? s?.salesdetail ?? s?.sales_details ?? [];
-    console.log('[Sales Edit] populateFormFromSummary', { detailListLength: Array.isArray(details) ? details.length : 0, details });
+    const details = data?.details ?? data?.inventorydetails ?? data?.items ?? data?.salesdetails ?? data?.salesdetail ?? data?.sales_details ?? s?.details ?? s?.items ?? [];
+    console.log('[InventorySales Edit] populateFormFromSummary', { detailListLength: Array.isArray(details) ? details.length : 0, details });
     while (this.items.length > 0) this.items.removeAt(0);
 
     const detailList = Array.isArray(details) ? details : [];
@@ -464,10 +493,17 @@ export class SalesComponent implements OnInit {
         const lineTotal = parseFloat(d.salegrandtotal ?? d.sale_grand_total ?? d.grandtotal ?? 0) || 0;
         const taxableVal = parseFloat(d.saleamount ?? d.sale_amount ?? d.salesubtotal ?? d.sale_subtotal ?? 0) || 0;
         const amount = lineTotal > 0 ? lineTotal : (taxableVal > 0 && gstPct > 0 ? taxableVal * (1 + gstPct / 100) : taxableVal);
+        const expVal = d.expirydate ?? d.expiry_date ?? null;
+        const expiryStr = expVal ? (expVal instanceof Date ? expVal.toISOString().split('T')[0] : String(expVal).split('T')[0]) : '';
         this.items.push(this.formBuilder.group({
+          stockid: [d.stockid ?? d.stock_id ?? null],
           productid: [d.productid ?? d.product_id ?? null],
           description: [String(d.productname ?? d.product_name ?? d.description ?? '')],
           hsnSac: [String(d.salehsn ?? d.sale_hsn ?? d.hsnSac ?? '')],
+          batchno: [String(d.batchno ?? d.batch_no ?? '')],
+          expirydate: [expiryStr],
+          productpackqty: [d.productpackqty ?? d.product_pack_qty ?? 1],
+          availableQty: [0],
           quantity: [qty],
           rate: [rate],
           discountPct: [discPct],
@@ -519,6 +555,7 @@ export class SalesComponent implements OnInit {
   }
 
   private lastLoadedInvoiceno: number | null = null;
+  private isLoadingInvoiceForEdit = false;
 
   ngOnInit(): void {
     this.getCurrentUserId();
@@ -526,7 +563,7 @@ export class SalesComponent implements OnInit {
     this.initializeForm();
     this.loadSalesSummaryWhenOnList();
     this.getCustomers();
-    if (this.router.url.includes('salesadd')) {
+    if (this.router.url.includes('inventorysalesadd')) {
       this.toggleForm();
       this.tryLoadInvoiceFromQuery();
     }
@@ -534,7 +571,7 @@ export class SalesComponent implements OnInit {
     this.getGstOptions();
     this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)).subscribe((e) => {
       const url = e.urlAfterRedirects || '';
-      if (url.includes('salesadd')) {
+      if (url.includes('inventorysalesadd')) {
         this.toggleForm();
         this.tryLoadInvoiceFromQuery();
         if (this.customerOptions.length === 0) {
@@ -548,9 +585,9 @@ export class SalesComponent implements OnInit {
     });
   }
 
-  /** Load list/counts only when on sales list view (skip on salesadd edit) */
+  /** Load list/counts only when on inventory sales list view (skip on inventorysalesadd edit) */
   private loadSalesSummaryWhenOnList(): void {
-    if (!this.router.url.includes('salesadd')) {
+    if (!this.router.url.includes('inventorysalesadd')) {
       this.getSalesSummaryDetails();
       this.getSalesSummaryListData();
     }
@@ -562,8 +599,9 @@ export class SalesComponent implements OnInit {
     if (invoiceno == null || invoiceno === '') return;
     const num = +invoiceno;
     if (isNaN(num) || num <= 0) return;
-    if (this.lastLoadedInvoiceno === num) return;
+    if (this.lastLoadedInvoiceno === num || this.isLoadingInvoiceForEdit) return;
     this.lastLoadedInvoiceno = num;
+    this.isLoadingInvoiceForEdit = true;
     this.loadSalesSummaryForEdit(num);
   }
 
@@ -606,9 +644,14 @@ export class SalesComponent implements OnInit {
   createItemFormGroup(): FormGroup {
     const qtyMin = this.allowDecimalQty ? 0.01 : 1;
     return this.formBuilder.group({
+      stockid: [null as number | null],
       productid: [null as number | null],
       description: ["", Validators.required],
       hsnSac: [""],
+      batchno: [""],
+      expirydate: [""],
+      productpackqty: [1],
+      availableQty: [0],
       quantity: [null, [Validators.required, Validators.min(qtyMin)]],
       rate: [0, [Validators.required, Validators.min(0)]],
       discountPct: [0, [Validators.min(0), Validators.max(100)]],
@@ -729,15 +772,15 @@ export class SalesComponent implements OnInit {
 
   /** For grid: Sale Date in UTC (avoids timezone shift). */
   saleDateCellValue = (rowData: any): string =>
-    formatDateUtcDdSlashMmSlashYyyy(rowData?.saledate ?? rowData?.invdate ?? rowData?.invoiceDate);
+    formatDateUtcDdSlashMmSlashYyyy(rowData?.saledate ?? rowData?.invdate);
 
   /** Invoice number with only the sequence part (for listing; hides account and instance). */
   getDisplayInvoiceNoSequenceOnly(invoiceno: number | null | undefined): string {
     if (invoiceno == null) return '';
     const n = Number(invoiceno);
     if (!Number.isFinite(n) || n < 0) return '';
-    const seq = n < SalesComponent.INVOICE_NO_LEGACY_THRESHOLD ? n : (n % 1e6) || 1;
-    return SalesComponent.formatSequencePart(seq);
+    const seq = n < InventorysalesComponent.INVOICE_NO_LEGACY_THRESHOLD ? n : (n % 1e6) || 1;
+    return InventorysalesComponent.formatSequencePart(seq);
   }
 
   /** Format sequence as 6 digits (no comma): 1 → "000001". */
@@ -750,8 +793,8 @@ export class SalesComponent implements OnInit {
     if (invoiceno == null) return this.invoiceNumber || '';
     const n = Number(invoiceno);
     if (!Number.isFinite(n) || n < 0) return '';
-    const seqPart = SalesComponent.formatSequencePart(n < SalesComponent.INVOICE_NO_LEGACY_THRESHOLD ? n : (n % 1e6) || 1);
-    if (n < SalesComponent.INVOICE_NO_LEGACY_THRESHOLD) return `0000${seqPart}`;
+    const seqPart = InventorysalesComponent.formatSequencePart(n < InventorysalesComponent.INVOICE_NO_LEGACY_THRESHOLD ? n : (n % 1e6) || 1);
+    if (n < InventorysalesComponent.INVOICE_NO_LEGACY_THRESHOLD) return `0000${seqPart}`;
     const instanceId = Math.floor(n / 1e6) % 10000;
     const accountId = Math.floor(n / 1e10);
     return `${accountId}${String(instanceId).padStart(2, '0')}${seqPart}`;
@@ -778,7 +821,7 @@ export class SalesComponent implements OnInit {
     const invoicenoParam = this.route?.snapshot?.queryParamMap?.get('invoiceno') ?? this.route?.root?.snapshot?.queryParamMap?.get('invoiceno');
     if (invoicenoParam != null && invoicenoParam !== '') return;
     const { accountId, instanceId } = this.getCurrentAccountAndInstance();
-    this.salesService.getNextInvoiceNo(accountId, instanceId).subscribe({
+    this.inventorysalesService.getNextInvoiceNo(accountId, instanceId).subscribe({
       next: (res) => {
         if (this.salesForm && res?.nextInvoiceNo != null) {
           this.salesForm.patchValue({ invoiceno: res.nextInvoiceNo }, { emitEvent: false });
@@ -801,10 +844,11 @@ export class SalesComponent implements OnInit {
   }
 
   getSalesSummaryDetails(): void {
-    this.salesService.getSalesSummaryCounts().subscribe({
+    const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+    this.inventorysalesService.getInventorySummaryCounts(accountId, instanceId).subscribe({
       next: (response: any) => {
-        this.activeSales = response.activeSalessummary ?? response.activeSales ?? response.active ?? 0;
-        this.deactiveSales = response.deactiveSalessummary ?? response.deactiveSales ?? response.deactive ?? response.inactive ?? 0;
+        this.activeSales = response.activeInventorysummary ?? response.activeSalessummary ?? response.activeSales ?? response.active ?? 0;
+        this.deactiveSales = response.deactiveInventorysummary ?? response.deactiveSalessummary ?? response.deactiveSales ?? response.deactive ?? response.inactive ?? 0;
         // totalSales and totalAmount are set from getSalesSummaryListData() so they stay scoped to accountId/instanceId
       },
       error: (err) => {
@@ -838,8 +882,8 @@ export class SalesComponent implements OnInit {
     const accountId = isSuperAdmin ? null : this.authService.getAccountId();
     const instanceId = isSuperAdmin ? null : this.authService.getInstanceId();
     const listObs = accountId != null
-      ? this.salesService.getSalesSummaryList(accountId, instanceId ?? undefined)
-      : this.salesService.getSalesSummaryList();
+      ? this.inventorysalesService.getInventorySummaryList(accountId, instanceId ?? undefined)
+      : this.inventorysalesService.getInventorySummaryList();
     listObs.subscribe({
       next: (data: any) => {
         const rawList = Array.isArray(data) ? data : (data?.list ?? data?.data ?? data?.records ?? []);
@@ -873,7 +917,7 @@ export class SalesComponent implements OnInit {
   getCustomers(): void {
     const isSuperAdmin = this.permissionService.isSuperAdmin();
     const accountId = isSuperAdmin ? null : this.authService.getAccountId();
-    this.salesService.getCustomers().subscribe({
+    this.inventorysalesService.getCustomers().subscribe({
       next: (customers) => {
         const raw = Array.isArray(customers) ? customers : [];
         this.customerOptions = accountId != null ? this.byAccountId(raw, accountId) : raw;
@@ -884,22 +928,23 @@ export class SalesComponent implements OnInit {
     });
   }
 
+  /** Load product options from currentstock (inventory sales uses stock, not product master) */
   getProducts(): void {
-    const isSuperAdmin = this.permissionService.isSuperAdmin();
-    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
-    this.salesService.getProducts().subscribe({
-      next: (products) => {
-        const raw = Array.isArray(products) ? products : [];
-        const filtered = accountId != null ? this.byAccountId(raw, accountId) : raw;
+    const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+    this.inventorysalesService.getProductsFromCurrentStock(accountId, instanceId).subscribe({
+      next: (items) => {
+        const raw = Array.isArray(items) ? items : [];
+        const filtered = this.hideBatchNoAndExpiry
+          ? raw
+          : raw.filter((p: any) => !this.settingsService.shouldHideProductForExpiry(p.expirydate));
         this.productOptions = filtered;
         this.filteredProducts = this.items.controls.map(() => [...filtered]);
         this.items.controls.forEach((_, i) => this.subscribeDescriptionFilter(i));
-        if (filtered.length > 0) {
-          console.log('Product API sample fields:', Object.keys(filtered[0]));
-        }
       },
       error: (err) => {
-        console.error('Error fetching products:', err);
+        console.error('Error fetching products from current stock:', err);
+        this.productOptions = [];
+        this.filteredProducts = this.items.controls.map(() => []);
       }
     });
   }
@@ -1015,7 +1060,7 @@ export class SalesComponent implements OnInit {
   /** Called when Add Customer form (shared component) saves successfully */
   handleCustomerSaved(savedCustomer: any): void {
     this.closeAddCustomerModal();
-    this.salesService.getCustomers().subscribe({
+    this.inventorysalesService.getCustomers().subscribe({
       next: (customers) => {
         this.customerOptions = customers;
         const newId = savedCustomer?.customerid ?? savedCustomer?.id ?? savedCustomer?.data?.customerid;
@@ -1055,37 +1100,82 @@ export class SalesComponent implements OnInit {
   }
 
 
-  onProductSelect(index: number, event: any): void {
-    const selectedProductName = event.option.value;
-    const selectedProduct = this.productOptions.find((item) => item.productname === selectedProductName);
-    const item = this.items.at(index);
+  /** For autocomplete display when value is currentstock object */
+  getProductDisplayFn(): (val: any) => string {
+    return (val: any) => (val && typeof val === 'object' && val.productname) ? val.productname : (val || '');
+  }
 
-    if (selectedProduct) {
-      console.log('Selected product fields:', selectedProduct);
-      const gstPercent = selectedProduct.productgstpercent
-        || selectedProduct.totalgstpercent
-        || selectedProduct.gstpercent
-        || selectedProduct.gst
-        || 0;
+  /** True if product expires within 30 days (for highlight) */
+  isExpiringWithin30Days(product: any): boolean {
+    const exp = product?.expirydate;
+    if (!exp) return false;
+    const expDate = typeof exp === 'string' ? new Date(exp) : exp;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const cutoff = new Date(today);
+    cutoff.setDate(cutoff.getDate() + 30);
+    cutoff.setHours(23, 59, 59, 999);
+    const expOnly = new Date(expDate);
+    expOnly.setHours(0, 0, 0, 0);
+    return expOnly > today && expDate <= cutoff;
+  }
+
+  /** Single-line label: "ProductName | Batch no-X | Avail Qty- Y" (batch when !hideBatchNoAndExpiry, avail qty 2 decimals) */
+  getProductOptionLabel(product: any): string {
+    if (!product) return '';
+    const name = product.productname || '';
+    const batch = this.hideBatchNoAndExpiry ? '' : (product.batchno ? ` | Batch no-${product.batchno}` : '');
+    const qty = Number(product.productqty ?? 0);
+    const avail = ` | Avail Qty- ${qty % 1 === 0 ? qty : qty.toFixed(2)}`;
+    return `${name}${batch}${avail}`.trim();
+  }
+
+  onProductSelect(index: number, event: any): void {
+    const selected = event.option?.value;
+    if (!selected) return;
+    const item = this.items.at(index);
+    const availQty = parseFloat(String(selected.productqty ?? 0)) || 0;
+    const productid = selected.productid ?? null;
+
+    const applyProduct = (prod: any) => {
+      const gstPct = prod?.productgstpercent ?? prod?.totalgstpercent ?? prod?.gstpercent ?? 0;
+      const rate = prod?.productlastprice ?? prod?.productlastmrp ?? prod?.price ?? 0;
+      const expiryVal = selected.expirydate;
+      const expiryStr = expiryVal
+        ? (expiryVal instanceof Date ? expiryVal.toISOString().split('T')[0] : String(expiryVal).split('T')[0])
+        : '';
       item.patchValue({
-        productid: selectedProduct.productid ?? selectedProduct.productId ?? null,
-        description: selectedProduct.productname || '',
-        hsnSac: selectedProduct.producthsncode || '',
-        rate: selectedProduct.productlastprice || selectedProduct.price || selectedProduct.unitprice || 0,
+        stockid: selected.stockid ?? null,
+        productid: productid,
+        description: selected.productname || '',
+        hsnSac: prod?.producthsncode ?? selected.producthsncode ?? '',
+        batchno: selected.batchno ?? '',
+        expirydate: expiryStr,
+        productpackqty: selected.productpackqty ?? 1,
+        availableQty: availQty,
+        rate: Number(rate) || 0,
         discountPct: 0,
-        quantity: null,
-        gstPercent: Number(gstPercent)
+        quantity: availQty > 0 ? 1 : null,
+        gstPercent: Number(gstPct) || 0
       }, { emitEvent: false });
       this.calculateItemAmount(index);
+    };
 
-      // Move focus to qty input for this row
-      setTimeout(() => {
-        const qtyList = this.qtyInputs.toArray();
-        if (qtyList[index]) {
-          qtyList[index].nativeElement.focus();
-          qtyList[index].nativeElement.select();
-        }
-      }, 50);
+    if (productid) {
+      this.inventorysalesService.getProductDetails(productid).pipe(
+        catchError(() => of(null))
+      ).subscribe((prod) => {
+        applyProduct(prod || {});
+        setTimeout(() => {
+          const qtyList = this.qtyInputs.toArray();
+          if (qtyList[index]) {
+            qtyList[index].nativeElement.focus();
+            qtyList[index].nativeElement.select();
+          }
+        }, 50);
+      });
+    } else {
+      applyProduct({});
     }
   }
 
@@ -1115,6 +1205,20 @@ export class SalesComponent implements OnInit {
     }, 50);
   }
 
+  /** Validate sale qty does not exceed available stock */
+  private validateQuantityVsStock(): string | null {
+    for (let i = 0; i < this.items.length; i++) {
+      const ctrl = this.items.at(i);
+      const qty = Number(ctrl.get('quantity')?.value || 0);
+      const avail = Number(ctrl.get('availableQty')?.value || 0);
+      const desc = ctrl.get('description')?.value;
+      if (desc && qty > 0 && avail > 0 && qty > avail) {
+        return `Quantity (${qty}) exceeds available stock (${avail}) for "${desc}"`;
+      }
+    }
+    return null;
+  }
+
   /** True if we have enough data to create an invoice (customer, payment, at least one line with description + qty) */
   private canCreateInvoice(): boolean {
     const v = this.salesForm.value;
@@ -1139,12 +1243,17 @@ export class SalesComponent implements OnInit {
       this.salesForm.patchValue({ updatedby: this.currentUserId, updateddate: new Date() });
 
       if (this.editingInvoiceno != null) {
-        const payload = this.buildSalessummaryPayload();
+        const payload = this.buildInventorysummaryPayload();
         if (!payload || payload.items.length === 0) {
           this.errorMessage = 'Please add at least one item.';
           return;
         }
-        this.salesService.updateSalesSummaryWithDetails(payload).subscribe({
+        const qtyErr = this.validateQuantityVsStock();
+        if (qtyErr) {
+          this.errorMessage = qtyErr;
+          return;
+        }
+        this.inventorysalesService.updateInventorySummaryWithDetails(payload).subscribe({
           next: () => {
             this.getSalesSummaryDetails();
             this.getSalesSummaryListData();
@@ -1156,12 +1265,14 @@ export class SalesComponent implements OnInit {
           }
         });
       } else {
-        const formData = { ...this.salesForm.value };
-        if (!formData.salesid || formData.salesid === 0) {
-          this.errorMessage = 'Sales ID is missing. Cannot update.';
+        const payload = this.buildInventorysummaryPayload();
+        const invoiceno = Number(this.salesForm.get('invoiceno')?.value) || this.editingInvoiceno;
+        if (!payload || payload.items.length === 0 || !invoiceno) {
+          this.errorMessage = 'Cannot update: invoice number or items missing.';
           return;
         }
-        this.salesService.updateSales(formData).subscribe({
+        payload.invoiceno = invoiceno;
+        this.inventorysalesService.updateInventorySummaryWithDetails(payload).subscribe({
           next: () => {
             this.getSalesSummaryDetails();
             this.getSalesSummaryListData();
@@ -1188,6 +1299,11 @@ export class SalesComponent implements OnInit {
       }
       return;
     }
+    const qtyErr = this.validateQuantityVsStock();
+    if (qtyErr) {
+      this.errorMessage = qtyErr;
+      return;
+    }
 
     this.errorMessage = '';
     this.salesForm.patchValue({
@@ -1210,16 +1326,17 @@ export class SalesComponent implements OnInit {
     return new Date().toISOString().split('T')[0];
   }
 
-  /** Build DTO for salessummary/save (transaction: salessummary + salesdetail). New invoice: omit invoiceno (server generates per account+instance). Edit: include existing invoiceno. */
-  buildSalessummaryPayload(): SaveSalessummaryDto | null {
+  /** Build DTO for inventorysummary/save (transaction: inventorysummary + inventorydetail). New invoice: omit invoiceno (server generates per account+instance). Edit: include existing invoiceno. */
+  buildInventorysummaryPayload(): SaveInventorysummaryDto | null {
     const v = this.salesForm.value;
     const user = this.authService.getUser() as any;
     const accountid = user?.accountid ?? user?.accountId ?? 1;
     const instanceid = user?.instanceid ?? user?.instanceId ?? 1;
     const now = new Date().toISOString().split('T')[0];
+    const round2 = (n: number) => Math.round(n * 100) / 100;
 
     const gstInclusive = this.settingsService.getSalesSettings().gstInclusive;
-    const items: SalesDetailItemDto[] = this.items.controls
+    const items: InventoryDetailItemDto[] = this.items.controls
       .filter((ctrl) => ctrl.get('description')?.value && Number(ctrl.get('quantity')?.value) > 0)
       .map((ctrl) => {
       const i = ctrl.value;
@@ -1242,12 +1359,15 @@ export class SalesComponent implements OnInit {
       const cgst = gstAmount / 2;
       const sgst = gstAmount / 2;
       const grandtotal = subtotal + gstAmount;
-      const round2 = (n: number) => Math.round(n * 100) / 100;
       const saleqtyVal = this.allowDecimalQty ? round2(qty) : Math.round(qty);
       return {
+        stockid: i.stockid ?? undefined,
         productid: i.productid ?? 0,
         productname: i.description || '',
         salehsn: i.hsnSac || null,
+        batchno: i.batchno ?? '',
+        expirydate: i.expirydate ?? now,
+        productpackqty: Number(i.productpackqty) || 1,
         saleqty: saleqtyVal,
         salemrp: String(rate),
         saledisper: discPct || null,
@@ -1265,23 +1385,23 @@ export class SalesComponent implements OnInit {
 
     const grossSubtotal = this.getGrossSubtotal();
     const totalDiscount = this.getTotalDiscount();
-    const tdisamount = Math.round(totalDiscount * 100) / 100;
-    const tdisaper = grossSubtotal > 0 ? Math.round((totalDiscount / grossSubtotal) * 100 * 100) / 100 : null;
+    const tdisamount = round2(totalDiscount);
+    const tdisaper = grossSubtotal > 0 ? round2((totalDiscount / grossSubtotal) * 100) : null;
     const netSubtotal = parseFloat(v.subtotal) || 0;
     const totalgst = parseFloat(v.totalgst) || 0;
     const grandtotalVal = netSubtotal + totalgst;
 
-    const payload: SaveSalessummaryDto = {
+    const payload: SaveInventorysummaryDto = {
       invdate: this.formatDateForApi(v.saledate),
       customerid: Number(v.customerid) || 0,
       customername: v.customername || null,
-      tgrossamount: Math.round(grossSubtotal * 100) / 100,
+      tgrossamount: round2(netSubtotal),
       tdisaper,
       tdisamount,
-      tgstamount: totalgst,
-      tsgstamount: totalgst / 2,
-      tcgstamount: totalgst / 2,
-      grandtotal: Math.round(grandtotalVal * 100) / 100,
+      tgstamount: round2(totalgst),
+      tsgstamount: round2(totalgst / 2),
+      tcgstamount: round2(totalgst / 2),
+      grandtotal: round2(grandtotalVal),
       paymenttype: v.paymentmethod || null,
       paymentstatus: v.paymentstatus === true || v.paymentstatus === 'Paid' || v.paymentstatus === 'true',
       accountid,
@@ -1293,7 +1413,6 @@ export class SalesComponent implements OnInit {
       isactive: v.isactive !== false,
       items,
     };
-    // Update flow: send existing invoiceno. New invoice: omit so server generates next per account+instance.
     if (this.editingInvoiceno != null) {
       payload.invoiceno = typeof v.invoiceno === 'number' && v.invoiceno > 0 ? v.invoiceno : this.editingInvoiceno;
     }
@@ -1309,13 +1428,13 @@ export class SalesComponent implements OnInit {
       updateddate: new Date()
     });
 
-    const payload = this.buildSalessummaryPayload();
+    const payload = this.buildInventorysummaryPayload();
     if (!payload || payload.items.length === 0) {
       this.errorMessage = 'Please add at least one item.';
       return;
     }
     // New invoice: invoiceno omitted so server generates next per (accountid, instanceid)
-    this.salesService.saveSalesSummaryWithDetails(payload).subscribe({
+    this.inventorysalesService.saveInventorySummaryWithDetails(payload).subscribe({
       next: (data: any) => {
         console.log('Sales summary saved', data);
         this.getSalesSummaryDetails();
@@ -1324,31 +1443,8 @@ export class SalesComponent implements OnInit {
         this.errorMessage = '';
       },
       error: (err: any) => {
-        console.warn('salessummary/save failed, falling back to sales/salessave', err);
-        this.createSalesViaLegacyApi();
-      }
-    });
-  }
-
-  /** Fallback: use existing sales/salessave API when salessummary/save is not available */
-  private createSalesViaLegacyApi(): void {
-    this.salesService.addSales(this.salesForm.value).subscribe({
-      next: (data: any) => {
-        console.log('Sales saved via legacy API', data);
-        this.getSalesSummaryDetails();
-        this.getSalesSummaryListData();
-        this.resetSalesForm();
-        this.errorMessage = '';
-      },
-      error: (err: any) => {
-        console.error('Error saving sales:', err);
-        if (err.status === 400 && err.error?.message) {
-          this.errorMessage = err.error.message;
-        } else if (err.error?.message) {
-          this.errorMessage = err.error.message;
-        } else {
-          this.errorMessage = err.message || 'Something went wrong. Please try again.';
-        }
+        console.error('Error saving inventory summary:', err);
+        this.errorMessage = err?.error?.message || err?.message || 'Something went wrong. Please try again.';
       }
     });
   }
@@ -1427,16 +1523,21 @@ export class SalesComponent implements OnInit {
   }
 
   deleteItem(item: any): void {
-    if (confirm(`Are you sure you want to delete this sales record?`)) {
-      this.salesService.deleteSales(item.salesid).subscribe({
+    const invoiceno = item?.invoiceno ?? item?.data?.invoiceno;
+    if (!invoiceno) {
+      this.errorMessage = 'Invalid invoice. Cannot delete.';
+      return;
+    }
+    if (confirm(`Are you sure you want to delete this inventory sales record?`)) {
+      const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+      this.inventorysalesService.deleteInventorySummary(invoiceno, accountId, instanceId).subscribe({
         next: () => {
-          console.log("Deleted:", item);
           this.getSalesSummaryDetails();
           this.getSalesSummaryListData();
+          this.errorMessage = '';
         },
         error: (err: any) => {
-          console.error('Error deleting sales', err);
-          this.errorMessage = 'Error deleting sales. Please try again.';
+          this.errorMessage = err?.error?.message || err?.message || 'Error deleting. Please try again.';
         }
       });
     }
@@ -1486,7 +1587,7 @@ export class SalesComponent implements OnInit {
           const user = this.authService.getUser() as any;
           const accountId = user?.accountid ?? user?.accountId ?? 1;
           const instanceId = user?.instanceid ?? user?.instanceId ?? 1;
-          this.salesService.getNextInvoiceNo(accountId, instanceId).subscribe({
+          this.inventorysalesService.getNextInvoiceNo(accountId, instanceId).subscribe({
             next: (res) => {
               if (this.salesForm && res?.nextInvoiceNo != null) {
                 this.salesForm.patchValue({ invoiceno: res.nextInvoiceNo }, { emitEvent: false });
@@ -1516,8 +1617,8 @@ export class SalesComponent implements OnInit {
     this.errorMessage = '';
     this.getCurrentUserId();
     this.generateInvoiceNumber();
-    if (this.router.url.includes('salesadd')) {
-      this.router.navigate(['/pages/sales']);
+    if (this.router.url.includes('inventorysalesadd')) {
+      this.router.navigate(['/pages/inventorysales']);
     }
   }
 

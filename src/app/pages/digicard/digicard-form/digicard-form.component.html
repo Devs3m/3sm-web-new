@@ -215,7 +215,7 @@
             <dxi-column dataField="digicardid" caption="Digicard ID" [cellTemplate]="'digiTemplate'"></dxi-column>
             <dxi-column dataField="companyname" caption="Company Name"></dxi-column>
             <dxi-column dataField="digicardmobile1" caption="Mobile"></dxi-column>
-            <dxi-column dataField="createddate" caption="Created Date" dataType="date" [format]="'dd/MM/yyyy'"></dxi-column>
+            <dxi-column dataField="createddate" caption="Created Date" [calculateCellValue]="dateCellValue"></dxi-column>
 
 
             <!-- Actions Column -->

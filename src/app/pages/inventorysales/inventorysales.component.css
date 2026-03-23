@@ -1,12 +1,25 @@
+/* Product dropdown: single-line (panel in overlay; primary in styles.css) */
+.inventory-product-autocomplete .product-option-single-line {
+  white-space: nowrap !important;
+  display: inline-block !important;
+  width: 100% !important;
+}
+.inventory-product-autocomplete .mat-mdc-option,
+.inventory-product-autocomplete .mat-mdc-option .mdc-list-item__primary-text,
+.inventory-product-autocomplete .mat-mdc-option .mdc-list-item__content {
+  white-space: nowrap !important;
+  flex-wrap: nowrap !important;
+}
+
 /* Same structure as account page (account.component.css) */
-.sales-container {
+.inventorysales-container {
   position: relative;
   padding: 20px;
   width: 100%;
   box-sizing: border-box;
 }
 
-.sales-container.form-mode {
+.inventorysales-container.form-mode {
   padding: 0;
 }
 
@@ -44,7 +57,7 @@ body {
   color: #337ab7;
 }
 
-::ng-deep app-sales .dx-datagrid .dx-row > td {
+::ng-deep app-inventorysales .dx-datagrid .dx-row > td {
   vertical-align: middle !important;
 }
 
@@ -60,7 +73,7 @@ body {
 }
 
 /* Statistics Cards - same as account (reduced height) */
-::ng-deep app-sales .example-card mat-card-header {
+::ng-deep app-inventorysales .example-card mat-card-header {
   display: flex;
   padding: 10px 12px 10px;
   background-color: whitesmoke !important;
@@ -68,15 +81,15 @@ body {
   border-color: whitesmoke !important;
 }
 
-::ng-deep app-sales .example-card .mat-mdc-card-title,
-::ng-deep app-sales .example-card .mat-mdc-card-subtitle {
+::ng-deep app-inventorysales .example-card .mat-mdc-card-title,
+::ng-deep app-inventorysales .example-card .mat-mdc-card-subtitle {
   display: block;
   margin: 4px;
   width: 196px;
 }
 
 /* Total Amount card - wider width and no wrap to keep label + value on one line */
-::ng-deep app-sales .example-card .total-amount-card .mat-mdc-card-title {
+::ng-deep app-inventorysales .example-card .total-amount-card .mat-mdc-card-title {
   width: auto;
   min-width: 220px;
   white-space: nowrap;
@@ -511,14 +524,16 @@ body {
 }
 
 /* Column widths - must total 100% for alignment */
-.col-desc   { width: 37%; }
-.col-hsn    { width: 9%; }
-.col-qty    { width: 7%; }
-.col-rate   { width: 10%; }
-.col-disc   { width: 8%; }
-.col-gst    { width: 8%; }
-.col-amount { width: 14%; }
-.col-action { width: 7%; }
+.col-desc   { width: 29%; }
+.col-batch  { width: 8%; }
+.col-expiry { width: 8%; }
+.col-hsn    { width: 8%; }
+.col-qty    { width: 6%; }
+.col-rate   { width: 9%; }
+.col-disc   { width: 7%; }
+.col-gst    { width: 7%; }
+.col-amount { width: 12%; }
+.col-action { width: 6%; }
 
 .items-table thead {
   background-color: #f5f5f5;
@@ -538,6 +553,8 @@ body {
 
 /* Header labels - center aligned */
 .th-desc   { text-align: center; }
+.th-batch  { text-align: center; }
+.th-expiry { text-align: center; }
 .th-hsn    { text-align: center; }
 .th-qty    { text-align: center; }
 .th-rate   { text-align: center; }
@@ -662,12 +679,14 @@ body {
 }
 
 /* Cell alignment - must match th for each column */
-.cell-hsn   { text-align: left; padding: 4px 12px; }
-.cell-qty   { text-align: right; }
-.cell-rate  { text-align: right; padding: 4px 12px; }
-.cell-disc  { text-align: right; }
-.cell-gst   { text-align: right; padding: 4px 12px; }
-.cell-amount{ text-align: right; padding: 4px 12px; }
+.cell-batch  { text-align: left; padding: 4px 12px; }
+.cell-expiry { text-align: left; padding: 4px 12px; }
+.cell-hsn    { text-align: left; padding: 4px 12px; }
+.cell-qty    { text-align: right; }
+.cell-rate   { text-align: right; padding: 4px 12px; }
+.cell-disc   { text-align: right; }
+.cell-gst    { text-align: right; padding: 4px 12px; }
+.cell-amount { text-align: right; padding: 4px 12px; }
 
 .gst-cell {
   font-weight: 600;
@@ -940,73 +959,73 @@ body {
 }
 
 /* Form field overrides - same as account (account.component.css) */
-::ng-deep app-sales {
+::ng-deep app-inventorysales {
   --mdc-outlined-text-field-focus-outline-color: #f7f5f5 !important;
   --mdc-outlined-text-field-outline-color: #f7f5f5 !important;
 }
 
 /* Remove all box-shadows from text inputs */
-::ng-deep app-sales .mdc-text-field,
-::ng-deep app-sales .mdc-text-field--focused,
-::ng-deep app-sales .mdc-text-field--outlined,
-::ng-deep app-sales .mdc-text-field--filled,
-::ng-deep app-sales .mat-mdc-text-field-wrapper,
-::ng-deep app-sales .mat-mdc-form-field,
-::ng-deep app-sales .mat-mdc-form-field-focus-overlay,
-::ng-deep app-sales input.mat-mdc-input-element,
-::ng-deep app-sales .mdc-text-field:not(.mdc-text-field--disabled),
-::ng-deep app-sales .mat-mdc-input-element,
-::ng-deep app-sales .mdc-line-ripple,
-::ng-deep app-sales .mat-mdc-form-field .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+::ng-deep app-inventorysales .mdc-text-field,
+::ng-deep app-inventorysales .mdc-text-field--focused,
+::ng-deep app-inventorysales .mdc-text-field--outlined,
+::ng-deep app-inventorysales .mdc-text-field--filled,
+::ng-deep app-inventorysales .mat-mdc-text-field-wrapper,
+::ng-deep app-inventorysales .mat-mdc-form-field,
+::ng-deep app-inventorysales .mat-mdc-form-field-focus-overlay,
+::ng-deep app-inventorysales input.mat-mdc-input-element,
+::ng-deep app-inventorysales .mdc-text-field:not(.mdc-text-field--disabled),
+::ng-deep app-inventorysales .mat-mdc-input-element,
+::ng-deep app-inventorysales .mdc-line-ripple,
+::ng-deep app-inventorysales .mat-mdc-form-field .mdc-text-field--filled:not(.mdc-text-field--disabled) {
   box-shadow: none !important;
 }
 
-::ng-deep app-sales input,
-::ng-deep app-sales select,
-::ng-deep app-sales textarea {
+::ng-deep app-inventorysales input,
+::ng-deep app-inventorysales select,
+::ng-deep app-inventorysales textarea {
   box-shadow: none !important;
   outline: none !important;
 }
 
-::ng-deep app-sales .mat-form-field-appearance-outline .mat-form-field-outline,
-::ng-deep app-sales .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+::ng-deep app-inventorysales .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-inventorysales .mat-form-field-appearance-outline .mat-form-field-outline-thick {
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-sales .form-container .mat-form-field-appearance-outline .mat-form-field-outline,
-::ng-deep app-sales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+::ng-deep app-inventorysales .form-container .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-inventorysales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-sales .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline,
-::ng-deep app-sales .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+::ng-deep app-inventorysales .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline,
+::ng-deep app-inventorysales .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
   color: #f7f5f5 !important;
   border-color: #f7f5f5 !important;
 }
 
-::ng-deep app-sales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-start,
-::ng-deep app-sales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-gap,
-::ng-deep app-sales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-end {
+::ng-deep app-inventorysales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-start,
+::ng-deep app-inventorysales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-gap,
+::ng-deep app-inventorysales .form-container .mat-form-field-appearance-outline .mat-form-field-outline-end {
   border-color: #f7f5f5 !important;
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-sales .invoice-form-container .mat-form-field-appearance-outline .mat-form-field-outline,
-::ng-deep app-sales .invoice-form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+::ng-deep app-inventorysales .invoice-form-container .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-inventorysales .invoice-form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-sales .invoice-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+::ng-deep app-inventorysales .invoice-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
   border-color: #f7f5f5 !important;
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-sales .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick {
+::ng-deep app-inventorysales .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick {
   color: #f44336 !important;
   border-color: #f44336 !important;
 }
 
-::ng-deep app-sales .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline {
+::ng-deep app-inventorysales .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline {
   color: #f44336 !important;
 }
 
@@ -1026,7 +1045,7 @@ body {
 }
 
 @media (max-width: 768px) {
-  .sales-container {
+  .inventorysales-container {
     padding: 15px;
   }
 
@@ -1125,14 +1144,14 @@ body {
 }
 
 /* When Add Customer panel is open, bring this section on top of sidenav/content */
-.sales-container.sales-add-customer-popup-open {
+.inventorysales-container.inventorysales-add-customer-popup-open {
   position: relative;
   z-index: 9999;
 }
 
 /* ── Add Customer sliding panel: same slide and CSS as Customer module create form ── */
 .sales-add-customer-panel.form-container {
-  z-index: 10000; /* On top of sales page (sales-container uses 9999 when panel is open) */
+  z-index: 10000; /* On top of inventory sales page (inventorysales-container uses 9999 when panel is open) */
   max-width: 100%;
   margin: 15px auto;
   padding: 20px;

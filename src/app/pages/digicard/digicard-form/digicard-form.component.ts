@@ -7,6 +7,7 @@ import { Workbook } from 'exceljs';
 import { DigicardService } from '../../service/digicard.service';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
+import { formatDateUtcDdSlashMmSlashYyyy } from '../../service/date-utils';
 
 @Component({
   selector: 'app-digicard-form',
@@ -40,6 +41,9 @@ cardThemes = [
   activeDigicard: number = 0;
   deactiveDigicard: number = 0;
   private apiUrl = environment.apiUrl;
+
+  dateCellValue = (rowData: any): string =>
+    formatDateUtcDdSlashMmSlashYyyy(rowData?.createddate);
 
   constructor(
     private digicardservice: DigicardService,

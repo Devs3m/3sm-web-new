@@ -1,0 +1,37 @@
+/* Reports expansion panel in sidenav */
+.reports-panel {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.reports-panel .mat-expansion-panel-header {
+  padding: 0 16px;
+  height: 48px;
+}
+
+.reports-panel .mat-expansion-panel-header-title {
+  display: flex;
+  align-items: center;
+}
+
+.reports-panel .mat-content {
+  display: flex;
+  align-items: center;
+}
+
+.reports-panel .mat-expansion-panel-body {
+  padding: 0 !important;
+}
+
+.reports-panel .mat-nav-list .mat-mdc-list-item {
+  display: flex;
+  align-items: center;
+}
+
+.reports-panel .sub-item {
+  padding-left: 12px;
+}
+
+.reports-panel .sub-item .aligned-icon {
+  margin-right: 8px;
+}

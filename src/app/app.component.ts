@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from './pages/service/auth.service';
 
 @Component({
@@ -6,7 +7,25 @@ import { AuthService } from './pages/service/auth.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
-  constructor(public authService: AuthService) {} 
+export class AppComponent implements OnInit, OnDestroy {
+  private tokenCheckInterval: any;
 
+  constructor(
+    public authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.tokenCheckInterval = setInterval(() => {
+      if (this.router.url !== '/login' && !this.router.url.startsWith('/login')) {
+        this.authService.logoutIfTokenExpired();
+      }
+    }, 60000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.tokenCheckInterval) {
+      clearInterval(this.tokenCheckInterval);
+    }
+  }
 }

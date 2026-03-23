@@ -1,0 +1,123 @@
+.product-ledger-container {
+  padding: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.filter-form mat-form-field {
+  min-width: 160px;
+}
+
+.filter-form .date-field {
+  min-width: 160px;
+}
+
+.filter-form .product-field {
+  min-width: 220px;
+}
+
+.filter-form .batch-field {
+  min-width: 220px;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-actions .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+}
+
+.refresh-btn {
+  color: black;
+}
+
+/* Filter form: icon and label black, box highlight white */
+.filter-form mat-icon,
+::ng-deep .product-ledger-container .filter-form mat-icon {
+  color: black !important;
+}
+
+::ng-deep .product-ledger-container .filter-form .mat-mdc-floating-label,
+::ng-deep .product-ledger-container .filter-form .mdc-floating-label {
+  color: black !important;
+}
+
+/* Bottom line - like other pages */
+::ng-deep .product-ledger-container .filter-form .mdc-notched-outline__leading,
+::ng-deep .product-ledger-container .filter-form .mdc-notched-outline__notch,
+::ng-deep .product-ledger-container .filter-form .mdc-notched-outline__trailing {
+  border-color: rgba(0, 0, 0, 0.38) !important;
+}
+
+::ng-deep .product-ledger-container .filter-form .mat-mdc-text-field-wrapper {
+  background-color: white !important;
+  border-bottom: 1px solid black !important;
+}
+
+::ng-deep .product-ledger-container .filter-form .mat-mdc-form-field-focus-overlay {
+  background-color: white !important;
+}
+
+.error-message {
+  color: #c62828;
+  margin: 0 0 16px 0;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  background-color: white;
+  padding: 16px;
+  border-radius: 4px;
+  color: black;
+  box-sizing: border-box;
+}
+
+.table-container dx-data-grid,
+::ng-deep .product-ledger-container .table-container .dx-datagrid {
+  width: 100% !important;
+}
+
+/* DevExpress grid - same styles as other pages */
+::ng-deep .product-ledger-container .dx-datagrid .dx-row > td {
+  vertical-align: middle !important;
+  background-color: white !important;
+  color: black !important;
+}
+
+::ng-deep .product-ledger-container .dx-datagrid .dx-datagrid-headers {
+  background-color: #1976d2;
+  color: white;
+}
+
+::ng-deep .product-ledger-container .dx-datagrid {
+  background-color: white;
+  color: black;
+}
+
+::ng-deep .product-ledger-container .dx-datagrid .dx-row {
+  background-color: white !important;
+  color: black !important;
+}
+
+::ng-deep .product-ledger-container .dx-datagrid .dx-data-row .dx-command-select {
+  background-color: white !important;
+}

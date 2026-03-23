@@ -152,6 +152,17 @@
           </select>     
         </mat-form-field>
 
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label style="color:black">Sales Page Type</mat-label>
+          <select matNativeControl formControlName="salestype">
+            <option value="" disabled>Select</option>
+            <option value="sales">Service Sales</option>
+            <option value="inventory_sales">Product Sales</option>
+            <option value="all">All Sales Pages</option>
+          </select>
+          <mat-hint>Controls which sales page appears in the side menu for this instance</mat-hint>
+        </mat-form-field>
+
           
          <div class="form-submit">
           <ng-container *appHasPermission="'instance:create'">

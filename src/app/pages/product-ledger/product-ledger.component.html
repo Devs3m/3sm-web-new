@@ -1,0 +1,91 @@
+<div class="product-ledger-container">
+  <h2>Product Ledger</h2>
+
+  <form [formGroup]="form" class="filter-form">
+    <mat-form-field appearance="outline" class="date-field">
+      <mat-label>From Date</mat-label>
+      <input matInput [matDatepicker]="startPicker" formControlName="startDate" placeholder="dd-mm-yyyy">
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="date-field">
+      <mat-label>To Date</mat-label>
+      <input matInput [matDatepicker]="endPicker" formControlName="endDate" placeholder="dd-mm-yyyy">
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="product-field">
+      <mat-label>Product</mat-label>
+      <input matInput
+             [formControl]="productSearchCtrl"
+             [matAutocomplete]="productAuto"
+             placeholder="Search product or All Products">
+      <mat-autocomplete #productAuto="matAutocomplete"
+                       [displayWith]="productDisplayFn.bind(this)"
+                       (optionSelected)="onProductSelect($event.option.value)">
+        <mat-option [value]="{ all: true }">All Products</mat-option>
+        <mat-option *ngFor="let p of filteredProducts" [value]="p">
+          {{ p.productname || p.product_name || p.description }}
+        </mat-option>
+      </mat-autocomplete>
+      <button mat-icon-button matSuffix *ngIf="form.get('productid')?.value" (click)="clearProduct()" type="button" title="Clear">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="batch-field">
+      <mat-label>Batch No</mat-label>
+      <input matInput
+             [formControl]="batchSearchCtrl"
+             [matAutocomplete]="batchAuto"
+             placeholder="All Batches">
+      <mat-autocomplete #batchAuto="matAutocomplete"
+                       [displayWith]="batchDisplayFn.bind(this)"
+                       (optionSelected)="onBatchSelect($event.option.value)">
+        <mat-option [value]="{ all: true }">All Batches</mat-option>
+        <mat-option *ngFor="let b of filteredBatches" [value]="b">{{ b }}</mat-option>
+      </mat-autocomplete>
+      <button mat-icon-button matSuffix *ngIf="form.get('batchno')?.value" (click)="clearBatch()" type="button" title="Clear">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <div class="filter-actions">
+      <button mat-raised-button type="button" class="btn-primary" (click)="onView()" [disabled]="isLoading">
+        {{ isLoading ? 'Loading...' : 'View' }}
+      </button>
+      <button mat-icon-button class="refresh-btn" (click)="onRefresh()" [disabled]="isLoading" title="Refresh">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </form>
+
+  <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+  <div class="table-container">
+    <dx-data-grid
+      [dataSource]="apiData"
+      [allowColumnReordering]="true"
+      [allowColumnResizing]="true"
+      [showBorders]="true"
+      [columnAutoWidth]="true"
+      [headerFilter]="{ visible: true }"
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }"
+      [paging]="{ pageSize: 12 }"
+      [noDataText]="isLoading ? 'Loading...' : 'No ledger entries. Select date range and click View.'"
+      title="Product Ledger"
+      (onExporting)="onExporting($event)">
+      <dxi-column dataField="date" caption="Date" [minWidth]="100" [calculateCellValue]="dateCellValue"></dxi-column>
+      <dxi-column dataField="type" caption="Type" [minWidth]="70"></dxi-column>
+      <dxi-column dataField="ref" caption="Ref (Invoice)" [minWidth]="100"></dxi-column>
+      <dxi-column dataField="description" caption="Description" [minWidth]="150"></dxi-column>
+      <dxi-column dataField="batchNo" caption="Batch No" [minWidth]="100"></dxi-column>
+      <dxi-column dataField="openingQty" caption="Opening Qty" [minWidth]="100" [calculateCellValue]="openingQtyCellValue"></dxi-column>
+      <dxi-column dataField="qty" caption="Qty Out" [minWidth]="80"></dxi-column>
+      <dxi-column dataField="closingQty" caption="Closing Qty" [minWidth]="100" [calculateCellValue]="closingQtyCellValue"></dxi-column>
+      <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+    </dx-data-grid>
+  </div>
+</div>

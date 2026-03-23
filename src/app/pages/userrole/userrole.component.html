@@ -83,8 +83,8 @@
         [sortIndex]="0">
       </dxi-column>
       <dxi-column dataField="userrolename" caption="Userrole Name" [width]="250"></dxi-column>
-      <dxi-column dataField="createddate" caption="Created Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="250"></dxi-column>
-      <dxi-column dataField="updateddate" caption="Updated Date" dataType="date" [format]="'dd/MM/yyyy'" [width]="250"></dxi-column>
+      <dxi-column dataField="createddate" caption="Created Date" [width]="250" [calculateCellValue]="createdDateCellValue"></dxi-column>
+      <dxi-column dataField="updateddate" caption="Updated Date" [width]="250" [calculateCellValue]="updatedDateCellValue"></dxi-column>
       <dxi-column dataField="userroleisactive" caption="Active" [width]="200"></dxi-column>
       <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="250"></dxi-column>
     

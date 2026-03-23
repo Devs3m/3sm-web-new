@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { Workbook } from 'exceljs';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { environment } from '../../../environments/environment';
+import { formatDateUtcDdSlashMmSlashYyyy } from '../service/date-utils';
 
 @Component({
   selector: 'app-userrole',
@@ -27,6 +28,11 @@ export class VatComponent implements OnInit {
   activeVat:number=0;
   deactiveVat:number=0;
   private apiUrl = environment.apiUrl;
+
+  createdDateCellValue = (rowData: any): string =>
+    formatDateUtcDdSlashMmSlashYyyy(rowData?.createddate);
+  updatedDateCellValue = (rowData: any): string =>
+    formatDateUtcDdSlashMmSlashYyyy(rowData?.updateddate);
   
  
   constructor(private vatservice:VatService,

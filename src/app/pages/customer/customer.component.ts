@@ -72,6 +72,7 @@ export class CustomerComponent implements OnInit {
       customerstate: [''],
       customercountry: [''],
       customerpincode: [''],
+      customergstno: [''],
       accountid: [accountId],
       instanceid: [instanceId],
       cityid: [null],
@@ -201,6 +202,7 @@ export class CustomerComponent implements OnInit {
           customerstate: r.customerstate || '',
           customercountry: r.customercountry || '',
           customerpincode: r.customerpincode || '',
+          customergstno: r.customergstno || '',
           accountid: r.accountid ?? this.authService.getAccountId() ?? 1,
           instanceid: r.instanceid ?? this.authService.getInstanceId() ?? 1,
           cityid: r.cityid || 1,
@@ -268,6 +270,8 @@ export class CustomerComponent implements OnInit {
 
     if (this.isEditMode) {
       const formData = { ...this.customerForm.value };
+      // Ensure customergstno is always included in update payload
+      formData.customergstno = this.customerForm.get('customergstno')?.value ?? '';
       if (!formData.customerid || formData.customerid === 0) {
         this.errorMessage = 'Customer ID is missing. Cannot update.';
         return;
@@ -315,6 +319,7 @@ export class CustomerComponent implements OnInit {
       customerstate: '',
       customercountry: '',
       customerpincode: '',
+      customergstno: '',
       accountid: accountId,
       instanceid: instanceId,
       cityid: null,

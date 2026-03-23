@@ -102,6 +102,16 @@ export class AuthService {
     return token ? !helper.isTokenExpired(token) : false;
   }
 
+  /** If token exists but is expired, logout and redirect to login. Call periodically for auto-logout on expiry. */
+  logoutIfTokenExpired(): void {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const helper = new JwtHelperService();
+    if (helper.isTokenExpired(token)) {
+      this.logout();
+    }
+  }
+
   // Get logged-in user data (merges JWT with userData so roleId/role are never lost)
   getUser() {
     const token = localStorage.getItem('token');

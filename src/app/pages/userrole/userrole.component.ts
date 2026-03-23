@@ -8,6 +8,7 @@ import { Workbook } from 'exceljs';
 import { PermissionService, Permission } from '../service/permission.service';
 import { AuthService } from '../service/auth.service';
 import { environment } from '../../../environments/environment';
+import { formatDateUtcDdSlashMmSlashYyyy } from '../service/date-utils';
 
 
 
@@ -32,6 +33,11 @@ data: { id: number; companyName: string; city: string; isActive: boolean }[] = [
 apiData:any[] =[];
 longText: any;
 totalUserrole:number=0;
+createdDateCellValue = (rowData: any): string =>
+  formatDateUtcDdSlashMmSlashYyyy(rowData?.createddate);
+updatedDateCellValue = (rowData: any): string =>
+  formatDateUtcDdSlashMmSlashYyyy(rowData?.updateddate);
+
 /** Numeric sort for userroleid (string/bigint safe). */
 userroleIdSortValue = (rowData: any): number => {
   const v = rowData?.userroleid ?? rowData?.userroleId ?? 0;
