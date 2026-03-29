@@ -1,5 +1,9 @@
 <section>
   <div class="form-backdrop" [class.open]="isFormOpen" (click)="restuserroleForm()"></div>
+  <div *ngIf="permissionNotification" class="permission-toast" [ngClass]="permissionNotification.type" role="alert">
+    <span>{{ permissionNotification.message }}</span>
+    <button type="button" (click)="dismissPermissionNotification()" aria-label="Close notification">&times;</button>
+  </div>
   <div class="form-container" [class.open]="isFormOpen">
       <p style="font-size: larger;">{{ isEditMode ? 'Edit User Role' : 'Add User Role' }}</p>
     <button (click)="restuserroleForm()" class="close-btn">&times;</button>
@@ -67,7 +71,7 @@
       [allowColumnResizing]="true" 
       [showBorders]="true"
       [headerFilter]="{ visible: true }" 
-      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }" 
       [paging]="{ pageSize: 12 }" 
       title="User Role"  
       [showBorders]="true" (onExporting)="onExporting($event)">
@@ -145,8 +149,10 @@
         </div>
         
         <div class="permission-footer">
-          <button class="permission-save-btn" mat-raised-button color="black" (click)="saveRolePermissions()">Save</button>
-          <button mat-button (click)="closePermissionConfig()">Cancel</button>
+          <button class="permission-save-btn" mat-raised-button color="black" (click)="saveRolePermissions()" [disabled]="isSavingPermissions">
+            {{ isSavingPermissions ? 'Saving...' : 'Save' }}
+          </button>
+          <button mat-button (click)="closePermissionConfig()" [disabled]="isSavingPermissions">Cancel</button>
         </div>
       </div>
     </div>

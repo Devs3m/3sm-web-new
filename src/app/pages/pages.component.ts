@@ -1,8 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { AuthService } from './service/auth.service';
 import { UserService } from './service/user.service';
 import { PermissionService } from './service/permission.service';
 import { InstanceService } from './service/instance.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-pages',
@@ -12,6 +14,7 @@ import { InstanceService } from './service/instance.service';
 export class PagesComponent implements OnInit {
   title = '3sm-web';
   shouldRun: any;
+  hideNavForVCard: boolean = false;
   loggedInUser: any = null;
   userName: string = '';
   userEmail: string = '';
@@ -24,10 +27,16 @@ export class PagesComponent implements OnInit {
     private userService: UserService,
     public permissionService: PermissionService,
     private instanceService: InstanceService,
+    private router: Router,
     private cdr: ChangeDetectorRef
   ) {} // Inject AuthService here
 
   ngOnInit(): void {
+    this.updateLayoutVisibility(this.router.url);
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe((event) => this.updateLayoutVisibility(event.urlAfterRedirects));
+
     this.getLoggedInUser();
     this.fetchUserDetailsFromAPI();
     this.getUserRole();
@@ -92,6 +101,10 @@ export class PagesComponent implements OnInit {
         clearInterval(checkRoleInterval);
       }
     }, 500);
+  }
+
+  private updateLayoutVisibility(url: string): void {
+    this.hideNavForVCard = /^\/pages\/digicard\/card(\/.*)?$/.test(url);
   }
 
   /** Fetch current instance salestype to control which sales menu (Service Sales vs Product Sales) to show */

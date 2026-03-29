@@ -1,4 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
+@import 'assets/css/variable.scss';
+@import 'assets/css/style.css';
+@import 'assets/css/responsive.css';
+
 
 /* Inventory sales product dropdown - single line (overlay outside component) */
 .inventory-product-autocomplete {
@@ -178,6 +182,18 @@ body .mat-mdc-text-field-wrapper{          /* Form Field width*/
 }
 
 /* Dev Express*/
+/* Fix duplicated search placeholder text in dx-data-grid search panel */
+.dx-datagrid .dx-datagrid-search-panel .dx-placeholder,
+.dx-datagrid .dx-datagrid-search-panel .dx-texteditor-container .dx-placeholder,
+.dx-datagrid .dx-datagrid-search-panel .dx-texteditor-input-container .dx-placeholder {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.dx-datagrid .dx-datagrid-search-panel .dx-texteditor-input::placeholder {
+  opacity: 1 !important;
+}
 
 
 html, body {

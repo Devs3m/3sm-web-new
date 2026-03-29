@@ -103,6 +103,18 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { permission: { resource: 'customer', action: 'view' } }
       },
+      {
+        path: 'supplier',
+        loadChildren: () => import(`./supplier/supplier.module`).then(m => m.SupplierModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'supplier', action: 'view' } }
+      },
+      {
+        path: 'purchase',
+        loadChildren: () => import(`./purchase/purchase.module`).then(m => m.PurchaseModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'purchase', action: 'view' } }
+      },
       { 
         path: 'product-ledger', 
         loadChildren: () => import(`./product-ledger/product-ledger.module`).then(m => m.ProductLedgerModule),

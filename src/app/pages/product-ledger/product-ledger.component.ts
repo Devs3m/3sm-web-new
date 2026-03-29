@@ -5,6 +5,7 @@ import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
 import { AuthService } from '../service/auth.service';
 import { InventorysalesService } from '../service/inventorysales.service';
+import { DX_FORMAT_FIXED_2, formatDisplayDecimal } from '../../core/display-number-format';
 
 export interface LedgerRow {
   date: string;
@@ -31,12 +32,16 @@ export class ProductLedgerComponent implements OnInit {
   apiData: LedgerRow[] = [];
   isLoading = false;
   errorMessage = '';
+  /** Hidden until the first successful ledger load so batch options exist. */
+  showBatchFilter = false;
+
+  readonly qtyColumnFormat = DX_FORMAT_FIXED_2;
 
   dateCellValue = (rowData: LedgerRow): string => this.formatDateDdMmYyyy(rowData.date);
   openingQtyCellValue = (rowData: LedgerRow): string =>
-    rowData.openingQty != null ? String(rowData.openingQty) : '-';
+    rowData.openingQty != null ? formatDisplayDecimal(rowData.openingQty) : '-';
   closingQtyCellValue = (rowData: LedgerRow): string =>
-    rowData.closingQty != null ? String(rowData.closingQty) : '-';
+    rowData.closingQty != null ? formatDisplayDecimal(rowData.closingQty) : '-';
 
   constructor(
     private fb: FormBuilder,
@@ -75,9 +80,8 @@ export class ProductLedgerComponent implements OnInit {
 
   ngOnInit(): void {
     const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     this.form = this.fb.group({
-      startDate: [startOfMonth],
+      startDate: [today],
       endDate: [today],
       productid: [null as number | null],
       batchno: [null as string | null],
@@ -115,6 +119,10 @@ export class ProductLedgerComponent implements OnInit {
   }
 
   onRefresh(): void {
+    const today = new Date();
+    this.form.patchValue({ startDate: today, endDate: today });
+    this.clearProduct();
+    this.clearBatch();
     this.onView();
   }
 
@@ -150,6 +158,7 @@ export class ProductLedgerComponent implements OnInit {
       next: (rows) => {
         this.apiData = rows || [];
         this.isLoading = false;
+        this.showBatchFilter = true;
       },
       error: (err) => {
         this.errorMessage = err?.error?.message || err?.message || 'Failed to load product ledger.';

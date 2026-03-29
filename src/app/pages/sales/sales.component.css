@@ -44,7 +44,9 @@ body {
   color: #337ab7;
 }
 
-::ng-deep app-sales .dx-datagrid .dx-row > td {
+/* Listing grid: sales + purchase (GRN) share the same page shell */
+::ng-deep app-sales .dx-datagrid .dx-row > td,
+::ng-deep app-purchase .dx-datagrid .dx-row > td {
   vertical-align: middle !important;
 }
 
@@ -59,8 +61,30 @@ body {
   margin-top: -14px;
 }
 
-/* Statistics Cards - same as account (reduced height) */
-::ng-deep app-sales .example-card mat-card-header {
+/* Statistics Cards — Service sales listing + Purchase (GRN) listing (override global .example-card max-width) */
+::ng-deep app-sales .example-card,
+::ng-deep app-purchase .example-card {
+  max-width: none !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch;
+  gap: 15px;
+  border: 1px solid rgb(247, 243, 243);
+  box-shadow: none;
+  text-align: left;
+}
+
+::ng-deep app-sales .example-card > .mat-mdc-card,
+::ng-deep app-purchase .example-card > .mat-mdc-card {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* Reduced header padding vs global .mat-mdc-card-header (matches service sales listing) */
+::ng-deep app-sales .example-card mat-card-header,
+::ng-deep app-sales .example-card .mat-mdc-card-header,
+::ng-deep app-purchase .example-card mat-card-header,
+::ng-deep app-purchase .example-card .mat-mdc-card-header {
   display: flex;
   padding: 10px 12px 10px;
   background-color: whitesmoke !important;
@@ -69,14 +93,17 @@ body {
 }
 
 ::ng-deep app-sales .example-card .mat-mdc-card-title,
-::ng-deep app-sales .example-card .mat-mdc-card-subtitle {
+::ng-deep app-sales .example-card .mat-mdc-card-subtitle,
+::ng-deep app-purchase .example-card .mat-mdc-card-title,
+::ng-deep app-purchase .example-card .mat-mdc-card-subtitle {
   display: block;
   margin: 4px;
   width: 196px;
 }
 
 /* Total Amount card - wider width and no wrap to keep label + value on one line */
-::ng-deep app-sales .example-card .total-amount-card .mat-mdc-card-title {
+::ng-deep app-sales .example-card .total-amount-card .mat-mdc-card-title,
+::ng-deep app-purchase .example-card .total-amount-card .mat-mdc-card-title {
   width: auto;
   min-width: 220px;
   white-space: nowrap;

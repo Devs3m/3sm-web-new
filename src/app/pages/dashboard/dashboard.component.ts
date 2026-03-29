@@ -9,6 +9,7 @@ import { AuthService } from '../service/auth.service';
 import { PermissionService } from '../service/permission.service';
 import type { PermissionDto } from '../service/permission.dto';
 import * as Highcharts from 'highcharts';
+import { formatDisplayDecimal } from '../../core/display-number-format';
 
 @Component({
   selector: 'app-dashboard',
@@ -193,7 +194,10 @@ export class DashboardComponent implements OnInit {
           title: { text: 'Sales Value (₹)', style: { color: '#27ae60' } },
           labels: {
             style: { color: '#27ae60' },
-            formatter: function (this: any) { return '₹' + (typeof this.value === 'number' ? this.value : Number(this.value || 0)).toLocaleString('en-IN'); }
+            formatter: function (this: any) {
+              const v = typeof this.value === 'number' ? this.value : Number(this.value || 0);
+              return '₹' + formatDisplayDecimal(v);
+            }
           },
           opposite: true,
           min: 0
@@ -206,7 +210,9 @@ export class DashboardComponent implements OnInit {
           const pts = this.points ?? [];
           let s = `<b>${x}</b><br/>`;
           pts.forEach((p: any) => {
-            s += `${p.series.name}: <b>${p.series.name.includes('Value') ? '₹' + p.y.toLocaleString('en-IN') : p.y}</b><br/>`;
+            const val =
+              p.series.name.includes('Value') ? '₹' + formatDisplayDecimal(p.y) : String(p.y);
+            s += `${p.series.name}: <b>${val}</b><br/>`;
           });
           return s;
         }

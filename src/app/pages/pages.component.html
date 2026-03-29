@@ -1,3 +1,4 @@
+<ng-container *ngIf="!hideNavForVCard; else fullPageVCard">
 <mat-toolbar class="example-spacer">
   <!-- <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
        <mat-icon>menu</mat-icon>
@@ -82,6 +83,12 @@
          mat-list-item routerLink='digicard' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">local_activity</mat-icon>Digicard
       </a>
+
+      <!-- V Card - opens card preview page -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('digicard')"
+         mat-list-item routerLink='digicard/card' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">badge</mat-icon>V Card
+      </a>
       
       <!-- Product - show if user has ANY product permission -->
       <a *ngIf="permissionService.hasAnyPermissionForResource('product')" 
@@ -105,6 +112,18 @@
       <a *ngIf="permissionService.hasAnyPermissionForResource('customer')" 
          mat-list-item routerLink='customer' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">contacts</mat-icon>Customer
+      </a>
+
+      <!-- Supplier - show if user has ANY supplier permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('supplier')"
+         mat-list-item routerLink='supplier' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">local_shipping</mat-icon>Supplier
+      </a>
+
+      <!-- Purchase (GRN) - show if user has ANY purchase permission -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('purchase')"
+         mat-list-item routerLink='purchase' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">receipt_long</mat-icon>Purchase
       </a>
       
       <!-- City - show if user has ANY city permission -->
@@ -152,3 +171,8 @@
     <router-outlet></router-outlet>
   </div>
 </mat-sidenav-container>
+</ng-container>
+
+<ng-template #fullPageVCard>
+  <router-outlet></router-outlet>
+</ng-template>

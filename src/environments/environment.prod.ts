@@ -2,6 +2,8 @@ export const environment = {
   production: true,
   apiUrl: 'https://api.connectsite.in',
   apiHost: 'https://connectsite.in/',
+  /** Base URL for V Card API (VCardMaster). Falls back to apiHost if not set. */
+  vcardApiUrl: 'https://connectsite.in/' as string,
   /** Auth header: 'Bearer' = "Bearer <token>", 'token' = "<token>" only */
   authHeaderFormat: 'Bearer' as 'Bearer' | 'token'
 };

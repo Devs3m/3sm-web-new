@@ -48,7 +48,7 @@
         <mat-select formControlName="gstid" (selectionChange)="onGstChange($event)" [compareWith]="compareGstById">
           <mat-option value="">Select GST</mat-option>
           <mat-option *ngFor="let gst of gstDropdownItems" [value]="gst.gstid">
-            {{ (gst.totalgstpercent !== null && gst.totalgstpercent !== undefined) ? gst.totalgstpercent : 'N/A' }}%
+            {{ (gst.totalgstpercent !== null && gst.totalgstpercent !== undefined) ? (gst.totalgstpercent | number:'1.2-2') : 'N/A' }}%
           </mat-option>
         </mat-select>
         <mat-hint *ngIf="gstDropdownItems.length === 0" style="color: orange;">
@@ -63,7 +63,7 @@
         <mat-select formControlName="taxid" (selectionChange)="onTaxChange($event)" [compareWith]="compareTaxById">
           <mat-option value="">Select Tax</mat-option>
           <mat-option *ngFor="let tax of taxDropdownItems" [value]="tax.vatid">
-            {{ tax.vatpercent }}%
+            {{ tax.vatpercent | number:'1.2-2' }}%
           </mat-option>
         </mat-select>
         <mat-error *ngIf="productForm.get('taxid')?.hasError('required') && productForm.get('taxid')?.touched">
@@ -225,7 +225,7 @@
     [allowColumnResizing]="true" 
     [showBorders]="true"
     [headerFilter]="{ visible: true }" 
-    [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }"
+    [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
     [paging]="{ pageSize: 12 }" 
     title="Product"
     [showBorders]="true" (onExporting)="onExporting($event)">

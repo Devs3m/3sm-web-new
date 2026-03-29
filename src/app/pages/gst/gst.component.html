@@ -78,19 +78,25 @@
         [allowColumnResizing]="true" 
         [showBorders]="true"
         [headerFilter]="{ visible: true }" 
-        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }" 
+        [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }" 
         title="GST %" 
         [paging]="{ pageSize: 12 }" 
         [showBorders]="true" (onExporting)="onExporting($event)">
 
     
       <dxi-column dataField="gstid"[allowSorting]="true" [sortOrder]="'asc'"caption="GST ID" [width]="130"></dxi-column>
-        <dxi-column dataField="totalgstpercent" caption="Total GST%" [width]="150"></dxi-column>
-        <dxi-column dataField="igstpercent" caption="IGST %"[width]="150" ></dxi-column>
-        <dxi-column dataField="cgstpercent" caption="CGST %" [width]="150"></dxi-column>
-        <dxi-column dataField="sgstpercent" caption="SGST %" [width]="150"></dxi-column>
-        <dxi-column dataField="ugstpercent" caption="UGST %" [width]="150"></dxi-column>
-        <dxi-column dataField="chesspercent" caption="CHESS %" [width]="150"></dxi-column>
+        <dxi-column dataField="totalgstpercent" caption="Total GST%" [width]="150" alignment="right"
+          [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+        <dxi-column dataField="igstpercent" caption="IGST %" [width]="150" alignment="right"
+          [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+        <dxi-column dataField="cgstpercent" caption="CGST %" [width]="150" alignment="right"
+          [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+        <dxi-column dataField="sgstpercent" caption="SGST %" [width]="150" alignment="right"
+          [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+        <dxi-column dataField="ugstpercent" caption="UGST %" [width]="150" alignment="right"
+          [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+        <dxi-column dataField="chesspercent" caption="CHESS %" [width]="150" alignment="right"
+          [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
         <dxi-column dataField="gstisactive" caption="Active" [width]="130"></dxi-column>
         <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="150"></dxi-column>
     

@@ -354,16 +354,16 @@
         [allowColumnResizing]="true"
         [showBorders]="true"
         [headerFilter]="{ visible: true }"
-        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search product sales summary...' }"
+        [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search product sales summary...' }"
         [paging]="{ pageSize: 15 }"
         title="Product Sales Summary"
         (onExporting)="onExporting($event)">
         <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx', 'pdf']"></dxo-export>
         <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150" [calculateCellValue]="invoiceNoCellValue"></dxi-column>
         <dxi-column dataField="customername" caption="Customer Name"></dxi-column> 
-        <dxi-column dataField="tdisaper" caption="Dis %" [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+        <dxi-column dataField="tdisaper" caption="Dis %" [customizeText]="inventoryDisPercentDisplayText"></dxi-column>
         <dxi-column dataField="grandtotal" caption="Grand Total" alignment="right" [width]="130"
-          [format]="{ type: 'currency', currency: 'INR', precision: 2 }"></dxi-column>
+          [customizeText]="inventoryGrandTotalDisplayText"></dxi-column>
         <dxi-column dataField="saledate" caption="Sale Date" [width]="120" [calculateCellValue]="saleDateCellValue"></dxi-column>
         <dxi-column dataField="paymenttype" caption="Payment Method" [width]="150"></dxi-column>
         <dxi-column dataField="paymentstatus" caption="Payment Status" [width]="130"></dxi-column>

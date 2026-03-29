@@ -208,7 +208,7 @@
         </div>
         <dx-data-grid [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" [dataSource]="apiData"
             [allowColumnReordering]="true" [allowColumnResizing]="true" [showBorders]="true"
-            [headerFilter]="{ visible: true }" [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }"
+            [headerFilter]="{ visible: true }" [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
             title="Digicard" [columns]="['digicardid','companyname', 'digicardmobile1','createddate','Actions']"
             [paging]="{ pageSize: 12 }" [showBorders]="true" (onExporting)="onExporting($event)">
 

@@ -537,6 +537,8 @@ export class PermissionService {
       'vat': 'vat',
       'product': 'product',
       'digicard': 'digicard',
+      'supplier': 'supplier',
+      'purchase': 'purchase',
       'dashboard': 'dashboard'
     };
 
@@ -679,6 +681,8 @@ export class PermissionService {
       { key: 'digicard', label: 'Digicard' },
       { key: 'sales', label: 'Sales' },
       { key: 'customer', label: 'Customer' },
+      { key: 'supplier', label: 'Supplier' },
+      { key: 'purchase', label: 'Purchase' },
       { key: 'dashboard', label: 'Dashboard' }
     ];
     const out: { [key: string]: Permission[] } = {};

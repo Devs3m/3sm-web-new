@@ -1,0 +1,253 @@
+/* Purchase listing cards + grid: styled with sales.component.css (app-purchase selectors there). */
+::ng-deep app-purchase {
+  --mdc-outlined-text-field-focus-outline-color: #f7f5f5 !important;
+  --mdc-outlined-text-field-outline-color: #f7f5f5 !important;
+}
+
+::ng-deep app-purchase .mdc-text-field,
+::ng-deep app-purchase .mdc-text-field--focused,
+::ng-deep app-purchase .mdc-text-field--outlined,
+::ng-deep app-purchase .mdc-text-field--filled,
+::ng-deep app-purchase .mat-mdc-text-field-wrapper,
+::ng-deep app-purchase .mat-mdc-form-field,
+::ng-deep app-purchase .mat-mdc-form-field-focus-overlay,
+::ng-deep app-purchase input.mat-mdc-input-element,
+::ng-deep app-purchase .mdc-text-field:not(.mdc-text-field--disabled),
+::ng-deep app-purchase .mat-mdc-input-element,
+::ng-deep app-purchase .mdc-line-ripple,
+::ng-deep app-purchase .mat-mdc-form-field .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  box-shadow: none !important;
+}
+
+::ng-deep app-purchase input,
+::ng-deep app-purchase select,
+::ng-deep app-purchase textarea {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+::ng-deep app-purchase .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-purchase .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep app-purchase .form-container .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-purchase .form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep app-purchase .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline,
+::ng-deep app-purchase .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+  border-color: #f7f5f5 !important;
+}
+
+::ng-deep app-purchase .form-container .mat-form-field-appearance-outline .mat-form-field-outline-start,
+::ng-deep app-purchase .form-container .mat-form-field-appearance-outline .mat-form-field-outline-gap,
+::ng-deep app-purchase .form-container .mat-form-field-appearance-outline .mat-form-field-outline-end {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+::ng-deep app-purchase .invoice-form-container .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-purchase .invoice-form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #f7f5f5 !important;
+}
+
+::ng-deep app-purchase .invoice-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  border-color: #f7f5f5 !important;
+  color: #f7f5f5 !important;
+}
+
+::ng-deep app-purchase .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick {
+  color: #f44336 !important;
+  border-color: #f44336 !important;
+}
+
+::ng-deep app-purchase .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline {
+  color: #f44336 !important;
+}
+
+/* Purchase (GRN) listing: DataGrid fills content area without horizontal page scroll */
+.purchase-list-grid-wrap {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .purchase-list-grid-wrap .purchase-list-datagrid {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+}
+
+:host ::ng-deep .purchase-list-grid-wrap .dx-datagrid {
+  width: 100% !important;
+  max-width: 100%;
+}
+
+/* Wider purchase grid (extra columns) */
+.purchase-items-table {
+  table-layout: fixed;
+}
+
+.purchase-items-table .col-desc   { width: 18%; }
+.purchase-items-table .col-pack   { width: 5%; }
+.purchase-items-table .col-qty    { width: 5%; }
+.purchase-items-table .col-free   { width: 5%; }
+.purchase-items-table .col-rate   { width: 6%; }
+.purchase-items-table .col-mrp    { width: 6%; }
+.purchase-items-table .col-disc   { width: 6%; }
+.purchase-items-table .col-batch  { width: 8%; }
+.purchase-items-table .col-expiry { width: 9%; }
+.purchase-items-table .col-gst    { width: 5%; }
+.purchase-items-table .col-cost   { width: 7%; }
+.purchase-items-table .col-value  { width: 7%; }
+.purchase-items-table .col-action { width: 6%; }
+
+.purchase-items-table .th-expiry {
+  text-align: center;
+}
+
+.purchase-items-table .th-pack,
+.purchase-items-table .th-free,
+.purchase-items-table .th-cost,
+.purchase-items-table .th-value,
+.purchase-items-table .th-batch,
+.purchase-items-table .th-gst,
+.purchase-items-table .th-mrp {
+  text-align: center;
+}
+
+.purchase-items-table .cell-expiry {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.purchase-items-table .table-field-expiry {
+  width: 100%;
+  min-width: 0;
+}
+
+.purchase-items-table .table-field-expiry ::ng-deep .mat-mdc-form-field-infix {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  min-height: 36px;
+}
+
+.purchase-items-table .pack-readonly-value {
+  font-size: 13px;
+  color: #333;
+  font-weight: 600;
+}
+
+.purchase-items-table .cell-free,
+.purchase-items-table .cell-batch {
+  text-align: right;
+}
+
+.purchase-items-table .cell-pack {
+  text-align: center;
+}
+
+.purchase-items-table .cell-cost,
+.purchase-items-table .cell-value {
+  text-align: right;
+  padding: 4px 12px;
+}
+
+.purchase-items-table .cell-value {
+  font-weight: 600;
+}
+
+.lines-toolbar-purchase {
+  margin-top: 12px;
+}
+
+.lines-toolbar-purchase button mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.success-banner--inline {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+  padding: 12px 24px;
+  border-left: 4px solid #2e7d32;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px 0;
+  border-radius: 0;
+}
+
+.success-banner--inline mat-icon {
+  color: #2e7d32;
+}
+
+.banner-dismiss {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  color: inherit;
+}
+
+/* Shorter summary bar than default sales invoice footer */
+.summary-footer--compact {
+  border-top-width: 1px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.summary-footer--compact .summary-col {
+  padding: 6px 8px;
+  gap: 2px;
+  min-width: 0;
+}
+
+.summary-footer--compact .summary-col-label {
+  font-size: 9px;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.summary-footer--compact .summary-col-value {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.summary-footer--compact .grand-value {
+  font-size: 14px !important;
+  line-height: 1.2;
+}
+
+.summary-footer--compact .discount-saved {
+  font-size: 9px;
+  padding: 1px 4px;
+  margin-top: 0;
+}
+
+.summary-footer--compact .action-col {
+  padding: 4px 12px;
+}
+
+.summary-footer--compact .save-btn {
+  gap: 2px;
+  padding: 2px 6px;
+}
+
+.summary-footer--compact .save-btn mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+
+.summary-footer--compact .save-btn-label {
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}

@@ -1,0 +1,201 @@
+<section class="productIngfo clearfix">
+  <div class="leftProductInfo f-left">
+    <div class="leftHeader clearfix">
+      <ul class="headerUl nav nav-tabs clearfix">
+        <li class="profileSecTab" routerLink="active"><a data-toggle="tab" href="#profile"><i class="fa fa-user"
+              aria-hidden="true"></i></a>
+        </li>
+        <li routerLink="active"><a data-toggle="tab" href="#product"><i class="fa fa-archive"
+              aria-hidden="true"></i></a>
+        </li>
+       <li routerLink="active"><a data-toggle="tab" href="#videos"><i class="fa fa-play-circle-o"
+              aria-hidden="true"></i></a></li>
+        <li routerLink="active"><a data-toggle="tab" href="#Address"><i class="fa fa-address-card-o"
+              aria-hidden="true"></i></a></li>
+        <li routerLink="active"><a data-toggle="tab" href="#payment"><i class="fa fa-credit-card-alt"
+              aria-hidden="true"></i></a></li>
+      </ul>
+    </div>
+    <div class="container clearfix">
+      <div class="leftInnerBox hideSec clearfix">
+        <div class="logoLeft"><img class="" [src]="productDetails.logo || 'assets/images/before-upload.png'" alt="logo"></div>
+        <div class="profileSec clearfix">
+          <div class="profile clearfix">
+            <img [src]="productDetails.photo || 'assets/images/before-upload.png'">
+          </div>
+          <h2 class="heading">{{productDetails.name || 'Sundar'}}</h2>
+          <p>{{productDetails.designation || 'Manager'}}</p>
+        </div>
+        <div class="aboutSec clearfix">
+          <h5 class="heading">About Us</h5>
+          <p>{{productDetails.aboutme || 'Test'}}</p>
+          <div class="contact clearfix">
+            <h2 class="heading">Contact Me</h2>
+            <ul class="headerUl">
+              <li><a [href]="getHref(productDetails.mobileNo1 || '9042041321', 'tel')"><i class="fa fa-phone"
+                    aria-hidden="true"></i></a>{{productDetails.mobileNo1 || '9042041321'}}</li>
+              <li><a target="blank" [href]="getHref(productDetails.emailId || 'sundar@connectsite.in', 'mailto')"><i class="fa fa-envelope-o"
+                    aria-hidden="true"></i></a>{{productDetails.emailId || 'sundar@connectsite.in'}}</li>
+            </ul>
+          </div>
+        </div>
+        <div class="bottomCont clearfix">
+          <ul class="headerUl clearfix">
+            <li><a target="blank" [href]="productDetails.whatsAppLink || 'https://wa.me/919042041321'"><i class="fa fa-whatsapp"
+                  aria-hidden="true"></i></a></li>
+            <li><a href="javascript:;" (click)="showShareBtn()"><i class="fa fa-share-alt"
+                  aria-hidden="true"></i></a></li>
+            <li><a target="blank" [href]="productDetails.twitterLink || 'https://x.com/'"><i class="fa fa-twitter"
+                  aria-hidden="true"></i></a></li>
+            <li><a target="blank" [href]="productDetails.faceBookLink || 'https://www.facebook.com/'"><i class="fa fa-facebook"
+                  aria-hidden="true"></i></a></li>
+            <li><a target="blank" [href]="productDetails.vcardLink || 'https://connectsite.in/vcard'"><i class="fa fa-book" aria-hidden="true"></i></a>
+            </li>
+            <li><a target="blank" [href]="productDetails.linkedinLink || 'https://in.linkedin.com/'"><i class="fa fa-linkedin-square"
+                  aria-hidden="true"></i></a></li>
+            <li><a target="blank" [href]="productDetails.instagramLink || 'https://www.instagram.com/?hl=en'"><i class="fa fa-instagram"
+                  aria-hidden="true"></i></a></li>
+            <li><a target="blank" [href]="productDetails.pinrestLink || 'https://in.pinterest.com/'"><i class="fa fa-pinterest"
+                  aria-hidden="true"></i></a></li>
+          </ul>
+          <div class="shareBtns" *ngIf="showOptionShareBtn">
+            <ul class="headerUl clearfix">
+              <li><a target="_blank" [href]="getFacebookShareUrl()"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+              <li><a target="_blank" [href]="getWhatsappShareUrl()"><i class="fa fa-whatsapp" aria-hidden="true"></i></a></li>
+              <li><a target="_blank" [href]="getTwitterShareUrl()"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+              <li><a target="_blank" [href]="getLinkedinShareUrl()"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="poweredBy">
+      <p>Powered By <a href="https://webzzy.in/" target="_blank"><img class="brandLogo"
+            src="../../../../assets/images/WebzzyWhite.png" alt="" /></a></p>
+      <p class="iconLogoContact">
+        <a href="https://webzzy.in/" target="_blank"><img src="../../../../assets/images/weblink-blue.svg" alt="" /></a>
+        <a href="https://api.whatsapp.com/send/?phone=%2B917339313233&text=I+would+like+to+get+more+information+on+Healthonlyy&app_absent=0"
+          target="_blank"><img src="../../../../assets/images/whatsapp.svg" alt="" /></a>
+      </p>
+    </div>
+  </div>
+  <div class="rightProImgSet tab-content clearfix f-right">
+    <div id="profile" [class]="setDefaultActive ? 'tab-pane fade in  blockSec active': 'tab-pane fade in  blockSec '">
+      <div class="leftInnerBox clearfix">
+        <div class="logoLeft"><img class="" [src]="productDetails.logo || 'assets/images/before-upload.png'" alt="logo"></div>
+        <div class="profileSec clearfix">
+          <div class="profile clearfix">
+            <img [src]="productDetails.photo || 'assets/images/before-upload.png'">
+          </div>
+          <h2 class="heading">{{productDetails.name || 'Sundar'}}</h2>
+          <p>{{productDetails.designation || 'Manager'}}</p>
+        </div>
+        <div class="aboutSec clearfix">
+          <h5 class="heading">About Us</h5>
+          <p>{{productDetails.aboutme || 'Test'}}</p>
+          <div class="contact clearfix">
+            <h2 class="heading">Contact Me</h2>
+            <ul class="headerUl">
+              <li><a [href]="getHref(productDetails.mobileNo1 || '9042041321', 'tel')"><i class="fa fa-phone"
+                    aria-hidden="true"></i></a>{{productDetails.mobileNo1 || '9042041321'}}</li>
+              <li><a target="blank" [href]="getHref(productDetails.emailId || 'sundar@connectsite.in', 'mailto')"><i class="fa fa-envelope-o"
+                    aria-hidden="true"></i></a>{{productDetails.emailId || 'sundar@connectsite.in'}}</li>
+            </ul>
+          </div>
+        </div>
+        <div class="bottomCont clearfix">
+          <ul class="headerUl clearfix">
+            <li><a target="blank" [href]="productDetails.whatsAppLink"><i class="fa fa-whatsapp"
+                  aria-hidden="true"></i></a></li>
+                  <li><a href="javascript:;" (click)="showShareBtn()"><i class="fa fa-share-alt"
+                    aria-hidden="true"></i></a></li>
+            <li><a target="blank" [href]="productDetails.twitterLink || 'https://x.com/'"><i class="fa fa-twitter"
+                  aria-hidden="true"></i></a></li>
+            <li><a target="blank" [href]="productDetails.faceBookLink || 'https://www.facebook.com/'"><i class="fa fa-facebook"
+                  aria-hidden="true"></i></a></li>
+            <li><a target="blank" [href]="productDetails.vcardLink || 'https://connectsite.in/vcard'"><i class="fa fa-book" aria-hidden="true"></i></a>
+            </li>
+            <li><a target="blank" [href]="productDetails.linkedinLink || 'https://in.linkedin.com/'"><i class="fa fa-linkedin-square"
+                  aria-hidden="true"></i></a></li>
+            <li><a target="blank" [href]="productDetails.instagramLink || 'https://www.instagram.com/?hl=en'"><i class="fa fa-instagram"
+                  aria-hidden="true"></i></a></li>
+            <li><a target="blank" [href]="productDetails.pinrestLink || 'https://in.pinterest.com/'"><i class="fa fa-pinterest"
+                  aria-hidden="true"></i></a></li>
+          </ul>
+          <div class="shareBtns" *ngIf="showOptionShareBtn">
+            <ul class="headerUl clearfix">
+              <li><a target="_blank" [href]="getFacebookShareUrl()"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+              <li><a target="_blank" [href]="getWhatsappShareUrl()"><i class="fa fa-whatsapp" aria-hidden="true"></i></a></li>
+              <li><a target="_blank" [href]="getTwitterShareUrl()"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+              <li><a target="_blank" [href]="getLinkedinShareUrl()"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="product" [class]="setDefaultActive ? 'tab-pane fade in': 'tab-pane fade in active'">
+      <h2 class="multiHead">Product Category</h2>
+      <div class="scrolSec clearfix">
+        <ul class="productsSec">
+          <li *ngFor="let item of productDetails.vCardProductMasterData">
+            <div class="imgBox clearfix">
+              <img [src]="item.imageUrl" alt="pro">
+            </div>
+            <div class="imgCont">
+              <h2 class="secHeading">{{item.name}}</h2>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div id="Address" class="tab-pane fade in">
+      <h2 class="multiHead">Our Address</h2>
+      <div class="scrolSec clearfix">
+        <div class="overallAdd clearfix">
+          <div class="contactAddress clearfix">
+            <div class="row contSec clearfix">
+              <h2 class="col-sm-12">Address</h2>
+              <p class="col-sm-6"><span>Name </span>: {{productDetails.name}}</p>
+              <p class="col-sm-6"><span>Designation </span>: {{productDetails.designation}}</p>
+              <p class="col-sm-6"><span>PH </span>:{{productDetails.mobileNo1 || '9042041321'}}</p>
+              <p class="col-sm-6"><span>Gmail</span> : {{productDetails.emailId || 'sundar@connectsite.in'}}</p>
+              <p class="col-sm-6"><span>Web</span> :</p>
+              <p class="col-sm-6">
+                <span>Location</span>:{{productDetails.addressSt1 + ' ' + productDetails.addressSt2 + ' ' + productDetails.addressCity + ' ' +  productDetails.addressState + ' ' + productDetails.addressCountry}}
+              </p>
+            </div>
+          </div>
+          <div class="mapSec clearfix" *ngIf="hasValidMapCoordinates">
+            <iframe [src]="getMapEmbedUrl()" width="100%" height="300" style="border:0;" loading="lazy" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="videos" class="tab-pane fade in">
+      <h2 class="multiHead">Our Videos</h2>
+      <div class="scrolSec">
+        <div class="">
+          <div class="col-sm-12 videoSec clearfix">
+            <iframe [src]="productDetails.video1 | videoSafeUrl: 'resourceUrl'" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+          </div>
+          <div class="col-sm-12 videoSec clearfix">
+            <iframe [src]="productDetails.video2 | videoSafeUrl: 'resourceUrl'" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="poweredBy mobilePower">
+    <p>Powered By <a href="https://webzzy.in/" target="_blank"><img class="brandLogo"
+          src="../../../../assets/images/WebzzyWhite.png" alt="" /></a></p>
+    <p class="iconLogoContact">
+      <a href="https://webzzy.in/" target="_blank"><img src="../../../../assets/images/weblink-blue.svg" alt="" /></a>
+      <a href="https://api.whatsapp.com/send/?phone=%2B917339313233&text=I+would+like+to+get+more+information+on+Healthonlyy&app_absent=0"
+        target="_blank"><img src="../../../../assets/images/whatsapp.svg" alt="" /></a>
+    </p>
+  </div>
+</section>

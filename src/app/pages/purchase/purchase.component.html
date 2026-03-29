@@ -1,0 +1,468 @@
+<ng-container>
+<section class="sales-container" [class.form-mode]="isFormOpen">
+
+  <!-- GRN form (same shell as sales invoice) -->
+  <div class="invoice-form-container" [class.active]="isFormOpen">
+    <div class="invoice-form">
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <form id="purchaseForm" [formGroup]="purchaseForm" (ngSubmit)="onSubmit()">
+        <!-- Header: brand | supplier | GRN meta -->
+        <div class="form-section-card customer-section-card">
+          <div class="col-title">
+            <img src="assets/logo.png" class="brand-logo" alt="Logo">
+            <h2 class="invoice-title-text">Purchase</h2>
+            <p class="invoice-subtitle-text">Goods receipt &amp; stock</p>
+          </div>
+          <div class="customer-divider"></div>
+
+          <div class="col-customer">
+            <div class="section-title customer-section-title">
+              <div class="customer-title-left">
+                <mat-icon>local_shipping</mat-icon>
+                <h3>Supplier Details</h3>
+              </div>
+            </div>
+
+            <div class="customer-select-wrapper" *ngIf="!purchaseForm.get('suppliername')?.value">
+              <mat-form-field appearance="outline" class="customer-select-field">
+                <mat-label>Search supplier by name or phone</mat-label>
+                <input
+                  matInput
+                  [formControl]="supplierSearchCtrl"
+                  [matAutocomplete]="supplierAuto"
+                  placeholder="Type to search...">
+                <mat-autocomplete
+                  #supplierAuto="matAutocomplete"
+                  [displayWith]="supplierDisplayFn"
+                  (optionSelected)="onSupplierSelect($event.option.value)">
+                  <mat-option *ngFor="let s of filteredSuppliers" [value]="s">
+                    <span class="customer-option-name">{{ s.suppliername }}</span>
+                    <span class="customer-option-phone" *ngIf="s.supplierphone">({{ s.supplierphone }})</span>
+                  </mat-option>
+                </mat-autocomplete>
+                <mat-error *ngIf="purchaseForm.get('supplierid')?.hasError('required') && purchaseForm.get('supplierid')?.touched">
+                  Supplier is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="customer-info-panel" *ngIf="purchaseForm.get('suppliername')?.value">
+              <div class="customer-card-header">
+                <span class="customer-card-title">
+                  <mat-icon>business</mat-icon>
+                  {{ purchaseForm.get('suppliername')?.value }}
+                </span>
+                <div class="customer-card-actions">
+                  <button type="button" mat-icon-button class="card-action-btn edit-btn-card" title="Change supplier" (click)="clearSupplier()">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button type="button" mat-icon-button class="card-action-btn close-btn-card" title="Clear supplier" (click)="clearSupplier()">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="customer-info-row" *ngIf="supplierForPanel?.supplierphone">
+                <mat-icon class="info-icon">phone</mat-icon>
+                <span class="info-value">{{ supplierForPanel.supplierphone }}</span>
+              </div>
+              <div class="customer-info-row" *ngIf="supplierForPanel?.supplieremail">
+                <mat-icon class="info-icon">email</mat-icon>
+                <span class="info-value">{{ supplierForPanel.supplieremail }}</span>
+              </div>
+              <div class="customer-info-row" *ngIf="supplierAddressLine">
+                <mat-icon class="info-icon">location_on</mat-icon>
+                <span class="info-value">{{ supplierAddressLine }}</span>
+              </div>
+              <div class="customer-info-row" *ngIf="supplierForPanel?.suppliergst">
+                <mat-icon class="info-icon">badge</mat-icon>
+                <span class="info-value">GSTIN: {{ supplierForPanel.suppliergst }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="customer-divider"></div>
+
+          <div class="col-invoice">
+            <div class="section-title invoice-info-header">
+              <span class="invoice-info-title-group">
+                <mat-icon>receipt_long</mat-icon>
+                <h3>GRN Info</h3>
+              </span>
+              <button *ngIf="isFormOpen" type="button" class="back-btn" (click)="goBackToList()">
+                <mat-icon>arrow_back</mat-icon>
+                Back
+              </button>
+            </div>
+            <div class="invoice-meta-fields">
+              <mat-form-field appearance="outline" class="invoice-meta-field">
+                <mat-label>GRN No.</mat-label>
+                <input matInput [value]="grnDisplayValue" readonly placeholder="Auto">
+                <input type="hidden" formControlName="purchasegrnno">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="invoice-meta-field">
+                <mat-label>Date</mat-label>
+                <input matInput [matDatepicker]="pPicker" formControlName="purchasedate" placeholder="Select date">
+                <mat-datepicker-toggle matSuffix [for]="pPicker"></mat-datepicker-toggle>
+                <mat-datepicker #pPicker></mat-datepicker>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="invoice-meta-field">
+                <mat-label>Supplier invoice no.</mat-label>
+                <input matInput formControlName="supplierinvoiceno" (blur)="syncLinesFromHeader()">
+                <mat-error *ngIf="purchaseForm.get('supplierinvoiceno')?.hasError('required') && purchaseForm.get('supplierinvoiceno')?.touched">
+                  Required
+                </mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="invoice-meta-field">
+                <mat-label>Payment method</mat-label>
+                <select matNativeControl formControlName="paymenttype">
+                  <option value="" disabled>Select payment method</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Credit Card">Credit Card</option>
+                  <option value="Debit Card">Debit Card</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="UPI">UPI</option>
+                  <option value="Cheque">Cheque</option>
+                  <option value="Credit">Credit</option>
+                  <option value="Other">Other</option>
+                </select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="invoice-meta-field">
+                <mat-label>Payment period</mat-label>
+                <input matInput formControlName="paymentperiod" placeholder="Filled from supplier credit days">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="invoice-meta-field">
+                <mat-label>Purchase profit (total)</mat-label>
+                <input matInput type="number" formControlName="totalpurchaseprofitamt">
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+
+        <!-- Line items -->
+        <div class="form-section-card">
+          <div class="section-title">
+            <mat-icon>inventory_2</mat-icon>
+            <h3>Add line items</h3>
+          </div>
+
+          <div class="items-table-container">
+            <table class="items-table purchase-items-table">
+              <colgroup>
+                <col class="col-desc">
+                <col class="col-pack">
+                <col class="col-qty">
+                <col class="col-free">
+                <col class="col-rate">
+                <col class="col-mrp">
+                <col class="col-disc">
+                <col class="col-batch" *ngIf="!hideBatchNoAndExpiry">
+                <col class="col-expiry" *ngIf="!hideBatchNoAndExpiry">
+                <col class="col-gst">
+                <col class="col-cost">
+                <col class="col-value">
+                <col class="col-action">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th class="th-desc">DESCRIPTION</th>
+                  <th class="th-pack">PACK</th>
+                  <th class="th-qty">QTY</th>
+                  <th class="th-free">FREE</th>
+                  <th class="th-rate">PRICE</th>
+                  <th class="th-mrp">MRP</th>
+                  <th class="th-disc">DISCOUNT</th>
+                  <th class="th-batch" *ngIf="!hideBatchNoAndExpiry">BATCH</th>
+                  <th class="th-expiry" *ngIf="!hideBatchNoAndExpiry">EXPIRY</th>
+                  <th class="th-gst">GST</th>
+                  <th class="th-cost">COST</th>
+                  <th class="th-value">VALUE</th>
+                  <th class="th-action">ACTION</th>
+                </tr>
+              </thead>
+              <tbody formArrayName="items">
+                <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
+                  <td>
+                    <mat-form-field appearance="outline" class="table-field">
+                      <input
+                        matInput
+                        formControlName="productname"
+                        placeholder="Search product..."
+                        data-purchase-field="productname"
+                        (keydown.enter)="onLineEnterKey($event, i, 'productname')"
+                        [matAutocomplete]="prodAuto">
+                      <mat-autocomplete
+                        #prodAuto="matAutocomplete"
+                        [displayWith]="productAutocompleteDisplayFn"
+                        (optionSelected)="onProductLineSelect(i, $event)">
+                        <mat-option *ngFor="let p of (filteredProducts[i] || productOptions)" [value]="p">
+                          {{ p.productname }}
+                        </mat-option>
+                      </mat-autocomplete>
+                      <mat-error *ngIf="item.get('productname')?.hasError('required') && item.get('productname')?.touched">
+                        Required
+                      </mat-error>
+                    </mat-form-field>
+                  </td>
+                  <td class="readonly-cell cell-pack">
+                    <input type="hidden" formControlName="productpackqty" />
+                    <span class="pack-readonly-value" *ngIf="item.get('productpackqty')?.value != null && item.get('productpackqty')?.value !== ''; else packPlaceholder">
+                      {{ item.get('productpackqty')?.value }}
+                    </span>
+                    <ng-template #packPlaceholder>—</ng-template>
+                  </td>
+                  <td class="cell-qty">
+                    <mat-form-field appearance="outline" class="table-field table-field-qty">
+                      <input matInput type="number" formControlName="purchaseqty" min="1" step="1"
+                             data-purchase-field="qty"
+                             (keydown.enter)="onLineEnterKey($event, i, 'qty')"
+                             (input)="recalcLine(i); recalcHeaderTotals()">
+                      <mat-error *ngIf="item.get('purchaseqty')?.invalid && item.get('purchaseqty')?.touched">
+                        Quantity required (min 1)
+                      </mat-error>
+                    </mat-form-field>
+                  </td>
+                  <td class="cell-free">
+                    <mat-form-field appearance="outline" class="table-field table-field-qty">
+                      <input matInput type="number" formControlName="purchasefreeqty" min="0" step="1"
+                             data-purchase-field="free"
+                             (keydown.enter)="onLineEnterKey($event, i, 'free')"
+                             (input)="recalcLine(i); recalcHeaderTotals()">
+                    </mat-form-field>
+                  </td>
+                  <td class="cell-rate">
+                    <mat-form-field appearance="outline" class="table-field table-field-qty">
+                      <input matInput type="number" formControlName="purchaseprice" min="0" step="0.01"
+                             data-purchase-field="price"
+                             (keydown.enter)="onLineEnterKey($event, i, 'price')"
+                             (blur)="onPurchasePriceBlur(i)"
+                             (input)="recalcLine(i); recalcHeaderTotals()">
+                    </mat-form-field>
+                  </td>
+                  <td class="cell-mrp">
+                    <mat-form-field appearance="outline" class="table-field table-field-qty">
+                      <input matInput type="number" formControlName="mrp" min="0" step="0.01"
+                             data-purchase-field="mrp"
+                             (keydown.enter)="onLineEnterKey($event, i, 'mrp')"
+                             (blur)="onPurchaseMrpBlur(i)">
+                    </mat-form-field>
+                  </td>
+                  <td class="cell-disc">
+                    <mat-form-field appearance="outline" class="table-field table-field-disc">
+                      <input matInput type="number" formControlName="purchasediscountPer" min="0" max="100" step="0.01"
+                             data-purchase-field="disc"
+                             (keydown.enter)="onLineEnterKey($event, i, 'disc')"
+                             (input)="recalcLine(i); recalcHeaderTotals()">
+                      <span matSuffix>%</span>
+                    </mat-form-field>
+                  </td>
+                  <td class="cell-batch" *ngIf="!hideBatchNoAndExpiry">
+                    <mat-form-field appearance="outline" class="table-field">
+                      <input matInput formControlName="stockBatchno" placeholder="Batch"
+                             data-purchase-field="batch"
+                             (keydown.enter)="onLineEnterKey($event, i, 'batch')">
+                    </mat-form-field>
+                  </td>
+                  <td class="cell-expiry" *ngIf="!hideBatchNoAndExpiry">
+                    <mat-form-field appearance="outline" class="table-field table-field-expiry">
+                      <input matInput [matDatepicker]="lineExpPicker" formControlName="expirydate" placeholder="Expiry"
+                             data-purchase-field="expiry"
+                             (keydown.enter)="onLineEnterKey($event, i, 'expiry')">
+                      <mat-datepicker-toggle matSuffix [for]="lineExpPicker"></mat-datepicker-toggle>
+                      <mat-datepicker #lineExpPicker="matDatepicker"></mat-datepicker>
+                    </mat-form-field>
+                  </td>
+                  <td class="readonly-cell gst-cell cell-gst">
+                    {{ (item.get('purchasegstPer')?.value || 0) | number:'1.2-2' }}%
+                  </td>
+                  <td class="amount-cell cell-cost">
+                    {{ lineCostBeforeGst(item) | number:'1.2-2' }}
+                  </td>
+                  <td class="amount-cell cell-value">
+                    {{ (item.get('purchasecost')?.value || 0) | number:'1.2-2' }}
+                  </td>
+                  <td class="action-cell">
+                    <button type="button" (click)="removeLine(i)" class="delete-btn-icon" mat-icon-button [disabled]="items.length === 1">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="lines-toolbar-purchase">
+            <button type="button" mat-stroked-button color="primary" (click)="addLine()">
+              <mat-icon>add</mat-icon>
+              Add line
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="summary-footer summary-footer--compact" *ngIf="isFormOpen">
+      <div class="summary-cols">
+        <div class="summary-col">
+          <span class="summary-col-label">Gross Amount</span>
+          <span class="summary-col-value">{{ getGrossSubtotal() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col discount-col">
+          <span class="summary-col-label">Total Discount</span>
+          <span class="summary-col-value discount-text">- {{ getTotalDiscount() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col subtotal-col">
+          <span class="summary-col-label">Subtotal</span>
+          <span class="summary-col-value">{{ getSubtotal() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col">
+          <span class="summary-col-label">CGST</span>
+          <span class="summary-col-value">{{ getCgst() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col">
+          <span class="summary-col-label">SGST</span>
+          <span class="summary-col-value">{{ getSgst() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col">
+          <span class="summary-col-label">Total GST</span>
+          <span class="summary-col-value green-text">{{ getTotalGst() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-col grand-col">
+          <span class="summary-col-label">Grand Total</span>
+          <span class="summary-col-value grand-value">{{ getGrandTotal() | number:'1.2-2' }}</span>
+          <span *ngIf="getTotalDiscount() > 0" class="discount-saved">
+            Saved {{ getTotalDiscount() | number:'1.2-2' }}
+          </span>
+        </div>
+        <div class="summary-col action-col">
+          <ng-container *ngIf="!isEditMode">
+            <button
+              *appHasPermission="'purchase:create'"
+              type="submit"
+              form="purchaseForm"
+              class="save-btn"
+              [disabled]="!canSavePurchase()">
+              <mat-icon>save</mat-icon>
+              <span class="save-btn-label">SAVE (Ctrl+S)</span>
+            </button>
+          </ng-container>
+          <ng-container *ngIf="isEditMode">
+            <button
+              *appHasPermission="'purchase:update'"
+              type="submit"
+              form="purchaseForm"
+              class="save-btn"
+              [disabled]="!canSavePurchase()">
+              <mat-icon>save</mat-icon>
+              <span class="save-btn-label">SAVE (Ctrl+S)</span>
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Listing Page: Cards + Add Button + Grid (same structure as sales) -->
+  <div *ngIf="!isFormOpen">
+    <div *ngIf="errorMessage" class="error-message">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <div *ngIf="successMessage" class="success-banner success-banner--inline">
+      <mat-icon>check_circle</mat-icon>
+      <span>{{ successMessage }}</span>
+      <button type="button" (click)="dismissMessages()" class="banner-dismiss" aria-label="Dismiss">&times;</button>
+    </div>
+    <div *ngIf="deleteCautionMessage" class="error-message">
+      <mat-icon>warning</mat-icon>
+      <span>{{ deleteCautionMessage }}</span>
+      <button type="button" (click)="dismissMessages()" class="banner-dismiss" aria-label="Dismiss">&times;</button>
+    </div>
+
+    <div class="example-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Purchases &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ purchases.length }}</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+      <mat-card class="total-amount-card">
+        <mat-card-header>
+          <mat-card-title>Total Amount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ totalPurchaseAmount | number:'1.2-2' }}</mat-card-title>
+        </mat-card-header>
+      </mat-card>
+    </div>
+
+    <div class="pos-relative purchase-list-grid-wrap">
+      <div class="btn-pos-list">
+        <button *appHasPermission="'purchase:create'" type="button" (click)="toggleForm()" class="add-btn">
+          <mat-icon>add_circle</mat-icon>
+        </button>
+      </div>
+      <dx-data-grid
+        class="purchase-list-datagrid"
+        [dataSource]="purchases"
+        [width]="'100%'"
+        [columnAutoWidth]="true"
+        [wordWrapEnabled]="false"
+        [allowColumnReordering]="true"
+        [allowColumnResizing]="true"
+        [showBorders]="true"
+        [headerFilter]="{ visible: true }"
+        [searchPanel]="{ visible: true, width: 200, placeholder: 'Search…' }"
+        [paging]="{ pageSize: 15 }"
+        title="Purchase (GRN) summary"
+        (onExporting)="onExporting($event)">
+        <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx', 'pdf']"></dxo-export>
+        <dxi-column
+          dataField="purchasegrnno"
+          caption="GRN"
+          [minWidth]="72"
+          [calculateCellValue]="grnCellValue"
+          [calculateSortValue]="grnSortValue"
+          [sortOrder]="'desc'"
+          [sortIndex]="0">
+        </dxi-column>
+        <dxi-column dataField="purchasedate" caption="Date" dataType="date" [minWidth]="88"></dxi-column>
+        <dxi-column dataField="suppliername" caption="Supplier" [minWidth]="100"></dxi-column>
+        <dxi-column dataField="supplierinvoiceno" caption="Supplier inv." [minWidth]="88"></dxi-column>
+        <dxi-column
+          dataField="paymentperiod"
+          caption="Payment period"
+          [minWidth]="88"
+          [calculateCellValue]="paymentPeriodCellValue">
+        </dxi-column>
+        <dxi-column
+          dataField="totalpurchaseprofitamt"
+          caption="Profit"
+          alignment="right"
+          [minWidth]="88"
+          [calculateCellValue]="purchaseProfitCellValue"
+          [format]="{ type: 'fixedPoint', precision: 2 }">
+        </dxi-column>
+        <dxi-column
+          dataField="totalamount"
+          caption="Grand Total"
+          alignment="right"
+          [minWidth]="96"
+          [calculateCellValue]="totalAmountCellValue"
+          [format]="{ type: 'fixedPoint', precision: 2 }">
+        </dxi-column>
+        <dxi-column dataField="noofitems" caption="Items" [minWidth]="56"></dxi-column>
+        <dxi-column dataField="isactive" caption="Active" [minWidth]="56"></dxi-column>
+        <dxi-column caption="Actions" alignment="center" cellTemplate="purchaseActionTemplate" [minWidth]="96"></dxi-column>
+        <div *dxTemplate="let data of 'purchaseActionTemplate'" style="display:flex; gap:8px; justify-content:center;">
+          <a *appHasPermission="'purchase:update'" (click)="editItem(data.data)" style="cursor:pointer" title="Edit">
+            <span class="material-symbols-outlined action-icon edit-icon">edit</span>
+          </a>
+          <a *appHasPermission="'purchase:delete'" (click)="deleteItem(data.data)" style="cursor:pointer" title="Delete">
+            <span class="material-symbols-outlined action-icon delete-icon">delete</span>
+          </a>
+        </div>
+      </dx-data-grid>
+    </div>
+  </div>
+</section>
+</ng-container>

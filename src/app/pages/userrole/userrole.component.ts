@@ -54,6 +54,9 @@ permissionTemplates: { [key: string]: Permission[] } = {};
 permissionResourceKeys: string[] = []; // Array to hold resource keys for template
 allAvailablePermissions: Permission[] = []; // All permissions from backend with IDs
 permissionLookup: Map<string, Permission> = new Map(); // Lookup map: "resource:action" -> Permission with ID
+isSavingPermissions = false;
+permissionNotification: { type: 'success' | 'error'; message: string } | null = null;
+private notificationTimeoutRef: any = null;
  
 constructor(
   private userroleservice: UserroleService,
@@ -346,20 +349,22 @@ constructor(
   }
 
   saveRolePermissions(): void {
+    if (this.isSavingPermissions) return;
+
     // Check if user is Super Admin
     if (!this.permissionService.isSuperAdmin()) {
-      alert('Access denied. Only Super Admin can assign permissions to roles.');
+      this.showPermissionNotification('error', 'Access denied. Only Super Admin can assign permissions to roles.');
       return;
     }
 
     if (!this.selectedRoleId || this.selectedRoleId <= 0) {
-      alert('Invalid role selected. Role ID must be a positive number.');
+      this.showPermissionNotification('error', 'Invalid role selected. Role ID must be a positive number.');
       return;
     }
 
     const roleId = typeof this.selectedRoleId === 'number' ? this.selectedRoleId : Number(this.selectedRoleId);
     if (isNaN(roleId) || roleId <= 0) {
-      alert('Invalid role ID. Please select a valid role.');
+      this.showPermissionNotification('error', 'Invalid role ID. Please select a valid role.');
       return;
     }
 
@@ -418,9 +423,10 @@ constructor(
     }
 
     if (permissionIds.length === 0) {
-      alert(`Error: No valid permission IDs found for ${this.rolePermissions.length} selected permissions.\n\n` +
-            `The backend permissions list may not contain these permissions, or they may need to be created first.\n\n` +
-            `Please check the browser console for details.`);
+      this.showPermissionNotification(
+        'error',
+        `No valid permission IDs found for ${this.rolePermissions.length} selected permissions.`
+      );
       return;
     }
 
@@ -441,24 +447,47 @@ constructor(
       };
     });
 
+    this.isSavingPermissions = true;
     this.userroleservice.saveRolePermissions(roleId, permissionsToSave).subscribe({
       next: () => {
-        alert('Permissions saved successfully!');
+        this.showPermissionNotification('success', `Permissions updated successfully for "${this.selectedRoleName}".`);
+        this.isSavingPermissions = false;
         this.closePermissionConfig();
         this.permissionService.clearCache();
       },
       error: (err: any) => {
         const errorMessage = err.error?.message || err.error || err.message || 'Unknown error';
-        alert(`Error saving permissions: ${errorMessage}`);
+        this.isSavingPermissions = false;
+        this.showPermissionNotification('error', `Error saving permissions: ${errorMessage}`);
       }
     });
   }
 
   closePermissionConfig(): void {
+    if (this.isSavingPermissions) return;
     this.isPermissionConfigOpen = false;
     this.selectedRoleId = 0;
     this.selectedRoleName = '';
     this.rolePermissions = [];
+  }
+
+  dismissPermissionNotification(): void {
+    this.permissionNotification = null;
+    if (this.notificationTimeoutRef) {
+      clearTimeout(this.notificationTimeoutRef);
+      this.notificationTimeoutRef = null;
+    }
+  }
+
+  private showPermissionNotification(type: 'success' | 'error', message: string): void {
+    this.permissionNotification = { type, message };
+    if (this.notificationTimeoutRef) {
+      clearTimeout(this.notificationTimeoutRef);
+    }
+    this.notificationTimeoutRef = setTimeout(() => {
+      this.permissionNotification = null;
+      this.notificationTimeoutRef = null;
+    }, 3500);
   }
 
   // Helper method to check if configure button should be visible

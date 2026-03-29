@@ -35,7 +35,7 @@
       </button>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="batch-field">
+    <mat-form-field *ngIf="showBatchFilter" appearance="outline" class="batch-field">
       <mat-label>Batch No</mat-label>
       <input matInput
              [formControl]="batchSearchCtrl"
@@ -72,7 +72,7 @@
       [showBorders]="true"
       [columnAutoWidth]="true"
       [headerFilter]="{ visible: true }"
-      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search...' }"
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
       [paging]="{ pageSize: 12 }"
       [noDataText]="isLoading ? 'Loading...' : 'No ledger entries. Select date range and click View.'"
       title="Product Ledger"
@@ -83,7 +83,7 @@
       <dxi-column dataField="description" caption="Description" [minWidth]="150"></dxi-column>
       <dxi-column dataField="batchNo" caption="Batch No" [minWidth]="100"></dxi-column>
       <dxi-column dataField="openingQty" caption="Opening Qty" [minWidth]="100" [calculateCellValue]="openingQtyCellValue"></dxi-column>
-      <dxi-column dataField="qty" caption="Qty Out" [minWidth]="80"></dxi-column>
+      <dxi-column dataField="qty" caption="Qty Out" [minWidth]="80" [format]="qtyColumnFormat"></dxi-column>
       <dxi-column dataField="closingQty" caption="Closing Qty" [minWidth]="100" [calculateCellValue]="closingQtyCellValue"></dxi-column>
       <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
     </dx-data-grid>

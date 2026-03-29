@@ -7,7 +7,7 @@ export interface SalesSettings {
   hideProductsDaysBeforeExpiry: number;
   /** true = rate includes GST (inclusive), false = rate is before GST (exclusive) */
   gstInclusive: boolean;
-  /** When true: hide batch no and expiry fields in Product Sales UI. Backend batch logic still applies; expiry filtering exempted. */
+  /** When true: hide batch no and expiry in Product Sales & Purchase GRN; purchase auto-fills batch as GRN-{grn}-L{n}. */
   hideBatchNoAndExpiryInProductSales: boolean;
   /** When true: allow decimal quantity (e.g. 1.5, 2.25) in Service Sales and Product Sales */
   allowDecimalQtyInSales: boolean;

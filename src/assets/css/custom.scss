@@ -1,0 +1,65 @@
+.table {
+  border-collapse: collapse;
+  width: 100%;
+
+  tr {
+
+    th,
+    td {
+      border: 1px solid #eee;
+      padding: 3px 8px;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    th {
+      padding-top: 10px;
+      padding-bottom: 10px;
+      background-color: #007bff;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    &:nth-child(even) {
+      background-color: #fafafa;
+    }
+
+    &:hover {
+      background-color: #eeeeee;
+    }
+  }
+}
+
+.w-150px {
+  width: 150px;
+}
+
+.no-bg-btn {
+  padding: 5px;
+  background-color: transparent;
+  border: 0;
+  outline: none;
+  margin: 3px;
+  font-size: 17px;
+  color: #111;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.ListHeader {
+  width: 100%;
+  padding-bottom: 15px;
+  border-bottom: solid 1px #ddd;
+
+  .pageHeading {
+    padding-top: 10px;
+  }
+}
+
+a.btn:not([href]):not([tabindex]) {
+  color: #fff;
+}

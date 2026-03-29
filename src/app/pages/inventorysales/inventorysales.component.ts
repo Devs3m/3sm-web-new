@@ -19,6 +19,7 @@ import { FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@ang
 import { environment } from '../../../environments/environment';
 import { SaveInventorysummaryDto, InventoryDetailItemDto } from './models/save-inventorysummary.dto';
 import { formatDateUtcDdSlashMmSlashYyyy } from '../service/date-utils';
+import { formatDisplayDecimal } from '../../core/display-number-format';
 
 @Component({
   selector: 'app-inventorysales',
@@ -774,6 +775,29 @@ export class InventorysalesComponent implements OnInit {
   saleDateCellValue = (rowData: any): string =>
     formatDateUtcDdSlashMmSlashYyyy(rowData?.saledate ?? rowData?.invdate);
 
+  /** Product sales summary grid: 2 decimals (API may return numeric as string; DevExpress format is unreliable). */
+  inventoryDisPercentDisplayText = (cellInfo: { value: unknown }): string => {
+    const v = cellInfo.value;
+    if (v == null || v === '') return '';
+    const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/,/g, ''));
+    if (!Number.isFinite(n)) return String(v);
+    return formatDisplayDecimal(n);
+  };
+
+  /** Product sales summary grid: INR with 2 fraction digits. */
+  inventoryGrandTotalDisplayText = (cellInfo: { value: unknown }): string => {
+    const v = cellInfo.value;
+    if (v == null || v === '') return '';
+    const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/,/g, ''));
+    if (!Number.isFinite(n)) return String(v ?? '');
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(n);
+  };
+
   /** Invoice number with only the sequence part (for listing; hides account and instance). */
   getDisplayInvoiceNoSequenceOnly(invoiceno: number | null | undefined): string {
     if (invoiceno == null) return '';
@@ -898,10 +922,24 @@ export class InventorysalesComponent implements OnInit {
         } else {
           filtered = this.byAccountId(rawList, accountId);
         }
-        this.salesSummaryList = filtered.map((item: any) => ({
-          ...item,
-          saledate: item.invdate ?? item.invoicedate ?? item.invoiceDate ?? item.saledate ?? item.date
-        }));
+        this.salesSummaryList = filtered.map((item: any) => {
+          const gRaw = item.grandtotal ?? item.grandTotal;
+          const grandNum =
+            gRaw != null && gRaw !== ''
+              ? parseFloat(String(gRaw).replace(/,/g, ''))
+              : NaN;
+          const tdRaw = item.tdisaper;
+          const tdNum =
+            tdRaw != null && tdRaw !== ''
+              ? parseFloat(String(tdRaw).replace(/,/g, ''))
+              : null;
+          return {
+            ...item,
+            saledate: item.invdate ?? item.invoicedate ?? item.invoiceDate ?? item.saledate ?? item.date,
+            grandtotal: Number.isFinite(grandNum) ? grandNum : 0,
+            tdisaper: tdNum != null && Number.isFinite(tdNum) ? tdNum : null,
+          };
+        });
         this.totalSales = this.salesSummaryList.length;
         this.totalAmount = this.salesSummaryList.reduce((sum: number, item: any) => {
           const val = parseFloat(item.grandtotal ?? item.grandTotal ?? 0);
@@ -1120,13 +1158,13 @@ export class InventorysalesComponent implements OnInit {
     return expOnly > today && expDate <= cutoff;
   }
 
-  /** Single-line label: "ProductName | Batch no-X | Avail Qty- Y" (batch when !hideBatchNoAndExpiry, avail qty 2 decimals) */
+  /** Single-line label: "ProductName | Batch no-X | Avail Qty- Y" (batch when !hideBatchNoAndExpiry) */
   getProductOptionLabel(product: any): string {
     if (!product) return '';
     const name = product.productname || '';
     const batch = this.hideBatchNoAndExpiry ? '' : (product.batchno ? ` | Batch no-${product.batchno}` : '');
     const qty = Number(product.productqty ?? 0);
-    const avail = ` | Avail Qty- ${qty % 1 === 0 ? qty : qty.toFixed(2)}`;
+    const avail = ` | Avail Qty- ${formatDisplayDecimal(qty)}`;
     return `${name}${batch}${avail}`.trim();
   }
 

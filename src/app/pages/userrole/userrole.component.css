@@ -300,3 +300,38 @@ body {
   min-height: 36px;
   line-height: 36px;
 }
+
+.permission-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 11000;
+  min-width: 320px;
+  max-width: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  color: #fff;
+  font-size: 14px;
+}
+
+.permission-toast.success {
+  background: #2e7d32;
+}
+
+.permission-toast.error {
+  background: #c62828;
+}
+
+.permission-toast button {
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
