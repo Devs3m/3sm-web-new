@@ -166,6 +166,87 @@ export class InventorysalesService {
     return this.http.get<string[]>(`${this.apiUrl}/inventorysummary/product-ledger-batches`, { params });
   }
 
+  getSalesLedger(
+    startDate: string,
+    endDate: string,
+    accountId: number,
+    instanceId: number,
+    paymentType?: string | null
+  ): Observable<
+    {
+      date: string;
+      source: string;
+      invoiceno: string;
+      customerName: string;
+      paymentType: string;
+      paymentStatus: string;
+      amount: number;
+    }[]
+  > {
+    const params: Record<string, string> = {
+      startDate,
+      endDate,
+      accountid: String(accountId),
+      instanceid: String(instanceId),
+    };
+    if (paymentType != null && paymentType.trim() !== '') params['paymenttype'] = paymentType.trim();
+    return this.http.get<any[]>(`${this.apiUrl}/inventorysummary/sales-ledger`, { params });
+  }
+
+  getSalesLedgerPaymentTypes(accountId: number, instanceId: number): Observable<string[]> {
+    const params: Record<string, string> = {
+      accountid: String(accountId),
+      instanceid: String(instanceId),
+    };
+    return this.http.get<string[]>(`${this.apiUrl}/inventorysummary/sales-ledger-payment-types`, { params });
+  }
+
+  getCreditCollections(
+    startDate: string,
+    endDate: string,
+    accountId: number,
+    instanceId: number
+  ): Observable<
+    {
+      date: string;
+      source: 'SERVICE_SALES' | 'PRODUCT_SALES';
+      rawInvoiceno: number;
+      invoiceno: string;
+      customerid: number;
+      customerName: string;
+      amount: number;
+      paymentStatus: string;
+    }[]
+  > {
+    const params: Record<string, string> = {
+      startDate,
+      endDate,
+      accountid: String(accountId),
+      instanceid: String(instanceId),
+    };
+    return this.http.get<any[]>(`${this.apiUrl}/inventorysummary/credit-collections`, { params });
+  }
+
+  collectCreditPayment(
+    invoices: Array<{ source: 'SERVICE_SALES' | 'PRODUCT_SALES'; invoiceno: number }>,
+    accountId: number,
+    instanceId: number,
+    paymentDate?: string | null,
+    paymentType?: string | null,
+    paymentMode?: string | null,
+    collectionMode?: 'FULL' | 'PARTIAL' | null
+  ): Observable<{ success: boolean; updatedCount: number }> {
+    return this.http.put<{ success: boolean; updatedCount: number }>(`${this.apiUrl}/inventorysummary/credit-collections/collect`, {
+      invoices,
+      accountid: accountId,
+      instanceid: instanceId,
+      paymentDate: paymentDate ?? null,
+      paymentType: paymentType ?? null,
+      paymentMode: paymentMode ?? null,
+      collectionMode: collectionMode ?? null,
+    });
+  }
+
   /** For inventory sales: products from currentstock with qty > 0 */
   getProductsFromCurrentStock(
     accountId: number,

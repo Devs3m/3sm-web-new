@@ -5,14 +5,14 @@
   </div>
 
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <mat-form-field appearance="outline" class="form-field">
+    <mat-form-field appearance="outline" class="form-field mobile-four-columns">
       <mat-label style="color:black">Customer Name</mat-label>
       <input matInput placeholder="Customer Name" class="mat-input-element custom-placeholder" formControlName="customername">
       <mat-error *ngIf="form.get('customername')?.hasError('required') && form.get('customername')?.touched">Customer name is required</mat-error>
       <mat-error *ngIf="form.get('customername')?.hasError('minlength') && form.get('customername')?.touched">Customer name must be at least 3 characters</mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="form-field">
+    <mat-form-field appearance="outline" class="form-field mobile-four-columns">
       <mat-label style="color:black">Mobile Number</mat-label>
       <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder" formControlName="customermobile" type="tel">
       <mat-error *ngIf="form.get('customermobile')?.hasError('required') && form.get('customermobile')?.touched">Mobile number is required</mat-error>

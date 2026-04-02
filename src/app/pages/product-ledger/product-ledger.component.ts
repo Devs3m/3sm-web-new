@@ -37,6 +37,26 @@ export class ProductLedgerComponent implements OnInit {
 
   readonly qtyColumnFormat = DX_FORMAT_FIXED_2;
 
+  private parseNullableNumber(v: unknown): number | null {
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  /** Accepts camelCase/snake_case/lowercase keys from API payloads. */
+  private normalizeLedgerRow(row: any): LedgerRow {
+    return {
+      date: String(row?.date ?? ''),
+      type: String(row?.type ?? ''),
+      ref: String(row?.ref ?? ''),
+      description: String(row?.description ?? ''),
+      batchNo: String(row?.batchNo ?? row?.batchno ?? ''),
+      openingQty: this.parseNullableNumber(row?.openingQty ?? row?.openingqty ?? row?.opening_qty),
+      qty: this.parseNullableNumber(row?.qty ?? row?.quantity) ?? 0,
+      closingQty: this.parseNullableNumber(row?.closingQty ?? row?.closingqty ?? row?.closing_qty ?? row?.stockqty_after),
+    };
+  }
+
   dateCellValue = (rowData: LedgerRow): string => this.formatDateDdMmYyyy(rowData.date);
   openingQtyCellValue = (rowData: LedgerRow): string =>
     rowData.openingQty != null ? formatDisplayDecimal(rowData.openingQty) : '-';
@@ -156,7 +176,8 @@ export class ProductLedgerComponent implements OnInit {
 
     ledger$.subscribe({
       next: (rows) => {
-        this.apiData = rows || [];
+        const raw = Array.isArray(rows) ? rows : [];
+        this.apiData = raw.map((r) => this.normalizeLedgerRow(r));
         this.isLoading = false;
         this.showBatchFilter = true;
       },

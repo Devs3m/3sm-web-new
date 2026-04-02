@@ -1,4 +1,4 @@
-.form-container {
+.add-customer-form-container {
   max-width: 100%;
   margin: 15px auto;
   padding: 20px;
@@ -6,6 +6,8 @@
   box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
   background-color: #ffff;
   margin-top: 1% !important;
+  height: 380px !important;
+  width: 1237px !important;
   overflow-y: auto;
 }
 
@@ -15,7 +17,33 @@
   margin-bottom: 4px;
 }
 
+.add-customer-form-container form {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 1400px) {
+  .add-customer-form-container form {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 992px) {
+  .add-customer-form-container form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .add-customer-form-container form {
+    grid-template-columns: 1fr;
+  }
+}
+
 .form-submit {
+  grid-column: 1 / -1;
   margin-top: 50px;
   text-align: center;
 }
@@ -43,6 +71,11 @@
   color: white;
 }
 
+.mat-icon {
+  color: black;
+  height: 10px;
+}
+
 /* Outline color overrides — same as customer module */
 ::ng-deep app-customer-form {
   --mdc-outlined-text-field-focus-outline-color: #f7f5f5 !important;
@@ -54,79 +87,79 @@
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline .mat-form-field-outline {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline {
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick {
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline {
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
   border-color: #f7f5f5 !important;
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline .mat-form-field-outline-start,
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline .mat-form-field-outline-gap,
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline .mat-form-field-outline-end {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline-start,
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline-gap,
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline-end {
   border-color: #f7f5f5 !important;
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-start,
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-gap,
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-end {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-start,
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-gap,
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-end {
   border-color: #f7f5f5 !important;
   color: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline .mat-form-field-outline svg {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline svg {
   fill: #f7f5f5 !important;
   stroke: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg {
   fill: #f7f5f5 !important;
   stroke: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick svg {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline-thick svg {
   fill: #f7f5f5 !important;
   stroke: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick svg {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick svg {
   fill: #f7f5f5 !important;
   stroke: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline .mat-form-field-outline svg path {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline .mat-form-field-outline svg path {
   fill: #f7f5f5 !important;
   stroke: #f7f5f5 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg path {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline svg path {
   fill: #f7f5f5 !important;
   stroke: #f7f5f5 !important;
 }
 
 /* Keep error states red */
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick {
   color: #f44336 !important;
   border-color: #f44336 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline {
   color: #f44336 !important;
 }
 
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline svg,
-::ng-deep app-customer-form .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick svg {
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline svg,
+::ng-deep app-customer-form .add-customer-form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick svg {
   fill: #f44336 !important;
   stroke: #f44336 !important;
 }

@@ -9,7 +9,10 @@
       {{ errorMessage }}
     </div>
 
-    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="row g-3">
+      <div class="col-lg-3">
+        
+      </div>
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Customer Name</mat-label>
@@ -178,7 +181,6 @@
       <dxi-column dataField="customeremail" caption="Email" [width]="220"></dxi-column>
       <dxi-column dataField="customercity" caption="City" [width]="130"></dxi-column>
       <dxi-column dataField="customerstate" caption="State" [width]="130"></dxi-column>
-      <dxi-column dataField="customerpincode" caption="Pincode" [width]="110"></dxi-column>
       <dxi-column dataField="customergstno" caption="GST No" [width]="160"></dxi-column>
       <dxi-column dataField="isactive" caption="Status" alignment="center" [width]="100"></dxi-column>
       <dxi-column caption="Actions" alignment="center" cellTemplate="actionTemplate" [width]="120"></dxi-column>

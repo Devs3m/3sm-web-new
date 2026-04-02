@@ -79,11 +79,11 @@
       (onExporting)="onExporting($event)">
       <dxi-column dataField="date" caption="Date" [minWidth]="100" [calculateCellValue]="dateCellValue"></dxi-column>
       <dxi-column dataField="type" caption="Type" [minWidth]="70"></dxi-column>
-      <dxi-column dataField="ref" caption="Ref (Invoice)" [minWidth]="100"></dxi-column>
+      <dxi-column dataField="ref" caption="Ref (Invoice / GRN)" [minWidth]="120"></dxi-column>
       <dxi-column dataField="description" caption="Description" [minWidth]="150"></dxi-column>
       <dxi-column dataField="batchNo" caption="Batch No" [minWidth]="100"></dxi-column>
       <dxi-column dataField="openingQty" caption="Opening Qty" [minWidth]="100" [calculateCellValue]="openingQtyCellValue"></dxi-column>
-      <dxi-column dataField="qty" caption="Qty Out" [minWidth]="80" [format]="qtyColumnFormat"></dxi-column>
+      <dxi-column dataField="qty" caption="Qty (IN / OUT)" [minWidth]="110" [format]="qtyColumnFormat"></dxi-column>
       <dxi-column dataField="closingQty" caption="Closing Qty" [minWidth]="100" [calculateCellValue]="closingQtyCellValue"></dxi-column>
       <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
     </dx-data-grid>

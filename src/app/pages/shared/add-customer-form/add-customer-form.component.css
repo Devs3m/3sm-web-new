@@ -18,9 +18,35 @@
   margin-bottom: 4px;
 }
 
+.add-customer-form-container form {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 1400px) {
+  .add-customer-form-container form {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 992px) {
+  .add-customer-form-container form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .add-customer-form-container form {
+    grid-template-columns: 1fr;
+  }
+}
+
 .add-customer-form-container .form-submit {
   margin-top: 50px;
   text-align: center;
+  grid-column: 1 / -1;
 }
 
 .add-customer-form-container .form-submit .btn-primary,

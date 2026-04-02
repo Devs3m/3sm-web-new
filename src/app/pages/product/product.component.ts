@@ -4,6 +4,7 @@ import { AuthService } from '../service/auth.service';
 import { PermissionService } from '../service/permission.service';
 import { GstService } from '../service/gst.service';
 import { VatService } from '../service/vat.service';
+import { InstanceService } from '../service/instance.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { saveAs } from 'file-saver';
 import { HttpClient } from '@angular/common/http';
@@ -38,6 +39,8 @@ export class ProductComponent implements OnInit {
   private apiUrl = environment.apiUrl;
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
   imagePreview: string | null = null;
+  /** Product image upload enabled only for ecommerce instance salestype. */
+  canEditProductImage = false;
 
   /** Ensure numeric sorting in DevExtreme when productid comes as string/bigint. */
   productIdSortValue = (rowData: any): number => {
@@ -54,6 +57,7 @@ export class ProductComponent implements OnInit {
     private permissionService: PermissionService,
     private gstService: GstService,
     private vatService: VatService,
+    private instanceService: InstanceService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -62,6 +66,7 @@ export class ProductComponent implements OnInit {
     this.currentUserId = this.authService.getUserId();
     const accountId = this.authService.getAccountId();
     const instanceId = this.authService.getInstanceId();
+    this.loadInstanceSalesType(instanceId);
 
     this.productForm = this.fromBuilder.group({
       "productname": ["", [Validators.required, Validators.minLength(2)]],
@@ -108,6 +113,10 @@ export class ProductComponent implements OnInit {
   }
 
   onImageSelected(event: Event): void {
+    if (!this.canEditProductImage) {
+      this.errorMessage = 'Product image upload is enabled only for ecommerce sales page type.';
+      return;
+    }
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
@@ -134,6 +143,7 @@ export class ProductComponent implements OnInit {
   }
 
   removeImage(): void {
+    if (!this.canEditProductImage) return;
     this.imagePreview = null;
     this.productForm.patchValue({ productimage: '' });
     if (this.imageInput) {
@@ -635,6 +645,23 @@ export class ProductComponent implements OnInit {
     if (tax1 == null || tax2 == null) return false;
     // Convert both to numbers for comparison to handle string/number mismatches
     return Number(tax1) === Number(tax2);
+  }
+
+  private loadInstanceSalesType(instanceId: number): void {
+    if (!instanceId) {
+      this.canEditProductImage = false;
+      return;
+    }
+    this.instanceService.getDetailsById(instanceId).subscribe({
+      next: (inst: any) => {
+        const st = String(inst?.salestype ?? '').trim().toLowerCase();
+        this.canEditProductImage = st === 'ecommerce';
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.canEditProductImage = false;
+      }
+    });
   }
 }
 

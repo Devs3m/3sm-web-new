@@ -19,8 +19,8 @@ export class PagesComponent implements OnInit {
   userName: string = '';
   userEmail: string = '';
   userRole: string = '';
-  /** 'sales' | 'inventory_sales' | 'all' from current instance; null = loading or super admin (show both) */
-  instanceSalestype: 'sales' | 'inventory_sales' | 'all' | null = null;
+  /** 'sales' | 'inventory_sales' | 'ecommerce' | 'all' from current instance; null = loading or super admin (show both) */
+  instanceSalestype: 'sales' | 'inventory_sales' | 'ecommerce' | 'all' | null = null;
 
   constructor(
     public authService: AuthService,
@@ -119,7 +119,14 @@ export class PagesComponent implements OnInit {
       next: (instance) => {
         if (this.permissionService.isSuperAdmin()) return;
         const st = instance?.salestype;
-        this.instanceSalestype = st === 'inventory_sales' ? 'inventory_sales' : st === 'all' ? 'all' : 'sales';
+        this.instanceSalestype =
+          st === 'inventory_sales'
+            ? 'inventory_sales'
+            : st === 'ecommerce'
+              ? 'ecommerce'
+              : st === 'all'
+                ? 'all'
+                : 'sales';
         this.cdr.detectChanges();
       },
       error: () => {

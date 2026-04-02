@@ -36,6 +36,9 @@ type PurchaseLineEnterField =
   styleUrls: ['../sales/sales.component.css', 'purchase.component.css'],
 })
 export class PurchaseComponent implements OnInit {
+  /** Same as sales invoice encoding threshold — sequence is in the low 6 digits when above this. */
+  private static readonly GRN_NO_LEGACY_THRESHOLD = 1e6;
+
   isFormOpen = false;
   isEditMode = false;
   isSaving = false;
@@ -109,10 +112,10 @@ export class PurchaseComponent implements OnInit {
     return Number.isFinite(n) ? n : 0;
   };
 
-  /** Grid: format GRN / total like sales listing. */
+  /** Grid: sequence-only GRN like sales invoice column. */
   grnCellValue = (rowData: any): string => {
     const v = rowData?.purchasegrnno ?? rowData?.purchaseGrnNo;
-    return v != null ? String(v) : '';
+    return v != null ? this.getDisplayGrnSequenceOnly(v) : '';
   };
 
   totalAmountCellValue = (rowData: any): number => {
@@ -172,8 +175,8 @@ export class PurchaseComponent implements OnInit {
 
   get grnDisplayValue(): string {
     const v = this.purchaseForm?.get('purchasegrnno')?.value;
-    if (v != null && v !== '') return String(v);
-    if (!this.isEditMode && this.nextGrnPreview) return this.nextGrnPreview;
+    if (v != null && v !== '') return this.getDisplayGrnSequenceOnly(v);
+    if (!this.isEditMode && this.nextGrnPreview) return this.getDisplayGrnSequenceOnly(this.nextGrnPreview);
     return '—';
   }
 
@@ -280,29 +283,64 @@ export class PurchaseComponent implements OnInit {
     return this.byAccountAndInstance(list, accountId, instanceId ?? null);
   }
 
-  /** Max GRN in list + 1 (bigint-safe); first GRN is 1. */
-  private computeNextGrnFromList(list: any[]): string {
-    let max: bigint | null = null;
-    for (const row of list) {
-      const v = row?.purchasegrnno ?? row?.purchaseGrnNo;
-      if (v == null || v === '') continue;
-      try {
-        const n = BigInt(String(v).trim());
-        if (max == null || n > max) max = n;
-      } catch {
-        /* ignore non-numeric */
-      }
-    }
-    if (max == null) return '1';
-    return (max + 1n).toString();
+  /** Sequence-only display for GRN (matches sales invoice listing style). */
+  getDisplayGrnSequenceOnly(grn: number | string | null | undefined): string {
+    if (grn == null || grn === '') return '';
+    const n = Number(grn);
+    if (!Number.isFinite(n) || n < 0) return '';
+    const seq =
+      n < PurchaseComponent.GRN_NO_LEGACY_THRESHOLD ? n : (n % 1e6) || 1;
+    return String(Math.max(0, Math.floor(seq))).padStart(6, '0');
   }
 
-  /** Fetches latest list and sets {@link nextGrnPreview} from last GRN + 1. */
+  private getCurrentAccountAndInstanceForGrn(): { accountId: number; instanceId: number } {
+    const user = this.authService.getUser() as any;
+    return {
+      accountId: user?.accountid ?? user?.accountId ?? 1,
+      instanceId: user?.instanceid ?? user?.instanceId ?? 1,
+    };
+  }
+
+  /** Matches server duplicate rule: same supplier + supplier invoice no. (scoped list). */
+  private readonly duplicateSupplierInvoiceMsg =
+    'Already exists: this vendor already has a purchase with this supplier invoice number.';
+
+  private hasDuplicateSupplierInvoiceInLoadedList(dto: SavePurchaseDto): boolean {
+    const inv = String(dto.supplierinvoiceno ?? '').trim().toLowerCase();
+    if (!inv) return false;
+    const sid = Number(dto.supplierid);
+    if (!Number.isFinite(sid)) return false;
+    const excludeGrn =
+      this.isEditMode && dto.purchasegrnno != null ? String(dto.purchasegrnno).trim() : '';
+    for (const row of this.purchases) {
+      const rSid = Number(row.supplierid ?? row.supplierId);
+      const rInv = String(row.supplierinvoiceno ?? row.supplierInvoiceNo ?? '').trim().toLowerCase();
+      const rGrn = String(row.purchasegrnno ?? row.purchaseGrnNo ?? '').trim();
+      if (rSid !== sid || rInv !== inv) continue;
+      if (excludeGrn && rGrn === excludeGrn) continue;
+      return true;
+    }
+    return false;
+  }
+
+  private apiErrorMessage(err: any, fallback: string): string {
+    const e = err?.error;
+    if (typeof e?.message === 'string') return e.message;
+    if (Array.isArray(e?.message)) return e.message.join(' ');
+    if (typeof err?.message === 'string') return err.message;
+    return fallback;
+  }
+
+  /** Sets {@link nextGrnPreview} from API (per account + instance, same rules as sales invoice no.). */
   refreshNextGrnPreview(): Observable<void> {
-    return this.purchaseService.getList().pipe(
-      map((data) => {
-        const filtered = this.scopePurchases(data || []);
-        this.nextGrnPreview = this.computeNextGrnFromList(filtered);
+    const { accountId, instanceId } = this.getCurrentAccountAndInstanceForGrn();
+    return this.purchaseService.getNextGrnNo(accountId, instanceId).pipe(
+      map((res) => {
+        if (res?.nextGrnNo != null) {
+          this.nextGrnPreview = String(res.nextGrnNo);
+        } else {
+          this.nextGrnPreview = '1';
+        }
         this.syncAutoBatchesForAllLines();
         this.cdr.markForCheck();
       }),
@@ -393,6 +431,8 @@ export class PurchaseComponent implements OnInit {
       stockBatchno: [partial?.['stockBatchno'] ?? ''],
       expirydate: [partial?.['expirydate'] ?? null],
       purchaseinvoiceno: [partial?.['purchaseinvoiceno'] ?? ''],
+      gistid: [partial?.['gistid'] ?? partial?.['gstid'] ?? null],
+      taxid: [partial?.['taxid'] ?? null],
     });
   }
 
@@ -542,6 +582,8 @@ export class PurchaseComponent implements OnInit {
         purchaseprice: price,
         mrp,
         purchasegstPer: gst,
+        gistid: p.gstid != null && p.gstid !== '' ? Number(p.gstid) : null,
+        taxid: p.taxid != null && p.taxid !== '' ? Number(p.taxid) : null,
       },
       { emitEvent: false }
     );
@@ -560,10 +602,13 @@ export class PurchaseComponent implements OnInit {
       next: (d: any) => {
         if (!d) return;
         const mrp = this.pickProductLastMrpFromProductPayload(d);
-        if (mrp == null) return;
         const row = this.items.at(rowIndex) as FormGroup;
         if (Number(row.get('productid')?.value) !== productId) return;
-        row.patchValue({ mrp }, { emitEvent: false });
+        const patch: Record<string, unknown> = {};
+        if (mrp != null) patch['mrp'] = mrp;
+        if (d.gstid != null && d.gstid !== '') patch['gistid'] = Number(d.gstid);
+        if (d.taxid != null && d.taxid !== '') patch['taxid'] = Number(d.taxid);
+        if (Object.keys(patch).length) row.patchValue(patch, { emitEvent: false });
         this.cdr.markForCheck();
       },
       error: () => {},
@@ -747,9 +792,7 @@ export class PurchaseComponent implements OnInit {
         const filtered = this.scopePurchases(data || []);
         this.purchases = filtered.sort((a, b) => this.grnSortValue(b) - this.grnSortValue(a));
         if (this.isFormOpen && !this.isEditMode) {
-          this.nextGrnPreview = this.computeNextGrnFromList(filtered);
-          this.syncAutoBatchesForAllLines();
-          this.cdr.markForCheck();
+          this.refreshNextGrnPreview().subscribe();
         }
       },
       error: (err) => {
@@ -892,6 +935,8 @@ export class PurchaseComponent implements OnInit {
                 return ex instanceof Date ? ex : new Date(ex);
               })(),
               purchaseinvoiceno: d.purchaseinvoiceno ?? '',
+              gistid: d.gistid != null && d.gistid !== '' ? Number(d.gistid) : d.gstid != null ? Number(d.gstid) : null,
+              taxid: d.taxid != null && d.taxid !== '' ? Number(d.taxid) : null,
             })
           );
         });
@@ -995,6 +1040,13 @@ export class PurchaseComponent implements OnInit {
       expirydate: line.expirydate
         ? (line.expirydate instanceof Date ? line.expirydate.toISOString().slice(0, 10) : line.expirydate)
         : null,
+      gistid:
+        line.gistid != null && line.gistid !== ''
+          ? Number(line.gistid)
+          : line.gstid != null && line.gstid !== ''
+            ? Number(line.gstid)
+            : null,
+      taxid: line.taxid != null && line.taxid !== '' ? Number(line.taxid) : null,
     }));
 
     const dto: SavePurchaseDto = {
@@ -1012,8 +1064,8 @@ export class PurchaseComponent implements OnInit {
       totalamount: Number(v.totalamount) || 0,
       totalqtysum: Number(v.totalqtysum) || 0,
       totalpurchaseprofitamt: Number(v.totalpurchaseprofitamt) || 0,
-      accountid: Number(v.accountid),
-      instanceid: Number(v.instanceid),
+      accountid: Number(v.accountid) || this.authService.getAccountId() || 1,
+      instanceid: Number(v.instanceid) || this.authService.getInstanceId() || 1,
       createdby: this.currentUserId,
       updatedby: this.currentUserId,
       isactive: v.isactive === true || v.isactive === 'true',
@@ -1054,14 +1106,14 @@ export class PurchaseComponent implements OnInit {
         next: (r) => {
           this.isSaving = false;
           this.successMessage = this.isEditMode
-            ? `Purchase GRN ${r.purchasegrnno} updated. Stock refreshed.`
-            : `Purchase saved. GRN ${r.purchasegrnno}. Stock updated.`;
+            ? `Purchase GRN ${this.getDisplayGrnSequenceOnly(r.purchasegrnno)} updated. Stock refreshed.`
+            : `Purchase saved. GRN ${this.getDisplayGrnSequenceOnly(r.purchasegrnno)}. Stock updated.`;
           this.loadPurchases();
           this.resetForm();
         },
         error: (err) => {
           this.isSaving = false;
-          this.errorMessage = err?.error?.message || err?.message || 'Save failed.';
+          this.errorMessage = this.apiErrorMessage(err, 'Save failed.');
         },
       });
     };
@@ -1076,19 +1128,24 @@ export class PurchaseComponent implements OnInit {
               this.errorMessage = 'Add at least one line with a product.';
               return EMPTY;
             }
+            if (this.hasDuplicateSupplierInvoiceInLoadedList(dto)) {
+              this.isSaving = false;
+              this.errorMessage = this.duplicateSupplierInvoiceMsg;
+              return EMPTY;
+            }
             return this.purchaseService.save(dto);
           })
         )
         .subscribe({
           next: (r) => {
             this.isSaving = false;
-            this.successMessage = `Purchase saved. GRN ${r.purchasegrnno}. Stock updated.`;
+            this.successMessage = `Purchase saved. GRN ${this.getDisplayGrnSequenceOnly(r.purchasegrnno)}. Stock updated.`;
             this.loadPurchases();
             this.resetForm();
           },
           error: (err) => {
             this.isSaving = false;
-            this.errorMessage = err?.error?.message || err?.message || 'Save failed.';
+            this.errorMessage = this.apiErrorMessage(err, 'Save failed.');
           },
         });
       return;
@@ -1098,6 +1155,11 @@ export class PurchaseComponent implements OnInit {
     if (!dto.items.length) {
       this.isSaving = false;
       this.errorMessage = 'Add at least one line with a product.';
+      return;
+    }
+    if (this.hasDuplicateSupplierInvoiceInLoadedList(dto)) {
+      this.isSaving = false;
+      this.errorMessage = this.duplicateSupplierInvoiceMsg;
       return;
     }
     finishSave(dto);

@@ -1,0 +1,75 @@
+<div class="sales-ledger-container">
+  <h2>Sales Ledger</h2>
+
+  <form [formGroup]="form" class="filter-form">
+    <mat-form-field appearance="outline" class="date-field">
+      <mat-label>From Date</mat-label>
+      <input matInput [matDatepicker]="startPicker" formControlName="startDate" placeholder="dd-mm-yyyy">
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="date-field">
+      <mat-label>To Date</mat-label>
+      <input matInput [matDatepicker]="endPicker" formControlName="endDate" placeholder="dd-mm-yyyy">
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="payment-field">
+      <mat-label>Payment Type</mat-label>
+      <mat-select formControlName="paymentType" panelClass="sales-ledger-payment-panel">
+        <mat-option value="">All Payment Types</mat-option>
+        <mat-option *ngFor="let p of paymentTypeOptions" [value]="p">{{ p }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="filter-actions">
+      <button mat-raised-button type="button" class="btn-primary" (click)="onView()" [disabled]="isLoading">
+        {{ isLoading ? 'Loading...' : 'View' }}
+      </button>
+      <button mat-icon-button class="refresh-btn" (click)="onRefresh()" [disabled]="isLoading" title="Refresh">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </form>
+
+  <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+  <div class="table-container">
+    <dx-data-grid
+      [dataSource]="apiData"
+      [allowColumnReordering]="true"
+      [allowColumnResizing]="true"
+      [showBorders]="true"
+      [columnAutoWidth]="true"
+      [headerFilter]="{ visible: true }"
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
+      [paging]="{ pageSize: 12 }"
+      [noDataText]="isLoading ? 'Loading...' : 'No sales ledger entries. Select date range and click View.'"
+      title="Sales Ledger"
+      (onExporting)="onExporting($event)">
+      <dxi-column dataField="date" caption="Date" [minWidth]="100" [calculateCellValue]="dateCellValue"></dxi-column>
+      <dxi-column dataField="source" caption="Source" [minWidth]="120"></dxi-column>
+      <dxi-column dataField="invoiceno" caption="Invoice No" [minWidth]="110"></dxi-column>
+      <dxi-column dataField="customerName" caption="Customer" [minWidth]="140"></dxi-column>
+      <dxi-column dataField="paymentType" caption="Payment Type" [minWidth]="120"></dxi-column>
+      <dxi-column dataField="paymentStatus" caption="Payment Status" [minWidth]="120"></dxi-column>
+      <dxi-column dataField="amount" caption="Amount" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
+      <dxo-summary>
+        <dxi-total-item
+          column="date"
+          summaryType="count"
+          [customizeText]="grandTotalLabelText"
+        ></dxi-total-item>
+        <dxi-total-item
+          column="amount"
+          summaryType="sum"
+          alignment="right"
+          [valueFormat]="amountColumnFormat"
+        ></dxi-total-item>
+      </dxo-summary>
+      <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+    </dx-data-grid>
+  </div>
+</div>

@@ -1,0 +1,274 @@
+.sales-ledger-container {
+  padding: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.filter-form mat-form-field {
+  min-width: 160px;
+}
+
+.filter-form .date-field {
+  min-width: 160px;
+}
+
+.filter-form .payment-field {
+  min-width: 220px;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-actions .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+}
+
+.refresh-btn {
+  color: black;
+}
+
+.filter-form mat-icon,
+:host ::ng-deep .sales-ledger-container .filter-form mat-icon {
+  color: black !important;
+}
+
+:host ::ng-deep .sales-ledger-container .filter-form .mat-mdc-floating-label,
+:host ::ng-deep .sales-ledger-container .filter-form .mdc-floating-label {
+  color: black !important;
+}
+
+:host ::ng-deep .sales-ledger-container .filter-form .mdc-notched-outline__leading,
+:host ::ng-deep .sales-ledger-container .filter-form .mdc-notched-outline__notch,
+:host ::ng-deep .sales-ledger-container .filter-form .mdc-notched-outline__trailing {
+  border-color: rgba(0, 0, 0, 0.38) !important;
+}
+
+:host ::ng-deep .sales-ledger-container .filter-form .mat-mdc-text-field-wrapper {
+  background-color: white !important;
+  border-bottom: 1px solid black !important;
+}
+
+:host ::ng-deep .sales-ledger-container .filter-form .mat-mdc-form-field-focus-overlay {
+  background-color: white !important;
+}
+
+.error-message {
+  color: #c62828;
+  margin: 0 0 16px 0;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  background-color: white;
+  padding: 16px;
+  border-radius: 4px;
+  color: black;
+  box-sizing: border-box;
+}
+
+.table-container dx-data-grid,
+:host ::ng-deep .sales-ledger-container .table-container .dx-datagrid {
+  width: 100% !important;
+}
+
+:host ::ng-deep .sales-ledger-container .dx-datagrid .dx-row > td {
+  vertical-align: middle !important;
+  background-color: white !important;
+  color: black !important;
+}
+
+:host ::ng-deep .sales-ledger-container .dx-datagrid .dx-datagrid-headers {
+  background-color: #1976d2;
+  color: white;
+}
+
+:host ::ng-deep .sales-ledger-container .dx-datagrid {
+  background-color: white;
+  color: black;
+}
+
+:host ::ng-deep .sales-ledger-container .dx-datagrid .dx-row {
+  background-color: white !important;
+  color: black !important;
+}
+
+:host ::ng-deep .sales-ledger-container .dx-datagrid-total-footer {
+  font-weight: 600;
+  background-color: #f0f0f0 !important;
+}
+
+:host ::ng-deep .sales-ledger-container .dx-datagrid-total-footer .dx-row > td {
+  background-color: #f0f0f0 !important;
+  color: #000 !important;
+}
+
+/* Mat Datepicker calendar overlay - match Product Ledger styling (white bg + black text) */
+::ng-deep .mat-datepicker-popup,
+::ng-deep .mat-mdc-datepicker-content,
+::ng-deep .mat-datepicker-content,
+::ng-deep .mat-calendar,
+::ng-deep .mat-calendar-table {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #000 !important;
+  --mdc-theme-text-primary-on-background: #000 !important;
+  --mdc-theme-on-background: #000 !important;
+}
+
+::ng-deep .mat-calendar-body-cell-content {
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-header,
+::ng-deep .mat-calendar-period-button,
+::ng-deep .mat-calendar-table-header {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #000 !important;
+}
+
+::ng-deep .mat-calendar-content,
+::ng-deep .mat-calendar-body {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-table,
+::ng-deep table.mat-calendar-table,
+::ng-deep .mat-calendar-table-header,
+::ng-deep .mat-calendar-table-header-divider {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-body-cell-container,
+::ng-deep .mat-calendar-body-cell,
+::ng-deep .mat-calendar-body-cell-preview {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-arrow,
+::ng-deep .mat-calendar-period-button button {
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-table-header,
+::ng-deep .mat-calendar-header * {
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-body,
+::ng-deep .mat-calendar-body * {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .cdk-overlay-pane {
+  z-index: 10000 !important;
+}
+
+/* Ensure wrapper container stays white */
+::ng-deep .mat-datepicker-content-container {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #000 !important;
+  --mdc-theme-on-background: #000 !important;
+}
+
+/* Calendar toggle button (icon next to date fields) */
+::ng-deep .sales-ledger-container .mat-datepicker-toggle-default-icon {
+  color: #000 !important;
+  fill: #000 !important;
+}
+
+::ng-deep .sales-ledger-container .mat-mdc-icon-button.mat-mdc-icon-button {
+  color: #000 !important;
+}
+
+/* Payment type mat-select: white panel + black text (overlay is outside component) */
+::ng-deep .sales-ledger-payment-panel.mat-mdc-select-panel,
+::ng-deep .mat-mdc-select-panel.sales-ledger-payment-panel {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mat-select-panel-background-color: #fff !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #000 !important;
+  --mat-option-label-text-color: #000 !important;
+  --mat-option-selected-state-label-text-color: #000 !important;
+}
+
+::ng-deep .sales-ledger-payment-panel .mat-mdc-option,
+::ng-deep .mat-mdc-select-panel.sales-ledger-payment-panel .mat-mdc-option {
+  color: #000 !important;
+  --mat-option-label-text-color: #000 !important;
+}
+
+::ng-deep .sales-ledger-payment-panel .mat-mdc-option .mdc-list-item__primary-text,
+::ng-deep .sales-ledger-payment-panel .mat-mdc-option .mat-mdc-option-text {
+  color: #000 !important;
+}
+
+::ng-deep .sales-ledger-payment-panel .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled),
+::ng-deep .sales-ledger-payment-panel .mat-mdc-option.mat-mdc-option-active {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: #000 !important;
+}
+
+::ng-deep .sales-ledger-payment-panel .mat-mdc-option.mat-primary,
+::ng-deep .sales-ledger-payment-panel .mat-mdc-option.mat-accent {
+  color: #000 !important;
+}
+
+::ng-deep .sales-ledger-payment-panel .mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+::ng-deep .sales-ledger-payment-panel .mat-pseudo-checkbox,
+::ng-deep .sales-ledger-payment-panel .mat-pseudo-checkbox-minimal {
+  color: #000 !important;
+  --mat-minimal-pseudo-checkbox-selected-checkmark-color: #000 !important;
+}
+
+/* Select trigger: arrow black (not theme accent) */
+::ng-deep .sales-ledger-container .payment-field .mat-mdc-select-arrow svg {
+  fill: #000 !important;
+}
+
+::ng-deep .sales-ledger-container .payment-field .mat-mdc-select-value-text {
+  color: #000 !important;
+}

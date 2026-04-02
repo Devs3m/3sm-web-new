@@ -426,11 +426,6 @@ export class InventorysalesComponent implements OnInit {
         this.populateFormFromSummary(data, invoiceno);
         this.enrichCustomerAddressIfNeeded();
         this.cdr.detectChanges();
-        // Focus first description when editing (customer already set)
-        setTimeout(() => {
-          const descList = this.descInputs?.toArray();
-          if (descList?.[0]) descList[0].nativeElement.focus();
-        }, 50);
       },
       error: (err: any) => {
         this.isLoadingInvoiceForEdit = false;
@@ -517,6 +512,7 @@ export class InventorysalesComponent implements OnInit {
     const invdate = s.invdate ?? s.saledate;
     const paymentstatus = s.paymentstatus;
     const paymentStatusValue = paymentstatus === true || paymentstatus === 'Paid' || paymentstatus === 'true' ? 'Paid' : (paymentstatus === false || paymentstatus === 'Unpaid' ? 'Unpaid' : paymentstatus);
+    const paymentMethodValue = s.paymenttype ?? s.payment_type ?? s.paymentmethod ?? '';
 
     const customerid = s.customerid ?? s.customer_id ?? '';
     const tgross = parseFloat(s.tgrossamount ?? s.tgross_amount ?? s.subtotal ?? 0) || 0;
@@ -538,8 +534,8 @@ export class InventorysalesComponent implements OnInit {
       subtotal: (netSubtotal || s.subtotal) ?? 0,
       totalgst: parseFloat(s.tgstamount ?? s.tgst_amount ?? s.totalgst ?? 0) || 0,
       grandtotal: parseFloat(s.grandtotal ?? 0) || 0,
-      paymentmethod: s.paymenttype ?? s.payment_type ?? s.paymentmethod ?? '',
-      paymentstatus: paymentStatusValue,
+      paymentmethod: paymentMethodValue,
+      paymentstatus: String(paymentMethodValue).trim().toLowerCase() === 'credit' ? 'Pending' : paymentStatusValue,
       notes: s.notes ?? '',
       isactive: s.isactive !== false
     };
@@ -634,6 +630,19 @@ export class InventorysalesComponent implements OnInit {
       updateddate: [today],
       createdby: [this.currentUserId],
       updatedby: [this.currentUserId]
+    });
+
+    // Business rule: credit sales must default to Pending payment status.
+    this.salesForm.get('paymentmethod')?.valueChanges.subscribe((method) => {
+      if (String(method || '').trim().toLowerCase() === 'credit') {
+        this.salesForm.patchValue({ paymentstatus: 'Pending' }, { emitEvent: false });
+      }
+    });
+    this.salesForm.get('paymentstatus')?.valueChanges.subscribe((status) => {
+      const method = this.salesForm.get('paymentmethod')?.value;
+      if (String(method || '').trim().toLowerCase() === 'credit' && String(status || '') !== 'Pending') {
+        this.salesForm.patchValue({ paymentstatus: 'Pending' }, { emitEvent: false });
+      }
     });
 
     // Subscribe to form changes to calculate totals
@@ -957,8 +966,16 @@ export class InventorysalesComponent implements OnInit {
     const accountId = isSuperAdmin ? null : this.authService.getAccountId();
     this.inventorysalesService.getCustomers().subscribe({
       next: (customers) => {
-        const raw = Array.isArray(customers) ? customers : [];
-        this.customerOptions = accountId != null ? this.byAccountId(raw, accountId) : raw;
+        const raw = Array.isArray(customers)
+          ? customers
+          : (customers as any)?.list ?? (customers as any)?.data ?? (customers as any)?.records ?? [];
+        if (accountId != null) {
+          const filtered = this.byAccountId(raw, accountId);
+          // Some customer-list payloads omit accountid fields; don't hide all options in that case.
+          this.customerOptions = filtered.length > 0 ? filtered : raw;
+        } else {
+          this.customerOptions = raw;
+        }
       },
       error: (err) => {
         console.error('Error fetching customers:', err);
@@ -1031,30 +1048,38 @@ export class InventorysalesComponent implements OnInit {
   /** Filter customers by name or phone for search */
   get filteredCustomers(): any[] {
     const q = (this.customerSearchCtrl?.value || '').trim().toLowerCase();
-    if (!q) return this.customerOptions;
+    // Prevent dropdown opening with full list on initial focus/page load.
+    if (!q) return [];
     return this.customerOptions.filter(c => {
-      const name = (c.customername || '').toLowerCase();
-      const mobile = (c.customermobile || c.customermobileno || '').toString();
+      const name = (c.customername || c.customer_name || '').toLowerCase();
+      const mobile = (c.customermobile || c.customermobileno || c.customer_mobile || c.mobile || '').toString();
       return name.includes(q) || mobile.includes(q);
     });
   }
 
-  /** Display function for customer autocomplete - we clear on select, so return empty */
-  customerDisplayFn = (_: any) => '';
+  /**
+   * Mat-autocomplete displayWith runs for the control value while typing (string) and after option select (object).
+   * Returning '' for every value clears the input as the user types — pass through strings; show name for objects.
+   */
+  customerDisplayFn = (value: any): string => {
+    if (value == null || value === '') return '';
+    if (typeof value === 'string') return value;
+    return String(value.customername ?? value.customer_name ?? '');
+  };
 
   onCustomerSelect(customer: any): void {
     if (!customer) return;
     this.salesForm.patchValue({
-      customerid: customer.customerid ?? customer.id ?? '',
-      customername: customer.customername || '',
-      customermobile: customer.customermobile || customer.customermobileno || '',
-      customeremail: customer.customeremail || '',
+      customerid: customer.customerid ?? customer.customer_id ?? customer.id ?? '',
+      customername: customer.customername || customer.customer_name || '',
+      customermobile: customer.customermobile || customer.customermobileno || customer.customer_mobile || customer.mobile || '',
+      customeremail: customer.customeremail || customer.customer_email || customer.email || '',
       customeraddress: customer.customeraddress || customer.address || '',
       customercity: customer.customercity || customer.city || '',
       customerstate: customer.customerstate || customer.state || '',
       customercountry: customer.customercountry || customer.country || '',
       customerpincode: customer.customerpincode || customer.pincode || '',
-      customergstin: customer.customergstno || customer.customergstin || ''
+      customergstin: customer.customergstno || customer.customergstin || customer.customer_gstin || customer.gstin || ''
     });
     this.customerSearchCtrl.setValue('', { emitEvent: false });
     this.errorMessage = '';
@@ -1637,13 +1662,9 @@ export class InventorysalesComponent implements OnInit {
         }
         this.cdr.detectChanges();
       }
-      // Focus customer selection when no customer, else focus first description
-      const hasCustomer = this.salesForm?.get('customername')?.value;
-      if (!hasCustomer && this.customerSelect) {
+      // On page/form load, focus customer search input.
+      if (this.customerSelect?.nativeElement) {
         this.customerSelect.nativeElement.focus();
-      } else {
-        const descList = this.descInputs?.toArray();
-        if (descList?.[0]) descList[0].nativeElement.focus();
       }
     }, 150);
   }

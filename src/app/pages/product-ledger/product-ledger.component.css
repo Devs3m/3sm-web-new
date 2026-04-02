@@ -52,7 +52,7 @@
 /* Filter form: icon and label black, box highlight white */
 .filter-form mat-icon,
 ::ng-deep .product-ledger-container .filter-form mat-icon {
-  color: black !important;
+  color: rgb(29, 26, 26) !important;
 }
 
 ::ng-deep .product-ledger-container .filter-form .mat-mdc-floating-label,
@@ -69,11 +69,110 @@
 
 ::ng-deep .product-ledger-container .filter-form .mat-mdc-text-field-wrapper {
   background-color: white !important;
+
+
   border-bottom: 1px solid black !important;
 }
 
 ::ng-deep .product-ledger-container .filter-form .mat-mdc-form-field-focus-overlay {
   background-color: white !important;
+}
+
+::ng-deep .mat-datepicker-popup,
+::ng-deep .mat-mdc-datepicker-content,
+::ng-deep .mat-datepicker-content,
+::ng-deep .mat-calendar,
+::ng-deep .mat-calendar-table {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #1f1d1d !important;
+  --mdc-theme-text-primary-on-background: #1e1b1b !important;
+  --mdc-theme-on-background: #1d1919 !important;
+}
+
+:ng-deep .mat-calendar-body-cell-content {
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-header,
+::ng-deep .mat-calendar-period-button,
+::ng-deep .mat-calendar-table-header {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #000 !important;
+}
+
+::ng-deep .mat-calendar-content,
+::ng-deep .mat-calendar-body {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-table,
+::ng-deep table.mat-calendar-table,
+::ng-deep .mat-calendar-table-header,
+::ng-deep .mat-calendar-table-header-divider {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-body-cell-container,
+::ng-deep .mat-calendar-body-cell,
+::ng-deep .mat-calendar-body-cell-preview {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-arrow,
+::ng-deep .mat-calendar-period-button button {
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-table-header,
+::ng-deep .mat-calendar-header * {
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-body,
+::ng-deep .mat-calendar-body * {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .cdk-overlay-pane {
+  z-index: 10000 !important;
+}
+
+/* Ensure wrapper container stays white (mat-datepicker-content-container is the one in DOM) */
+::ng-deep .mat-datepicker-content-container {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #000 !important;
+  --mdc-theme-on-background: #000 !important;
+}
+
+/* Calendar toggle button (the icon button next to date fields) */
+::ng-deep .product-ledger-container .mat-datepicker-toggle-default-icon {
+  color: #000 !important;
+  fill: #000 !important;
+}
+
+::ng-deep .product-ledger-container .mat-mdc-icon-button.mat-mdc-icon-button {
+  color: #000 !important;
 }
 
 .error-message {

@@ -158,8 +158,8 @@
         </mat-error>
       </mat-form-field>
 
-      <!-- Product Image Upload (last field) -->
-      <div class="image-upload-field form-field">
+      <!-- Product Image Upload (enabled only for ecommerce instance) -->
+      <div class="image-upload-field form-field" *ngIf="canEditProductImage; else imageUploadDisabledNote">
         <label class="image-upload-label">Product Image</label>
         <div class="image-upload-area" (click)="imageInput.click()">
           <ng-container *ngIf="!imagePreview">
@@ -180,6 +180,11 @@
         </div>
         <input #imageInput type="file" accept="image/*" style="display:none" (change)="onImageSelected($event)">
       </div>
+      <ng-template #imageUploadDisabledNote>
+        <div class="form-field" style="padding: 8px 0; color: #666;">
+          Product image upload is available only when instance sales page type is set to Ecommerce.
+        </div>
+      </ng-template>
 
 
       <div class="form-submit">

@@ -19,7 +19,9 @@ export interface PurchaseDetailItemDto {
   purchasefreeqty?: number | null;
   stockBatchno?: string | null;
   expirydate?: Date | string | null;
+  /** Same as product `gstid`; API maps to currentstock.gistid */
   gistid?: number | null;
+  gstid?: number | null;
   taxid?: number | null;
 }
 

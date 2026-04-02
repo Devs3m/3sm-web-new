@@ -1,0 +1,426 @@
+.finance-container {
+  padding: 20px;
+}
+
+.finance-container > h2 {
+  margin: 0 0 16px 0;
+  font-size: 1.35rem;
+}
+
+.pending-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+.receipt-history-card {
+  background: white;
+  padding: 16px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-top: 14px;
+}
+
+.receipt-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.receipt-history-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+}
+
+.voucher-card {
+  background: white;
+  padding: 16px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 14px;
+}
+
+.voucher-header-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.voucher-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+}
+
+.voucher-no {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #444;
+}
+
+.voucher-no-label {
+  white-space: wrap;
+}
+
+.voucher-no-value {
+  font-weight: 600;
+  color: #000;
+  letter-spacing: 0.02em;
+}
+
+/* Left: empty space; right: payment fields + totals in a section */
+.voucher-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 1fr);
+  gap: 16px;
+  align-items: start;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .voucher-body {
+    grid-template-columns: 1fr;
+  }
+
+  .voucher-body-spacer {
+    display: none;
+  }
+}
+
+.voucher-body-spacer {
+  min-height: 1px;
+}
+
+.voucher-section {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 14px 16px 16px;
+  background: #fafafa;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.voucher-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.voucher-section-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: 0.02em;
+}
+
+.voucher-no-inline {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.voucher-form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.date-field {
+  min-width: 180px;
+}
+
+.customer-select-field {
+  min-width: 220px;
+}
+
+/* Read-only payment type (always Credit for this voucher) */
+:host ::ng-deep .finance-container .voucher-readonly-field input[readonly] {
+  cursor: default;
+  color: #000 !important;
+}
+
+.voucher-summary-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 14px;
+  width: 100%;
+}
+
+.voucher-summary-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 20px 28px;
+}
+
+.voucher-total-label {
+  font-size: 12px;
+  color: #444;
+  margin-bottom: 6px;
+}
+
+.voucher-total-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000;
+}
+
+.voucher-actions button {
+  white-space: nowrap;
+}
+
+:host ::ng-deep .voucher-actions .receive-payment-btn.mat-mdc-raised-button {
+  --mdc-protected-button-container-color: #000;
+  --mdc-protected-button-label-text-color: #fff;
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+:host ::ng-deep .voucher-actions .receive-payment-btn.mat-mdc-raised-button[disabled] {
+  --mdc-protected-button-container-color: rgba(0, 0, 0, 0.26);
+  background-color: rgba(0, 0, 0, 0.26) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.pending-card {
+  background: white;
+  padding: 16px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.pending-filter-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pending-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.refresh-btn {
+  color: black;
+}
+
+.error-message {
+  color: #c62828;
+  margin: 0 0 12px 0;
+}
+
+.table-container {
+  background: white;
+  padding: 0;
+  border-radius: 4px;
+}
+.bulk-actions {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Mat Datepicker calendar overlay - match Product Ledger styling (white bg + black text) */
+::ng-deep .mat-datepicker-popup,
+::ng-deep .mat-mdc-datepicker-content,
+::ng-deep .mat-datepicker-content,
+::ng-deep .mat-calendar,
+::ng-deep .mat-calendar-table {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #000 !important;
+  --mdc-theme-text-primary-on-background: #000 !important;
+  --mdc-theme-on-background: #000 !important;
+}
+
+::ng-deep .mat-calendar-body-cell-content {
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-header,
+::ng-deep .mat-calendar-period-button,
+::ng-deep .mat-calendar-table-header {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #000 !important;
+}
+
+::ng-deep .mat-calendar-content,
+::ng-deep .mat-calendar-body {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-table,
+::ng-deep table.mat-calendar-table,
+::ng-deep .mat-calendar-table-header,
+::ng-deep .mat-calendar-table-header-divider {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-body-cell-container,
+::ng-deep .mat-calendar-body-cell,
+::ng-deep .mat-calendar-body-cell-preview {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-arrow,
+::ng-deep .mat-calendar-period-button button {
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-table-header,
+::ng-deep .mat-calendar-header * {
+  color: #000 !important;
+}
+
+::ng-deep .mat-calendar-body,
+::ng-deep .mat-calendar-body * {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+::ng-deep .cdk-overlay-pane {
+  z-index: 10000 !important;
+}
+
+/* Ensure wrapper container stays white */
+::ng-deep .mat-datepicker-content-container {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #000 !important;
+  --mdc-theme-on-background: #000 !important;
+}
+
+/* Calendar toggle button (icon next to date fields) */
+::ng-deep .finance-container .mat-datepicker-toggle-default-icon {
+  color: #000 !important;
+  fill: #000 !important;
+}
+
+::ng-deep .finance-container .mat-mdc-icon-button.mat-mdc-icon-button {
+  color: #000 !important;
+}
+
+/* Outline fields: neutral border + black labels (match Sales Ledger, avoid theme accent outline) */
+:host ::ng-deep .finance-container .voucher-form-row .mat-mdc-floating-label,
+:host ::ng-deep .finance-container .voucher-form-row .mdc-floating-label,
+:host ::ng-deep .finance-container .pending-filter-row .mat-mdc-floating-label,
+:host ::ng-deep .finance-container .pending-filter-row .mdc-floating-label {
+  color: #000 !important;
+}
+
+:host ::ng-deep .finance-container .voucher-form-row .mdc-notched-outline__leading,
+:host ::ng-deep .finance-container .voucher-form-row .mdc-notched-outline__notch,
+:host ::ng-deep .finance-container .voucher-form-row .mdc-notched-outline__trailing,
+:host ::ng-deep .finance-container .pending-filter-row .mdc-notched-outline__leading,
+:host ::ng-deep .finance-container .pending-filter-row .mdc-notched-outline__notch,
+:host ::ng-deep .finance-container .pending-filter-row .mdc-notched-outline__trailing {
+  border-color: rgba(0, 0, 0, 0.38) !important;
+}
+
+:host ::ng-deep .finance-container .voucher-form-row .mat-mdc-text-field-wrapper,
+:host ::ng-deep .finance-container .pending-filter-row .mat-mdc-text-field-wrapper {
+  background-color: #fff !important;
+}
+
+:host ::ng-deep .finance-container .voucher-form-row .mat-mdc-form-field-focus-overlay,
+:host ::ng-deep .finance-container .pending-filter-row .mat-mdc-form-field-focus-overlay {
+  background-color: #fff !important;
+}
+
+:host ::ng-deep .finance-container .voucher-form-row mat-icon,
+:host ::ng-deep .finance-container .pending-filter-row mat-icon {
+  color: #000 !important;
+}
+
+/* mat-select: white panel + black text (overlay is outside component) */
+::ng-deep .finance-payment-select-panel.mat-mdc-select-panel,
+::ng-deep .mat-mdc-select-panel.finance-payment-select-panel {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  --mat-select-panel-background-color: #fff !important;
+  --mdc-theme-surface: #fff !important;
+  --mdc-theme-on-surface: #000 !important;
+  --mat-option-label-text-color: #000 !important;
+  --mat-option-selected-state-label-text-color: #000 !important;
+}
+
+::ng-deep .finance-payment-select-panel .mat-mdc-option,
+::ng-deep .mat-mdc-select-panel.finance-payment-select-panel .mat-mdc-option {
+  color: #000 !important;
+  --mat-option-label-text-color: #000 !important;
+}
+
+::ng-deep .finance-payment-select-panel .mat-mdc-option .mdc-list-item__primary-text,
+::ng-deep .finance-payment-select-panel .mat-mdc-option .mat-mdc-option-text {
+  color: #000 !important;
+}
+
+::ng-deep .finance-payment-select-panel .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled),
+::ng-deep .finance-payment-select-panel .mat-mdc-option.mat-mdc-option-active {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: #000 !important;
+}
+
+::ng-deep .finance-payment-select-panel .mat-mdc-option.mat-primary,
+::ng-deep .finance-payment-select-panel .mat-mdc-option.mat-accent {
+  color: #000 !important;
+}
+
+::ng-deep .finance-payment-select-panel .mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+::ng-deep .finance-payment-select-panel .mat-pseudo-checkbox,
+::ng-deep .finance-payment-select-panel .mat-pseudo-checkbox-minimal {
+  color: #000 !important;
+  --mat-minimal-pseudo-checkbox-selected-checkmark-color: #000 !important;
+}
+
+/* Select trigger: black arrow + value text */
+::ng-deep .finance-container .finance-select-field .mat-mdc-select-arrow svg {
+  fill: #000 !important;
+}
+
+::ng-deep .finance-container .finance-select-field .mat-mdc-select-value-text {
+  color: #000 !important;
+}

@@ -1188,7 +1188,7 @@ body {
   color: #c0392b;
 }
 
-/* Sales Add Customer form: same CSS as Customer module add customer form, with 5-column layout (row1: 5 fields, row2: 4 fields) */
+/* Sales Add Customer form: keep same base styling as shared add-customer form */
 .sales-add-customer-panel app-add-customer-form .add-customer-form-container {
   max-width: 100%;
   margin: 15px auto;
@@ -1202,8 +1202,9 @@ body {
 
 .sales-add-customer-panel app-add-customer-form .add-customer-form-container form {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(5, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: start;
 }
 
 .sales-add-customer-panel app-add-customer-form .add-customer-form-container .form-field {

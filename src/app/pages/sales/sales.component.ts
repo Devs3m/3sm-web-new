@@ -957,7 +957,12 @@ export class SalesComponent implements OnInit {
   }
 
   /** Display function for customer autocomplete - we clear on select, so return empty */
-  customerDisplayFn = (_: any) => '';
+  /** See inventorysales: displayWith must preserve typed strings or the search input stays blank. */
+  customerDisplayFn = (value: any): string => {
+    if (value == null || value === '') return '';
+    if (typeof value === 'string') return value;
+    return String(value.customername ?? value.customer_name ?? '');
+  };
 
   onCustomerSelect(customer: any): void {
     if (!customer) return;

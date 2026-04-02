@@ -121,6 +121,33 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { permission: { resource: 'sales', action: 'view' } }
       },
+      {
+        path: 'sales-ledger',
+        loadChildren: () => import(`./sales-ledger/sales-ledger.module`).then(m => m.SalesLedgerModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'sales', action: 'view' } }
+      },
+      {
+        path: 'finance',
+        loadChildren: () => import(`./finance/finance.module`).then(m => m.FinanceModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'sales', action: 'view' } }
+      },
+      {
+        path: 'receipt',
+        redirectTo: 'finance',
+        pathMatch: 'full',
+      },
+      {
+        path: 'receipts',
+        redirectTo: 'finance',
+        pathMatch: 'full',
+      },
+      {
+        path: 'accounts',
+        redirectTo: 'finance',
+        pathMatch: 'full',
+      },
       { 
         path: 'settings', 
         loadChildren: () => import(`./settings/settings.module`).then(m => m.SettingsModule),

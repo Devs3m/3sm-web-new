@@ -128,6 +128,7 @@
                 <select matNativeControl formControlName="paymentmethod">
                   <option value="" disabled>Select payment method</option>
                   <option value="Cash">Cash</option>
+                  <option value="Credit">Credit</option>
                   <option value="Credit Card">Credit Card</option>
                   <option value="Debit Card">Debit Card</option>
                   <option value="Bank Transfer">Bank Transfer</option>
@@ -354,16 +355,16 @@
         [allowColumnResizing]="true"
         [showBorders]="true"
         [headerFilter]="{ visible: true }"
-        [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search product sales summary...' }"
+        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search product sales summary...' }"
         [paging]="{ pageSize: 15 }"
         title="Product Sales Summary"
         (onExporting)="onExporting($event)">
         <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx', 'pdf']"></dxo-export>
         <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150" [calculateCellValue]="invoiceNoCellValue"></dxi-column>
         <dxi-column dataField="customername" caption="Customer Name"></dxi-column> 
-        <dxi-column dataField="tdisaper" caption="Dis %" [customizeText]="inventoryDisPercentDisplayText"></dxi-column>
+        <dxi-column dataField="tdisaper" caption="Dis %" [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
         <dxi-column dataField="grandtotal" caption="Grand Total" alignment="right" [width]="130"
-          [customizeText]="inventoryGrandTotalDisplayText"></dxi-column>
+          [format]="{ type: 'currency', currency: 'INR', precision: 2 }"></dxi-column>
         <dxi-column dataField="saledate" caption="Sale Date" [width]="120" [calculateCellValue]="saleDateCellValue"></dxi-column>
         <dxi-column dataField="paymenttype" caption="Payment Method" [width]="150"></dxi-column>
         <dxi-column dataField="paymentstatus" caption="Payment Status" [width]="130"></dxi-column>
@@ -391,10 +392,11 @@
 <div class="form-container sales-add-customer-panel" [class.open]="showAddCustomerModal" role="dialog" aria-modal="true" aria-labelledby="sales-add-customer-title">
   <p id="sales-add-customer-title" style="font-size: larger;">Add Customer</p>
   <button type="button" (click)="closeAddCustomerModal()" class="close-btn" aria-label="Close">&times;</button>
-  <app-add-customer-form
-    (saved)="handleCustomerSaved($event)"
+  <app-customer-form
+    [hideHeader]="true"
+    (customerSaved)="handleCustomerSaved($event)"
     (cancelled)="closeAddCustomerModal()">
-  </app-add-customer-form>
+  </app-customer-form>
 </div>
 
 </ng-container>
