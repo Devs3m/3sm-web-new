@@ -579,7 +579,7 @@ export class SaleseditComponent implements OnInit {
           productname: i.description || '',
           salehsn: i.hsnSac || null,
           saleqty: Math.round(qty),
-          salemrp: String(rate),
+          salemrp: round2(rate),
           saledisper: discPct || null,
           salegstper: Math.round(gstPct),
           saleamount: round2(subtotal),

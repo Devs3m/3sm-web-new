@@ -56,7 +56,14 @@
       <dxi-column dataField="paymentType" caption="Payment Type" [minWidth]="120"></dxi-column>
       <dxi-column dataField="paymentStatus" caption="Payment Status" [minWidth]="120"></dxi-column>
       <dxi-column dataField="amount" caption="Amount" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
-      <dxo-summary>
+      <dxi-column dataField="profit" caption="Profit" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
+      <dxi-column
+        dataField="profitPercent"
+        caption="Profit %"
+        [minWidth]="100"
+        [customizeText]="profitPercentText"
+      ></dxi-column>
+      <dxo-summary [texts]="summaryTexts">
         <dxi-total-item
           column="date"
           summaryType="count"
@@ -67,6 +74,19 @@
           summaryType="sum"
           alignment="right"
           [valueFormat]="amountColumnFormat"
+        ></dxi-total-item>
+        <dxi-total-item
+          column="profit"
+          summaryType="sum"
+          alignment="right"
+          [valueFormat]="amountColumnFormat"
+        ></dxi-total-item>
+        <!-- count + customizeText: weighted margin is computed in component (custom summary aggregate was NaN / skipped in grid) -->
+        <dxi-total-item
+          column="profitPercent"
+          summaryType="count"
+          alignment="right"
+          [customizeText]="totalProfitPercentFooterText"
         ></dxi-total-item>
       </dxo-summary>
       <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>

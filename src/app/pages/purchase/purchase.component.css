@@ -91,13 +91,14 @@
   table-layout: fixed;
 }
 
-.purchase-items-table .col-desc   { width: 18%; }
+.purchase-items-table .col-desc   { width: 16.5%; }
 .purchase-items-table .col-pack   { width: 5%; }
 .purchase-items-table .col-qty    { width: 5%; }
 .purchase-items-table .col-free   { width: 5%; }
 .purchase-items-table .col-rate   { width: 6%; }
 .purchase-items-table .col-mrp    { width: 6%; }
-.purchase-items-table .col-disc   { width: 6%; }
+.purchase-items-table .col-each-mrp { width: 5.5%; }
+.purchase-items-table .col-disc   { width: 5.5%; }
 .purchase-items-table .col-batch  { width: 8%; }
 .purchase-items-table .col-expiry { width: 9%; }
 .purchase-items-table .col-gst    { width: 5%; }
@@ -115,8 +116,14 @@
 .purchase-items-table .th-value,
 .purchase-items-table .th-batch,
 .purchase-items-table .th-gst,
-.purchase-items-table .th-mrp {
+.purchase-items-table .th-mrp,
+.purchase-items-table .th-each-mrp {
   text-align: center;
+}
+
+.purchase-items-table .cell-each-mrp {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .purchase-items-table .cell-expiry {

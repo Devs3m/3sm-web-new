@@ -419,6 +419,7 @@ export class PurchaseComponent implements OnInit {
           ? this.roundToTwoDecimals(Number(partial['mrp']))
           : null,
       ],
+      purchaseeachmrp: [this.initialPurchaseEachMrp(partial)],
       purchaseeachcost: [
         partial?.['purchaseeachcost'] ?? partial?.['purchaseeachprice'] ?? 0,
       ],
@@ -433,6 +434,11 @@ export class PurchaseComponent implements OnInit {
       purchaseinvoiceno: [partial?.['purchaseinvoiceno'] ?? ''],
       gistid: [partial?.['gistid'] ?? partial?.['gstid'] ?? null],
       taxid: [partial?.['taxid'] ?? null],
+      stockid: [
+        partial?.['stockid'] != null && String(partial['stockid']).trim() !== '' && Number(partial['stockid']) > 0
+          ? Number(partial['stockid'])
+          : null,
+      ],
     });
   }
 
@@ -584,6 +590,7 @@ export class PurchaseComponent implements OnInit {
         purchasegstPer: gst,
         gistid: p.gstid != null && p.gstid !== '' ? Number(p.gstid) : null,
         taxid: p.taxid != null && p.taxid !== '' ? Number(p.taxid) : null,
+        stockid: null,
       },
       { emitEvent: false }
     );
@@ -608,7 +615,10 @@ export class PurchaseComponent implements OnInit {
         if (mrp != null) patch['mrp'] = mrp;
         if (d.gstid != null && d.gstid !== '') patch['gistid'] = Number(d.gstid);
         if (d.taxid != null && d.taxid !== '') patch['taxid'] = Number(d.taxid);
-        if (Object.keys(patch).length) row.patchValue(patch, { emitEvent: false });
+        if (Object.keys(patch).length) {
+          row.patchValue(patch, { emitEvent: false });
+          this.recalcLine(rowIndex);
+        }
         this.cdr.markForCheck();
       },
       error: () => {},
@@ -621,6 +631,23 @@ export class PurchaseComponent implements OnInit {
 
   onPurchaseMrpBlur(index: number): void {
     this.roundOptionalMoneyControl(index, 'mrp', false);
+    this.recalcLine(index);
+  }
+
+  /** Pack MRP ÷ pack qty; prefers stored `purchaseeachmrp` when loading a line for edit. */
+  private initialPurchaseEachMrp(partial?: Record<string, unknown>): number | null {
+    const pe = partial?.['purchaseeachmrp'];
+    if (pe != null && String(pe).trim() !== '' && Number.isFinite(Number(pe))) {
+      return this.roundToTwoDecimals(Number(pe));
+    }
+    const packRaw = partial?.['productpackqty'];
+    const pack = packRaw != null && String(packRaw).trim() !== '' ? Number(packRaw) : 0;
+    const packEff = pack > 0 ? pack : 1;
+    const mrpRaw = partial?.['mrp'];
+    if (mrpRaw == null || String(mrpRaw).trim() === '') return null;
+    const m = Number(mrpRaw);
+    if (!Number.isFinite(m)) return null;
+    return this.roundToTwoDecimals(m / packEff);
   }
 
   private roundOptionalMoneyControl(
@@ -710,6 +737,11 @@ export class PurchaseComponent implements OnInit {
         : pack > 0
           ? price / pack
           : price;
+    const mrpCtrl = g.get('mrp')?.value;
+    const mrpNum =
+      mrpCtrl != null && String(mrpCtrl).trim() !== '' ? Number(mrpCtrl) : NaN;
+    const eachMrp =
+      Number.isFinite(mrpNum) && pack > 0 ? this.roundToTwoDecimals(mrpNum / pack) : null;
     g.patchValue(
       {
         purchaseeachqty: eachQty,
@@ -717,6 +749,7 @@ export class PurchaseComponent implements OnInit {
         purchasediscountamount: discAmt,
         purchasegstamount: gstAmt,
         purchasecost: cost,
+        purchaseeachmrp: eachMrp,
       },
       { emitEvent: false }
     );
@@ -937,6 +970,14 @@ export class PurchaseComponent implements OnInit {
               purchaseinvoiceno: d.purchaseinvoiceno ?? '',
               gistid: d.gistid != null && d.gistid !== '' ? Number(d.gistid) : d.gstid != null ? Number(d.gstid) : null,
               taxid: d.taxid != null && d.taxid !== '' ? Number(d.taxid) : null,
+              stockid:
+                d.stockid != null && String(d.stockid).trim() !== '' && Number(d.stockid) > 0
+                  ? Number(d.stockid)
+                  : null,
+              purchaseeachmrp:
+                d.purchaseeachmrp != null && String(d.purchaseeachmrp).trim() !== ''
+                  ? this.roundToTwoDecimals(Number(d.purchaseeachmrp))
+                  : null,
             })
           );
         });
@@ -998,6 +1039,22 @@ export class PurchaseComponent implements OnInit {
     this.deleteCautionMessage = '';
   }
 
+  /**
+   * Pack × (purchase qty + free), matching API `computeLineStockQty` / currentstock.productqty.
+   * Used on save so we never send `purchaseeachqty: 0` when the control was empty.
+   */
+  private resolveLinePurchaseEachQtyForDto(line: Record<string, unknown>): number {
+    if (line['purchaseeachqty'] != null && String(line['purchaseeachqty']).trim() !== '') {
+      const n = Number(line['purchaseeachqty']);
+      if (Number.isFinite(n)) return n;
+    }
+    const packRaw = Number(line['productpackqty']) || 0;
+    const pack = packRaw > 0 ? packRaw : 1;
+    const pq = Number(line['purchaseqty']) || 0;
+    const free = Number(line['purchasefreeqty']) || 0;
+    return pack * (pq + free);
+  }
+
   private buildDto(): SavePurchaseDto {
     this.syncLinesFromHeader();
     this.recalcHeaderTotals();
@@ -1023,7 +1080,7 @@ export class PurchaseComponent implements OnInit {
       productname: String(line.productname || ''),
       productpackqty: Number(line.productpackqty) || 1,
       purchaseqty: Number(line.purchaseqty) || 0,
-      purchaseeachqty: Number(line.purchaseeachqty) || 0,
+      purchaseeachqty: this.resolveLinePurchaseEachQtyForDto(line),
       purchaseprice: this.roundToTwoDecimals(Number(line.purchaseprice) || 0),
       mrp:
         line.mrp != null && String(line.mrp).trim() !== ''
@@ -1047,6 +1104,11 @@ export class PurchaseComponent implements OnInit {
             ? Number(line.gstid)
             : null,
       taxid: line.taxid != null && line.taxid !== '' ? Number(line.taxid) : null,
+      ...(line.stockid != null &&
+      String(line.stockid).trim() !== '' &&
+      Number(line.stockid) > 0
+        ? { stockid: Number(line.stockid) }
+        : {}),
     }));
 
     const dto: SavePurchaseDto = {
@@ -1072,8 +1134,8 @@ export class PurchaseComponent implements OnInit {
       items,
     };
 
-    if (this.isEditMode && v.purchasegrnno != null) {
-      dto.purchasegrnno = v.purchasegrnno;
+    if (this.isEditMode && v.purchasegrnno != null && String(v.purchasegrnno).trim() !== '') {
+      dto.purchasegrnno = String(v.purchasegrnno).trim();
     }
     return dto;
   }

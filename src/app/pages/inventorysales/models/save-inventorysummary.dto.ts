@@ -12,7 +12,7 @@ export interface InventoryDetailItemDto {
   expirydate?: string;
   productpackqty?: number;
   saleqty: number;
-  salemrp: string;
+  salemrp: number;
   saledisper: number | null;
   salegstper: number;
   saleamount: number;

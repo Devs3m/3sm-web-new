@@ -1455,7 +1455,7 @@ export class InventorysalesComponent implements OnInit {
         expirydate: i.expirydate ?? now,
         productpackqty: Number(i.productpackqty) || 1,
         saleqty: saleqtyVal,
-        salemrp: String(rate),
+        salemrp: round2(rate),
         saledisper: discPct || null,
         salegstper: Math.round(gstPct),
         saleamount: round2(subtotal),

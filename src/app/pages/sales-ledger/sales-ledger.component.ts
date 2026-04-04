@@ -15,6 +15,8 @@ interface SalesLedgerRow {
   paymentType: string;
   paymentStatus: string;
   amount: number;
+  profit: number;
+  profitPercent: number;
 }
 
 @Component({
@@ -29,7 +31,13 @@ export class SalesLedgerComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
 
+  /** Σprofit / Σamount × 100 for loaded rows; drives Profit % footer. */
+  footerTotalProfitMarginPct = 0;
+
   readonly amountColumnFormat = DX_FORMAT_FIXED_2;
+
+  /** Replace default "Sum: {0}" with "Total: {0}" for footer sums. */
+  readonly summaryTexts = { sum: 'Total: {0}' };
 
   constructor(
     private fb: FormBuilder,
@@ -53,6 +61,18 @@ export class SalesLedgerComponent implements OnInit {
       accountId: user?.accountid ?? user?.accountId ?? 1,
       instanceId: user?.instanceid ?? user?.instanceId ?? 1,
     };
+  }
+
+  /** Weighted margin from current apiData (matches Amount/Profit sum footers). */
+  private refreshFooterProfitMarginPct(): void {
+    let amount = 0;
+    let profit = 0;
+    for (const row of this.apiData) {
+      amount += Number(row.amount) || 0;
+      profit += Number(row.profit) || 0;
+    }
+    this.footerTotalProfitMarginPct =
+      amount > 0 ? Math.round((profit / amount) * 10000) / 100 : 0;
   }
 
   private loadPaymentTypes(): void {
@@ -97,12 +117,26 @@ export class SalesLedgerComponent implements OnInit {
       .getSalesLedger(startDateStr, endDateStr, accountId, instanceId, paymentType)
       .subscribe({
         next: (rows) => {
-          this.apiData = Array.isArray(rows) ? rows : [];
+          const list = Array.isArray(rows) ? rows : [];
+          this.apiData = list.map((r: any) => {
+            const amount = parseFloat(String(r.amount ?? 0)) || 0;
+            const profit = parseFloat(String(r.profit ?? 0)) || 0;
+            const profitPercentRaw = r.profitPercent ?? r.profit_percent;
+            const profitPercent =
+              profitPercentRaw != null && `${profitPercentRaw}` !== ''
+                ? parseFloat(String(profitPercentRaw)) || 0
+                : amount > 0
+                  ? Math.round((profit / amount) * 10000) / 100
+                  : 0;
+            return { ...r, amount, profit, profitPercent } as SalesLedgerRow;
+          });
+          this.refreshFooterProfitMarginPct();
           this.isLoading = false;
         },
         error: (err) => {
           this.errorMessage = err?.error?.message || err?.message || 'Failed to load sales ledger.';
           this.apiData = [];
+          this.footerTotalProfitMarginPct = 0;
           this.isLoading = false;
         },
       });
@@ -120,6 +154,27 @@ export class SalesLedgerComponent implements OnInit {
 
   /** Footer label for the total row (count summary only supplies the cell; text is fixed). */
   grandTotalLabelText = (): string => 'Grand Total';
+
+  /** Profit % column: show two decimals with percent sign. */
+  profitPercentText = (cellInfo: { value?: number | null }): string => {
+    const v = cellInfo.value;
+    if (v == null || !Number.isFinite(Number(v))) {
+      return '';
+    }
+    return `${Number(v).toFixed(2)}%`;
+  };
+
+  /** Footer for Profit %: weighted total margin (not sum of row %). */
+  totalProfitPercentFooterText = (): string => {
+    if (!this.apiData.length) {
+      return '';
+    }
+    const v = this.footerTotalProfitMarginPct;
+    if (!Number.isFinite(v)) {
+      return '';
+    }
+    return `Total: ${v.toFixed(2)}%`;
+  };
 
   onExporting(e: any): void {
     const workbook = new Workbook();

@@ -8,7 +8,7 @@ export interface SalesDetailItemDto {
   productname: string;
   salehsn: string | null;
   saleqty: number;
-  salemrp: string;
+  salemrp: number;
   saledisper: number | null;
   salegstper: number;
   saleamount: number;

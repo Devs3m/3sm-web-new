@@ -1254,7 +1254,7 @@ export class SalesComponent implements OnInit {
         productname: i.description || '',
         salehsn: i.hsnSac || null,
         saleqty: saleqtyVal,
-        salemrp: String(rate),
+        salemrp: round2(rate),
         saledisper: discPct || null,
         salegstper: Math.round(gstPct),
         saleamount: round2(subtotal),

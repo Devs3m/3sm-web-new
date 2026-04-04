@@ -10,6 +10,8 @@ export interface PurchaseDetailItemDto {
   purchaseeachqty: number;
   purchaseprice: number;
   mrp?: number | null;
+  /** From API when loading a GRN for edit; server recomputes on save from mrp ÷ productpackqty. */
+  purchaseeachmrp?: number | null;
   purchaseeachcost: number;
   purchasediscountPer: number;
   purchasediscountamount: number;
@@ -23,6 +25,8 @@ export interface PurchaseDetailItemDto {
   gistid?: number | null;
   gstid?: number | null;
   taxid?: number | null;
+  /** When editing a GRN; API allows update only if purchaseeachqty matches currentstock.productqty */
+  stockid?: number | null;
 }
 
 export interface SavePurchaseDto {
