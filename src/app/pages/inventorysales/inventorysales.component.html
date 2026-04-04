@@ -174,7 +174,7 @@
                 <col class="col-expiry" *ngIf="!hideBatchNoAndExpiry">
                 <col class="col-hsn" *ngIf="hideBatchNoAndExpiry">
                 <col class="col-qty">
-                <col class="col-rate">
+                <col class="col-mrp">
                 <col class="col-disc">
                 <col class="col-gst">
                 <col class="col-amount">
@@ -187,7 +187,7 @@
                   <th class="th-expiry" *ngIf="!hideBatchNoAndExpiry">EXPIRY</th>
                   <th class="th-hsn" *ngIf="hideBatchNoAndExpiry">HSN/SAC</th>
                   <th class="th-qty">QTY</th>
-                  <th class="th-rate">RATE (₹)</th>
+                  <th class="th-mrp">MRP (₹)</th>
                   <th class="th-disc">DISC %</th>
                   <th class="th-gst">GST %</th>
                   <th class="th-amount">AMOUNT (₹)</th>
@@ -237,8 +237,16 @@
                       </mat-error>
                     </mat-form-field>
                   </td>
-                  <td class="readonly-cell cell-rate">
-                    ₹{{ item.get('rate')?.value || 0 | number:'1.2-2' }}
+                  <td class="cell-mrp" [class.readonly-cell]="!mrpEditableInInventorySales">
+                    <ng-container *ngIf="mrpEditableInInventorySales; else mrpReadonlyTpl">
+                      <mat-form-field appearance="outline" class="table-field table-field-mrp">
+                        <input matInput type="number" formControlName="rate"
+                               (input)="calculateItemAmount(i)" min="0" step="0.01" placeholder="MRP">
+                      </mat-form-field>
+                    </ng-container>
+                    <ng-template #mrpReadonlyTpl>
+                      ₹{{ item.get('rate')?.value || 0 | number:'1.2-2' }}
+                    </ng-template>
                   </td>
                   <td class="cell-disc">
                     <mat-form-field appearance="outline" class="table-field table-field-disc">

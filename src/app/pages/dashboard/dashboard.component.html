@@ -6,10 +6,26 @@
       <mat-icon class="dashboard-icon">dashboard</mat-icon>
       <h2 class="dashboard-title">Dashboard</h2>
     </div>
-    <button class="refresh-btn" (click)="loadDashboardData()" title="Refresh">
-      <mat-icon>refresh</mat-icon>
-    </button>
+    <div class="dashboard-header-actions">
+      <label class="month-filter-label">
+        <span class="month-filter-text">Month</span>
+        <input
+          class="month-filter-input"
+          type="month"
+          name="dashboardMonth"
+          [(ngModel)]="filterMonth"
+          (ngModelChange)="onFilterMonthChange()"
+          title="Filter sales, purchases, and chart" />
+      </label>
+      <button type="button" class="refresh-btn" (click)="loadDashboardData()" title="Refresh data">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
   </div>
+
+  <p class="dashboard-filter-hint" *ngIf="!isLoading && filterMonthDisplayLabel">
+    Sales, purchase totals, and the chart use <strong>{{ filterMonthDisplayLabel }}</strong>. Company, customers, suppliers, and stock show overall figures.
+  </p>
 
   <!-- Loading state -->
   <div class="loading-overlay" *ngIf="isLoading">
@@ -20,23 +36,27 @@
   <!-- Stat Cards -->
   <div class="stat-cards" *ngIf="!isLoading">
 
-    <div class="stat-card accounts">
+    <div class="stat-card accounts" *ngIf="showAccountAndInstanceCards">
       <div class="stat-icon-wrap">
         <mat-icon>business</mat-icon>
       </div>
       <div class="stat-body">
         <span class="stat-label">Company</span>
-        <span class="stat-value">{{ accountCount }}</span>
+        <div class="stat-value-block">
+          <span class="stat-value">{{ accountCount }}</span>
+        </div>
       </div>
     </div>
 
-    <div class="stat-card instances">
+    <div class="stat-card instances" *ngIf="showAccountAndInstanceCards">
       <div class="stat-icon-wrap">
         <mat-icon>dns</mat-icon>
       </div>
       <div class="stat-body">
         <span class="stat-label">Instances</span>
-        <span class="stat-value">{{ instanceCount }}</span>
+        <div class="stat-value-block">
+          <span class="stat-value">{{ instanceCount }}</span>
+        </div>
       </div>
     </div>
 
@@ -46,27 +66,86 @@
       </div>
       <div class="stat-body">
         <span class="stat-label">Customers</span>
-        <span class="stat-value">{{ customerCount }}</span>
+        <div class="stat-value-block">
+          <span class="stat-value">{{ customerCount }}</span>
+        </div>
       </div>
     </div>
 
-    <div class="stat-card sales-count">
+    <div class="stat-card suppliers">
       <div class="stat-icon-wrap">
-        <mat-icon>receipt_long</mat-icon>
+        <mat-icon>local_shipping</mat-icon>
       </div>
       <div class="stat-body">
-        <span class="stat-label">Sales (Invoices)</span>
-        <span class="stat-value">{{ salesCount }}</span>
+        <span class="stat-label">Suppliers</span>
+        <div class="stat-value-block">
+          <span class="stat-value">{{ supplierCount }}</span>
+        </div>
       </div>
     </div>
 
-    <div class="stat-card sales-value">
+    <div class="stat-card purchases">
       <div class="stat-icon-wrap">
-        <mat-icon>currency_rupee</mat-icon>
+        <mat-icon>shopping_bag</mat-icon>
       </div>
       <div class="stat-body">
-        <span class="stat-label">Total Sales Value</span>
-        <span class="stat-value">₹{{ salesValue | number:'1.2-2' }}</span>
+        <span class="stat-label">Purchase total</span>
+        <div class="stat-value-block">
+          <span class="stat-value">₹{{ purchaseTotalValue | number:'1.2-2' }}</span>
+          <span class="stat-sub">{{ purchaseCount }} GRN(s)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card stock-value" *ngIf="showCurrentStockValueCard">
+      <div class="stat-icon-wrap">
+        <mat-icon>warehouse</mat-icon>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Current stock value</span>
+        <div class="stat-value-block">
+          <span class="stat-value">₹{{ currentStockValue | number:'1.2-2' }}</span>
+          <span class="stat-sub">{{ stockProductsAvailable }} {{ stockProductsAvailable === 1 ? 'product' : 'products' }} with stock</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card service-sales" *ngIf="showServiceSalesDashboard">
+      <div class="stat-icon-wrap">
+        <mat-icon>handyman</mat-icon>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Service sales</span>
+        <div class="stat-value-block">
+          <span class="stat-value">₹{{ serviceSalesValue | number:'1.2-2' }}</span>
+          <span class="stat-sub">{{ serviceSalesCount }} invoice(s)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card product-sales" *ngIf="showProductSalesDashboard">
+      <div class="stat-icon-wrap">
+        <mat-icon>inventory_2</mat-icon>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Product sales</span>
+        <div class="stat-value-block">
+          <span class="stat-value">₹{{ productSalesValue | number:'1.2-2' }}</span>
+          <span class="stat-sub">{{ productSalesCount }} invoice(s)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card total-sales" *ngIf="showTotalSalesCard">
+      <div class="stat-icon-wrap">
+        <mat-icon>summarize</mat-icon>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Total sales (service + product)</span>
+        <div class="stat-value-block">
+          <span class="stat-value">₹{{ salesValue | number:'1.2-2' }}</span>
+          <span class="stat-sub">{{ salesCount }} invoice(s)</span>
+        </div>
       </div>
     </div>
 
@@ -79,27 +158,6 @@
       [options]="chartOptions"
       style="width: 100%; height: 360px; display: block;">
     </highcharts-chart>
-  </div>
-
-  <!-- Your permissions (e.g. Administrator view) -->
-  <div class="permissions-card chart-card" *ngIf="!isLoading && permissionModuleKeys.length > 0">
-    <div class="permissions-header">
-      <mat-icon class="permissions-icon">lock</mat-icon>
-      <h3 class="permissions-title">Your permissions ({{ currentRoleName }})</h3>
-    </div>
-    <div class="permissions-list">
-      <ng-container *ngFor="let module of permissionModuleKeys">
-        <div class="permissions-module">
-          <span class="permissions-module-name">{{ module }}</span>
-          <ul class="permissions-items">
-            <li *ngFor="let p of permissionsByModule[module]" class="permissions-item">
-              <span class="permissions-key">{{ p.key }}</span>
-              <span class="permissions-name" *ngIf="p.name && p.name !== p.key"> — {{ p.name }}</span>
-            </li>
-          </ul>
-        </div>
-      </ng-container>
-    </div>
   </div>
 
 </section>

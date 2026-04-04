@@ -96,6 +96,11 @@ export class InventorysalesComponent implements OnInit {
     return !!this.settingsService.getSalesSettings().allowDecimalQtyInSales;
   }
 
+  /** When true, MRP (rate) can be edited per line; when false, display-only from product. */
+  get mrpEditableInInventorySales(): boolean {
+    return !!this.settingsService.getSalesSettings().mrpEditableInInventorySales;
+  }
+
   constructor(
     private inventorysalesService: InventorysalesService,
     private customerService: CustomerService,
@@ -297,11 +302,11 @@ export class InventorysalesComponent implements OnInit {
 
     const hideBatchExpiry = this.hideBatchNoAndExpiry;
     const colW = hideBatchExpiry
-      ? [8, 50, 16, 12, 18, 14, 14, 24]  // S.No, Description, HSN, Qty, Rate, Disc %, GST %, Amount
+      ? [8, 50, 16, 12, 18, 14, 14, 24]  // S.No, Description, HSN, Qty, MRP, Disc %, GST %, Amount
       : [8, 34, 16, 16, 16, 12, 18, 14, 14, 24];
     const headers = hideBatchExpiry
-      ? ['S.No', 'Description', 'HSN', 'Qty', 'Rate', 'Disc %', 'GST %', 'Amount']
-      : ['S.No', 'Description', 'Batch', 'Expiry', 'HSN', 'Qty', 'Rate', 'Disc %', 'GST %', 'Amount'];
+      ? ['S.No', 'Description', 'HSN', 'Qty', 'MRP', 'Disc %', 'GST %', 'Amount']
+      : ['S.No', 'Description', 'Batch', 'Expiry', 'HSN', 'Qty', 'MRP', 'Disc %', 'GST %', 'Amount'];
     doc.setDrawColor(0, 0, 0);
     doc.rect(left, y, colW.reduce((a, b) => a + b, 0), 8);
     doc.setFont('helvetica', 'bold');
@@ -1183,6 +1188,24 @@ export class InventorysalesComponent implements OnInit {
     return expOnly > today && expDate <= cutoff;
   }
 
+  /**
+   * Default line MRP from product master: prefer last MRP, then purchase MRP alias, then last sale price.
+   * Matches the MRP column label on the grid.
+   */
+  private resolveProductMrp(prod: any): number {
+    if (prod == null || typeof prod !== 'object') {
+      return 0;
+    }
+    const raw =
+      prod.productlastmrp ??
+      prod.purchaselastmrp ??
+      prod.productlastprice ??
+      prod.price ??
+      0;
+    const n = typeof raw === 'string' ? parseFloat(raw) : Number(raw);
+    return Number.isFinite(n) ? n : 0;
+  }
+
   /** Single-line label: "ProductName | Batch no-X | Avail Qty- Y" (batch when !hideBatchNoAndExpiry) */
   getProductOptionLabel(product: any): string {
     if (!product) return '';
@@ -1202,7 +1225,7 @@ export class InventorysalesComponent implements OnInit {
 
     const applyProduct = (prod: any) => {
       const gstPct = prod?.productgstpercent ?? prod?.totalgstpercent ?? prod?.gstpercent ?? 0;
-      const rate = prod?.productlastprice ?? prod?.productlastmrp ?? prod?.price ?? 0;
+      const rate = this.resolveProductMrp(prod);
       const expiryVal = selected.expirydate;
       const expiryStr = expiryVal
         ? (expiryVal instanceof Date ? expiryVal.toISOString().split('T')[0] : String(expiryVal).split('T')[0])
@@ -1536,7 +1559,11 @@ export class InventorysalesComponent implements OnInit {
           description: [salesItem.description || ''],
           hsnSac: [salesItem.hsnSac || ''],
           quantity: [salesItem.quantity || 1],
-          rate: [salesItem.rate || 0],
+          rate: [
+            parseFloat(
+              String(salesItem.salemrp ?? salesItem.sale_mrp ?? salesItem.rate ?? 0)
+            ) || 0
+          ],
           discountPct: [salesItem.discountPct || 0],
           gstPercent: [salesItem.gstPercent || 0],
           amount: [salesItem.amount || 0]
@@ -1548,7 +1575,9 @@ export class InventorysalesComponent implements OnInit {
         description: [item.productname || ''],
         hsnSac: [item.producthsncode || item.hsnSac || ''],
         quantity: [item.quantity || 1],
-        rate: [item.unitprice || 0],
+        rate: [
+          parseFloat(String(item.salemrp ?? item.sale_mrp ?? item.unitprice ?? item.rate ?? 0)) || 0
+        ],
         discountPct: [item.discountPct || 0],
         gstPercent: [item.gstpercent || 0],
         amount: [item.totalamount || 0]

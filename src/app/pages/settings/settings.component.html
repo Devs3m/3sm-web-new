@@ -98,6 +98,18 @@
             <p class="setting-hint">
               When enabled, Batch no and Expiry are hidden in Product Sales and in Purchase (GRN); purchase lines get an automatic batch (GRN-L-line). When disabled (batch mandatory), HSN/SAC is hidden in sales as before.
             </p>
+            <div class="setting-row">
+              <div class="setting-label">
+                <span>Editable MRP in Product Sales</span>
+              </div>
+              <mat-slide-toggle
+                formControlName="mrpEditableInInventorySales"
+                color="primary">
+              </mat-slide-toggle>
+            </div>
+            <p class="setting-hint">
+              When enabled, the MRP column can be edited on each line. When disabled, MRP is taken from the product and shown as read-only.
+            </p>
           </div>
 
           <!-- Subsection: Quantity -->

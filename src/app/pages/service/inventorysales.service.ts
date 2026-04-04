@@ -260,4 +260,20 @@ export class InventorysalesService {
       params,
     });
   }
+
+  /**
+   * GET /currentstock/stock-value-total — Σ (qty × cost/price) and distinct product count (qty &gt; 0).
+   */
+  getStockValueTotal(
+    accountId: number,
+    instanceId: number
+  ): Observable<{ totalStockValue: number; productsAvailable: number }> {
+    const params = { accountid: String(accountId), instanceid: String(instanceId) };
+    return this.http
+      .get<{ totalStockValue: number; productsAvailable: number }>(
+        `${this.apiUrl}/currentstock/stock-value-total`,
+        { params }
+      )
+      .pipe(catchError(() => of({ totalStockValue: 0, productsAvailable: 0 })));
+  }
 }

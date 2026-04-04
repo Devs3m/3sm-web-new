@@ -3,143 +3,141 @@
 
   <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-  <!-- Voucher Header -->
-  <div class="voucher-card">
-    <div class="voucher-header-row">
-      <div class="voucher-title">Receipt</div>
-    </div>
-
-    <div class="voucher-body">
-      <div class="voucher-body-spacer" aria-hidden="true"></div>
-      <section class="voucher-section" aria-labelledby="voucher-payment-heading">
-        <div class="voucher-section-head">
-          <h3 id="voucher-payment-heading" class="voucher-section-title">Payment details</h3>
-          <div class="voucher-no voucher-no-inline">
-            <span class="voucher-no-label">Receipt No:</span>
-            <span class="voucher-no-value">{{ receiptNo }}</span>
-          </div>
+  <!-- Top row: receipt / payment (left) | pending invoices (right) -->
+  <div class="finance-top-row">
+    <div class="finance-receipt-col">
+      <div class="voucher-card">
+        <div class="voucher-header-row">
+          <div class="voucher-title">Receipt</div>
         </div>
 
-        <div class="voucher-form-row">
-          <mat-form-field appearance="outline" class="date-field customer-select-field finance-select-field">
-            <mat-label>Customer</mat-label>
-            <mat-select formControlName="customerFilter" panelClass="finance-payment-select-panel" [compareWith]="compareCustomerFilter">
-              <mat-option [value]="null">All customers</mat-option>
-              <mat-option *ngFor="let c of customerOptions" [value]="c.customerid">{{ c.customername }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="date-field">
-            <mat-label>Collection Date</mat-label>
-            <input matInput [matDatepicker]="paymentDatePicker" formControlName="paymentDate" placeholder="dd-mm-yyyy">
-            <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
-            <mat-datepicker #paymentDatePicker></mat-datepicker>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="date-field voucher-readonly-field">
-            <mat-label>Payment Type</mat-label>
-            <input matInput [value]="paymentReceiptType" readonly />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="date-field finance-select-field">
-            <mat-label>Payment Mode</mat-label>
-            <mat-select formControlName="paymentMode" panelClass="finance-payment-select-panel">
-              <mat-option value="Cash">Cash</mat-option>
-              <mat-option value="UPI">UPI</mat-option>
-              <mat-option value="Bank Transfer">Bank Transfer</mat-option>
-              <mat-option value="Cheque">Cheque</mat-option>
-              <mat-option value="Credit Card">Credit Card</mat-option>
-              <mat-option value="Debit Card">Debit Card</mat-option>
-              <mat-option value="Other">Other</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="date-field">
-            <mat-label>Received Amount</mat-label>
-            <input matInput type="number" step="0.01" formControlName="receivedAmount" placeholder="0.00">
-          </mat-form-field>
-        </div>
-
-        <div class="voucher-summary-row">
-          <div class="voucher-summary-right">
-            <div class="voucher-total">
-              <div class="voucher-total-label">Total Amount</div>
-              <div class="voucher-total-value">{{ selectedTotalAmount | number:'1.2-2' }}</div>
+        <section class="voucher-section" aria-labelledby="voucher-payment-heading">
+          <div class="voucher-section-head">
+            <h3 id="voucher-payment-heading" class="voucher-section-title">Payment details</h3>
+            <div class="voucher-no voucher-no-inline">
+              <span class="voucher-no-label">Receipt No:</span>
+              <span class="voucher-no-value">{{ receiptNo }}</span>
             </div>
-            <div class="voucher-total">
-              <div class="voucher-total-label">Received</div>
-              <div class="voucher-total-value">
-                {{ (form.get('receivedAmount')?.value ?? 0) | number:'1.2-2' }}
+          </div>
+
+          <div class="voucher-form-row">
+            <mat-form-field appearance="outline" class="date-field customer-select-field finance-select-field">
+              <mat-label>Customer</mat-label>
+              <mat-select formControlName="customerFilter" panelClass="finance-payment-select-panel" [compareWith]="compareCustomerFilter">
+                <mat-option [value]="null">All customers</mat-option>
+                <mat-option *ngFor="let c of customerOptions" [value]="c.customerid">{{ c.customername }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="date-field">
+              <mat-label>Collection Date</mat-label>
+              <input matInput [matDatepicker]="paymentDatePicker" formControlName="paymentDate" placeholder="dd-mm-yyyy">
+              <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #paymentDatePicker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="date-field voucher-readonly-field">
+              <mat-label>Payment Type</mat-label>
+              <input matInput [value]="paymentReceiptType" readonly />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="date-field finance-select-field">
+              <mat-label>Payment Mode</mat-label>
+              <mat-select formControlName="paymentMode" panelClass="finance-payment-select-panel">
+                <mat-option value="Cash">Cash</mat-option>
+                <mat-option value="UPI">UPI</mat-option>
+                <mat-option value="Bank Transfer">Bank Transfer</mat-option>
+                <mat-option value="Cheque">Cheque</mat-option>
+                <mat-option value="Credit Card">Credit Card</mat-option>
+                <mat-option value="Debit Card">Debit Card</mat-option>
+                <mat-option value="Other">Other</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="date-field">
+              <mat-label>Received Amount</mat-label>
+              <input matInput type="number" step="0.01" formControlName="receivedAmount" placeholder="0.00">
+            </mat-form-field>
+          </div>
+
+          <div class="voucher-summary-row">
+            <div class="voucher-summary-right">
+              <div class="voucher-total">
+                <div class="voucher-total-label">Total Amount</div>
+                <div class="voucher-total-value">{{ selectedTotalAmount | number:'1.2-2' }}</div>
+              </div>
+              <div class="voucher-total">
+                <div class="voucher-total-label">Received</div>
+                <div class="voucher-total-value">
+                  {{ (form.get('receivedAmount')?.value ?? 0) | number:'1.2-2' }}
+                </div>
+              </div>
+              <div class="voucher-actions">
+                <button mat-raised-button type="button" class="receive-payment-btn" (click)="collectSelectedPayments()" [disabled]="!selectedRows.length || isLoading">
+                  Receive Payment ({{ selectedRows.length }})
+                </button>
               </div>
             </div>
-            <div class="voucher-actions">
-              <button mat-raised-button type="button" class="receive-payment-btn" (click)="collectSelectedPayments()" [disabled]="!selectedRows.length || isLoading">
-                Receive Payment ({{ selectedRows.length }})
-              </button>
-            </div>
           </div>
-        </div>
-      </section>
-    </div>
-  </div>
-
-  <div class="finance-two-col">
-    <!-- Left: pending credit invoices -->
-    <div class="finance-col finance-col-left">
-  <div class="pending-card">
-    <div class="pending-section-title">Pending credit invoices</div>
-    <div class="pending-filter-row">
-      <mat-form-field appearance="outline" class="date-field">
-        <mat-label>From Date</mat-label>
-        <input matInput [matDatepicker]="startPicker" formControlName="startDate" placeholder="dd-mm-yyyy">
-        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-        <mat-datepicker #startPicker></mat-datepicker>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="date-field">
-        <mat-label>To Date</mat-label>
-        <input matInput [matDatepicker]="endPicker" formControlName="endDate" placeholder="dd-mm-yyyy">
-        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-        <mat-datepicker #endPicker></mat-datepicker>
-      </mat-form-field>
-
-      <div class="pending-actions">
-        <button mat-raised-button type="button" class="btn-primary" (click)="onView()" [disabled]="isLoading">
-          {{ isLoading ? 'Loading...' : 'View Pending' }}
-        </button>
-        <button mat-icon-button class="refresh-btn" (click)="onRefresh()" [disabled]="isLoading" title="Refresh">
-          <mat-icon>refresh</mat-icon>
-        </button>
+        </section>
       </div>
     </div>
 
-    <div class="table-container">
-      <dx-data-grid
-        [dataSource]="apiData"
-        [keyExpr]="'rowKey'"
-        [allowColumnReordering]="true"
-        [allowColumnResizing]="true"
-        [showBorders]="true"
-        [columnAutoWidth]="true"
-        [selection]="{ mode: 'multiple', showCheckBoxesMode: 'always' }"
-        [headerFilter]="{ visible: true }"
-        [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
-        [paging]="{ pageSize: 12 }"
-        [noDataText]="isLoading ? 'Loading...' : 'No credit pending invoices found.'"
-        (onSelectionChanged)="onSelectionChanged($event)">
-        <dxi-column dataField="date" caption="Date" [minWidth]="100" [calculateCellValue]="dateCellValue"></dxi-column>
-        <dxi-column dataField="source" caption="Source" [minWidth]="120" [calculateCellValue]="sourceCellValue"></dxi-column>
-        <dxi-column dataField="invoiceno" caption="Invoice No" [minWidth]="110"></dxi-column>
-        <dxi-column dataField="customerName" caption="Customer" [minWidth]="140"></dxi-column>
-        <dxi-column dataField="amount" caption="Amount" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
-        <dxi-column dataField="paymentStatus" caption="Status" [minWidth]="100"></dxi-column>
-      </dx-data-grid>
+    <div class="finance-pending-col">
+      <div class="pending-card">
+        <div class="pending-section-title">Pending credit invoices</div>
+        <div class="pending-filter-row">
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>From Date</mat-label>
+            <input matInput [matDatepicker]="startPicker" formControlName="startDate" placeholder="dd-mm-yyyy">
+            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>To Date</mat-label>
+            <input matInput [matDatepicker]="endPicker" formControlName="endDate" placeholder="dd-mm-yyyy">
+            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+          </mat-form-field>
+
+          <div class="pending-actions">
+            <button mat-raised-button type="button" class="btn-primary" (click)="onView()" [disabled]="isLoading">
+              {{ isLoading ? 'Loading...' : 'View Pending' }}
+            </button>
+            <button mat-icon-button class="refresh-btn" (click)="onRefresh()" [disabled]="isLoading" title="Refresh">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <dx-data-grid
+            [dataSource]="filteredPendingData"
+            [keyExpr]="'rowKey'"
+            [allowColumnReordering]="true"
+            [allowColumnResizing]="true"
+            [showBorders]="true"
+            [columnAutoWidth]="true"
+            [selection]="{ mode: 'multiple', showCheckBoxesMode: 'always' }"
+            [headerFilter]="{ visible: true }"
+            [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
+            [paging]="{ pageSize: 12 }"
+            [noDataText]="isLoading ? 'Loading...' : 'No credit pending invoices found.'"
+            (onSelectionChanged)="onSelectionChanged($event)">
+            <dxi-column dataField="date" caption="Date" [minWidth]="100" [calculateCellValue]="dateCellValue"></dxi-column>
+            <dxi-column dataField="source" caption="Source" [minWidth]="120" [calculateCellValue]="sourceCellValue"></dxi-column>
+            <dxi-column dataField="invoiceno" caption="Invoice No" [minWidth]="110"></dxi-column>
+            <dxi-column dataField="customerName" caption="Customer" [minWidth]="140"></dxi-column>
+            <dxi-column dataField="amount" caption="Amount" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
+            <dxi-column dataField="paymentStatus" caption="Status" [minWidth]="100"></dxi-column>
+          </dx-data-grid>
+        </div>
+      </div>
     </div>
   </div>
-    </div>
 
-    <!-- Right: receipt history (search) -->
-    <div class="finance-col finance-col-right">
+  <!-- Receipt history full width below -->
   <div class="receipt-history-card">
     <div class="receipt-history-header">
       <h3 class="receipt-history-title">Receipt history</h3>
@@ -166,8 +164,6 @@
         <dxi-column dataField="receiptbalanceamount" caption="Balance" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
         <dxi-column dataField="receiptpaymentmode" caption="Mode" [minWidth]="100"></dxi-column>
       </dx-data-grid>
-    </div>
-  </div>
     </div>
   </div>
 </div>

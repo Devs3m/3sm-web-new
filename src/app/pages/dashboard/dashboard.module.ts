@@ -12,6 +12,9 @@ import { AccountService } from '../service/account.service';
 import { InstanceService } from '../service/instance.service';
 import { CustomerService } from '../service/customer.service';
 import { SalesService } from '../service/sales.service';
+import { InventorysalesService } from '../service/inventorysales.service';
+import { SupplierService } from '../service/supplier.service';
+import { PurchaseService } from '../service/purchase.service';
 
 @NgModule({
   declarations: [
@@ -34,7 +37,10 @@ import { SalesService } from '../service/sales.service';
     AccountService,
     InstanceService,
     CustomerService,
-    SalesService
+    SalesService,
+    InventorysalesService,
+    SupplierService,
+    PurchaseService
   ]
 })
 export class DashboardModule { }

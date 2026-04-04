@@ -81,6 +81,7 @@ export class FinanceComponent implements OnInit {
       this.selectedRowKeys = [];
       this.receivedAmountEdited = false;
       this.form.patchValue({ receivedAmount: 0 }, { emitEvent: false });
+      this.loadPendingAfterCustomerChange();
     });
 
     this.loadCustomers();
@@ -169,6 +170,16 @@ export class FinanceComponent implements OnInit {
     const today = new Date();
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
     this.form.patchValue({ startDate: monthStart, endDate: today });
+    this.onView();
+  }
+
+  /** After customer filter changes, reload pending invoices for the current date range (same as View Pending). */
+  private loadPendingAfterCustomerChange(): void {
+    const startDate = this.form.get('startDate')?.value;
+    const endDate = this.form.get('endDate')?.value;
+    if (!startDate || !endDate) {
+      return;
+    }
     this.onView();
   }
 

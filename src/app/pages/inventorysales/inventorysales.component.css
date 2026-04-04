@@ -529,7 +529,7 @@ body {
 .col-expiry { width: 8%; }
 .col-hsn    { width: 8%; }
 .col-qty    { width: 6%; }
-.col-rate   { width: 9%; }
+.col-mrp   { width: 9%; }
 .col-disc   { width: 7%; }
 .col-gst    { width: 7%; }
 .col-amount { width: 12%; }
@@ -557,7 +557,7 @@ body {
 .th-expiry { text-align: center; }
 .th-hsn    { text-align: center; }
 .th-qty    { text-align: center; }
-.th-rate   { text-align: center; }
+.th-mrp   { text-align: center; }
 .th-disc   { text-align: center; }
 .th-gst    { text-align: center; }
 .th-amount { text-align: center; }
@@ -663,6 +663,15 @@ body {
   min-width: 0 !important;
 }
 
+.table-field-mrp {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.table-field-mrp input {
+  text-align: right;
+}
+
 .readonly-cell {
   font-size: 13px;
   color: #333;
@@ -683,7 +692,7 @@ body {
 .cell-expiry { text-align: left; padding: 4px 12px; }
 .cell-hsn    { text-align: left; padding: 4px 12px; }
 .cell-qty    { text-align: right; }
-.cell-rate   { text-align: right; padding: 4px 12px; }
+.cell-mrp   { text-align: right; padding: 4px 12px; }
 .cell-disc   { text-align: right; }
 .cell-gst    { text-align: right; padding: 4px 12px; }
 .cell-amount { text-align: right; padding: 4px 12px; }

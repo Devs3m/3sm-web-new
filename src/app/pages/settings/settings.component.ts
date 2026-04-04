@@ -28,6 +28,7 @@ export class SettingsComponent implements OnInit {
       gstInclusive: [sales.gstInclusive],
       hideBatchNoAndExpiryInProductSales: [sales.hideBatchNoAndExpiryInProductSales ?? false],
       allowDecimalQtyInSales: [sales.allowDecimalQtyInSales ?? false],
+      mrpEditableInInventorySales: [sales.mrpEditableInInventorySales ?? false],
     });
   }
 
@@ -40,6 +41,7 @@ export class SettingsComponent implements OnInit {
       gstInclusive: !!v.gstInclusive,
       hideBatchNoAndExpiryInProductSales: !!v.hideBatchNoAndExpiryInProductSales,
       allowDecimalQtyInSales: !!v.allowDecimalQtyInSales,
+      mrpEditableInInventorySales: !!v.mrpEditableInInventorySales,
     });
     this.savedMessage = 'Settings saved successfully.';
     setTimeout(() => (this.savedMessage = ''), 3000);

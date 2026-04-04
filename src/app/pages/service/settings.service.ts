@@ -11,6 +11,8 @@ export interface SalesSettings {
   hideBatchNoAndExpiryInProductSales: boolean;
   /** When true: allow decimal quantity (e.g. 1.5, 2.25) in Service Sales and Product Sales */
   allowDecimalQtyInSales: boolean;
+  /** When true: MRP column is editable in Product Sales (inventory sales). When false, MRP is read-only from product master. */
+  mrpEditableInInventorySales: boolean;
 }
 
 export interface AppSettings {
@@ -24,6 +26,7 @@ const DEFAULT_SALES: SalesSettings = {
   gstInclusive: true,
   hideBatchNoAndExpiryInProductSales: false,
   allowDecimalQtyInSales: false,
+  mrpEditableInInventorySales: false,
 };
 
 @Injectable({
