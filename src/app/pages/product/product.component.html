@@ -198,23 +198,54 @@
 
 
 
-    <div class="example-card">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Product&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalProduct}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-     <mat-card>
-        <mat-card-header>
-          <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeProduct}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveProduct}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
+    <div class="account-cards">
+
+  <mat-card class="account-card total">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>inventory_2</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Total Products</span>
+        <span class="card-value">{{ totalProduct }}</span>
+      </div>
+
     </div>
+  </mat-card>
+
+  <mat-card class="account-card active">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Active</span>
+        <span class="card-value">{{ activeProduct }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+  <mat-card class="account-card inactive">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>cancel</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Inactive</span>
+        <span class="card-value">{{ deactiveProduct }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+</div>
 
     <div class="pos-relative">
       <div class="btn-pos-list">
@@ -233,7 +264,7 @@
     [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
     [paging]="{ pageSize: 12 }" 
     title="Product"
-    [showBorders]="true" (onExporting)="onExporting($event)">
+    [showBorders]="true" (onExporting)="onExporting($event)" style="max-width: 100%;">
 
       <dxi-column
         dataField="productid"

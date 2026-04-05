@@ -145,23 +145,54 @@
     </div>
 
 
-    <div class="example-card">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalUser}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-     <mat-card>
-        <mat-card-header>
-          <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeUser}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveUser}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
+ <div class="account-cards">
+
+  <mat-card class="account-card total">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>person</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Total Users</span>
+        <span class="card-value">{{ totalUser }}</span>
+      </div>
+
     </div>
+  </mat-card>
+
+  <mat-card class="account-card active">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Active</span>
+        <span class="card-value">{{ activeUser }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+  <mat-card class="account-card inactive">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>cancel</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Inactive</span>
+        <span class="card-value">{{ deactiveUser }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+</div>
 
     <div class="pos-relative">
         <div class="btn-pos-list">

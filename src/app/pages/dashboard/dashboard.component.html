@@ -34,7 +34,12 @@
   </div>
 
   <!-- Stat Cards -->
-  <div class="stat-cards" *ngIf="!isLoading">
+ <!-- PURCHASE SECTION -->
+<!-- ================= GENERAL SECTION ================= -->
+<div class="card-section">
+  <h3 class="section-title">Overview</h3>
+
+  <div class="stat-cards three-col">
 
     <div class="stat-card accounts" *ngIf="showAccountAndInstanceCards">
       <div class="stat-icon-wrap">
@@ -42,9 +47,7 @@
       </div>
       <div class="stat-body">
         <span class="stat-label">Company</span>
-        <div class="stat-value-block">
-          <span class="stat-value">{{ accountCount }}</span>
-        </div>
+        <span class="stat-value">{{ accountCount }}</span>
       </div>
     </div>
 
@@ -54,9 +57,7 @@
       </div>
       <div class="stat-body">
         <span class="stat-label">Instances</span>
-        <div class="stat-value-block">
-          <span class="stat-value">{{ instanceCount }}</span>
-        </div>
+        <span class="stat-value">{{ instanceCount }}</span>
       </div>
     </div>
 
@@ -66,11 +67,19 @@
       </div>
       <div class="stat-body">
         <span class="stat-label">Customers</span>
-        <div class="stat-value-block">
-          <span class="stat-value">{{ customerCount }}</span>
-        </div>
+        <span class="stat-value">{{ customerCount }}</span>
       </div>
     </div>
+
+  </div>
+</div>
+
+
+<!-- ================= PURCHASE SECTION ================= -->
+<div class="card-section">
+  <h3 class="section-title">Purchases</h3>
+
+  <div class="stat-cards three-col">
 
     <div class="stat-card suppliers">
       <div class="stat-icon-wrap">
@@ -78,9 +87,7 @@
       </div>
       <div class="stat-body">
         <span class="stat-label">Suppliers</span>
-        <div class="stat-value-block">
-          <span class="stat-value">{{ supplierCount }}</span>
-        </div>
+        <span class="stat-value">{{ supplierCount }}</span>
       </div>
     </div>
 
@@ -102,13 +109,23 @@
         <mat-icon>warehouse</mat-icon>
       </div>
       <div class="stat-body">
-        <span class="stat-label">Current stock value</span>
+        <span class="stat-label">Stock value</span>
         <div class="stat-value-block">
           <span class="stat-value">₹{{ currentStockValue | number:'1.2-2' }}</span>
-          <span class="stat-sub">{{ stockProductsAvailable }} {{ stockProductsAvailable === 1 ? 'product' : 'products' }} with stock</span>
+          <span class="stat-sub">{{ stockProductsAvailable }} products</span>
         </div>
       </div>
     </div>
+
+  </div>
+</div>
+
+
+<!-- ================= SALES SECTION ================= -->
+<div class="card-section">
+  <h3 class="section-title">Sales</h3>
+
+  <div class="stat-cards three-col">
 
     <div class="stat-card service-sales" *ngIf="showServiceSalesDashboard">
       <div class="stat-icon-wrap">
@@ -141,7 +158,7 @@
         <mat-icon>summarize</mat-icon>
       </div>
       <div class="stat-body">
-        <span class="stat-label">Total sales (service + product)</span>
+        <span class="stat-label">Total sales</span>
         <div class="stat-value-block">
           <span class="stat-value">₹{{ salesValue | number:'1.2-2' }}</span>
           <span class="stat-sub">{{ salesCount }} invoice(s)</span>
@@ -150,6 +167,7 @@
     </div>
 
   </div>
+</div>
 
   <!-- Chart -->
   <div class="chart-card" *ngIf="!isLoading">

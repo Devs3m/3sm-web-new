@@ -146,19 +146,26 @@
 
       <!-- Reports: flat section (no expansion) so Product Ledger stays visible in narrow sidenav -->
       <ng-container *ngIf="permissionService.hasAnyPermissionForResource('sales')">
-        <mat-divider class="nav-section-divider"></mat-divider>
-        <div class="nav-section-label" role="presentation">
-          <span>Reports</span>
-        </div>
-        <a mat-list-item routerLink="product-ledger" href="#" class="aligned-list-item nav-sub-link">
-          <span class="nav-link-text">Product Ledger</span>
-        </a>
-        <a mat-list-item routerLink="sales-ledger" href="#" class="aligned-list-item nav-sub-link">
-          <span class="nav-link-text">Sales Ledger</span>
-        </a>
-      <a mat-list-item routerLink="finance" href="#" class="aligned-list-item nav-sub-link">
-             <span class="nav-link-text">Finance</span>
-           </a>
+       <!-- Reports Menu -->
+<button mat-list-item [matMenuTriggerFor]="reportsMenu" class="aligned-list-item">
+  <mat-icon class="aligned-icon">bar_chart</mat-icon>
+  Reports
+</button>
+
+<!-- Submenu -->
+<mat-menu #reportsMenu="matMenu" xPosition="after" yPosition="below">
+  <button mat-menu-item routerLink="product-ledger">
+    <span>Product Ledger</span>
+  </button>
+
+  <button mat-menu-item routerLink="sales-ledger">
+    <span>Sales Ledger</span>
+  </button>
+
+  <button mat-menu-item routerLink="finance">
+    <span>Finance</span>
+  </button>
+</mat-menu>
       </ng-container>
 
       <!-- Settings - visible when authenticated -->

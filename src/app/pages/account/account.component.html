@@ -9,11 +9,11 @@
       {{ errorMessage }}
     </div>
 
-    <form [formGroup]="accountForm" (ngSubmit)="onSubmit()">
+    <form class="form-section" [formGroup]="accountForm" (ngSubmit)="onSubmit()">
       
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Company Name</mat-label>
-        <input matInput placeholder="Company" class="mat-input-element custom-placeholder"
+        <input matInput placeholder="Company" class=""
           formControlName="companyname">
         <mat-error *ngIf="companyname?.hasError('required') && companyname?.touched">
           Company name is required
@@ -34,7 +34,7 @@
       
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Owner Name</mat-label>
-        <input matInput placeholder="Owner" class="mat-input-element custom-placeholder" 
+        <input matInput placeholder="Owner" class="" 
         formControlName="ownername">
         <mat-error *ngIf="accountForm.get('ownername')?.hasError('required') && accountForm.get('ownername')?.touched">
           Owner name is required
@@ -46,7 +46,7 @@
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Owner Mobile</mat-label>
-        <input maxlength="12" matInput placeholder="1234-567890" class="mat-input-element custom-placeholder"
+        <input maxlength="12" matInput placeholder="1234-567890" class=""
           formControlName="ownermobile" type="tel">
         <mat-error *ngIf="ownermobile?.hasError('required') && ownermobile?.touched">
           Mobile number is required
@@ -64,7 +64,7 @@
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black !important">Owner Email</mat-label>
-        <input matInput placeholder="Owner Email" class="mat-input-element custom-placeholder"
+        <input matInput placeholder="Owner Email" class=""
           formControlName="owneremail" type="email">
         <mat-error *ngIf="owneremail?.hasError('email') && owneremail?.touched">
           Enter a valid email
@@ -73,7 +73,7 @@
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Address</mat-label>
-        <input matInput placeholder="Address" class="mat-input-element custom-placeholder"
+        <input matInput placeholder="Address" class=""
           formControlName="companyaddress">
       </mat-form-field>  
 
@@ -94,25 +94,25 @@
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">State</mat-label>
-        <input matInput placeholder="State" class="mat-input-element custom-placeholder" formControlName="companystate">
+        <input matInput placeholder="State" class="" formControlName="companystate">
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Country</mat-label>
-        <input matInput placeholder="Country" class="mat-input-element custom-placeholder"
+        <input matInput placeholder="Country" class=""
           formControlName="companycountry">
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Pincode</mat-label>
-        <input matInput placeholder="Pincode" class="mat-input-element custom-placeholder"
+        <input matInput placeholder="Pincode" class=""
           formControlName="companypincode">
       </mat-form-field>
 
       <!-- Example: Field-level permission control using directive -->
       <mat-form-field *appHasPermission="'account:read:licensecount'" appearance="outline" class="form-field">
         <mat-label style="color:black">License Count</mat-label>
-        <input matInput placeholder="License Count" class="mat-input-element custom-placeholder"
+        <input matInput placeholder="License Count" class=""
           formControlName="licensecount" type="number">
       </mat-form-field>
 
@@ -169,25 +169,45 @@
     </form>
   </div>
 
-  <div class="example-card">
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Account&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalAccounts}}</mat-card-title>
-      </mat-card-header>
-    </mat-card>
+<div class="account-cards">
 
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeAccounts}}</mat-card-title>
-      </mat-card-header>
-    </mat-card>
-    
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveAccounts}}</mat-card-title>
-      </mat-card-header>
-    </mat-card>
-  </div>
+  <mat-card class="account-card total">
+    <div class="card-content">
+      <div class="card-icon">
+        <mat-icon>business</mat-icon>
+      </div>
+      <div class="card-text">
+        <span class="card-label">Total Accounts</span>
+        <span class="card-value">{{ totalAccounts }}</span>
+      </div>
+    </div>
+  </mat-card>
+
+  <mat-card class="account-card active">
+    <div class="card-content">
+      <div class="card-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <div class="card-text">
+        <span class="card-label">Active</span>
+        <span class="card-value">{{ activeAccounts }}</span>
+      </div>
+    </div>
+  </mat-card>
+
+  <mat-card class="account-card inactive">
+    <div class="card-content">
+      <div class="card-icon">
+        <mat-icon>cancel</mat-icon>
+      </div>
+      <div class="card-text">
+        <span class="card-label">Inactive</span>
+        <span class="card-value">{{ deactiveAccounts }}</span>
+      </div>
+    </div>
+  </mat-card>
+
+</div>
 
   <div class="pos-relative">
     <div class="btn-pos-list">

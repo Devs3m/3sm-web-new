@@ -39,23 +39,54 @@
       </form>
     </div>
 
-    <div class="example-card">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Userrole&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalUserrole}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-     <mat-card>
-        <mat-card-header>
-          <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeUserrole}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveUserrole}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
+  <div class="account-cards">
+
+  <mat-card class="account-card total">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>admin_panel_settings</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Total User Roles</span>
+        <span class="card-value">{{ totalUserrole }}</span>
+      </div>
+
     </div>
+  </mat-card>
+
+  <mat-card class="account-card active">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Active</span>
+        <span class="card-value">{{ activeUserrole }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+  <mat-card class="account-card inactive">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>cancel</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Inactive</span>
+        <span class="card-value">{{ deactiveUserrole }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+</div>
 
     <div class="pos-relative">
       <div class="btn-pos-list">

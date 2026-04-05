@@ -180,25 +180,54 @@
             </div>
         </form>
     </div>
-    <div class="example-card">
-        <mat-card>
-            <mat-card-header>
-                <mat-card-title>Digicard&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalDigicard}}</mat-card-title>
-            </mat-card-header>
-        </mat-card>
+    <div class="account-cards">
 
-        <mat-card>
-            <mat-card-header>
-                <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeDigicard}}</mat-card-title>
-            </mat-card-header>
-        </mat-card>
+  <mat-card class="account-card total">
+    <div class="card-content vertical">
 
-        <mat-card>
-            <mat-card-header>
-                <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveDigicard}}</mat-card-title>
-            </mat-card-header>
-        </mat-card>
+      <div class="card-icon">
+        <mat-icon>local_activity</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Total Digicards</span>
+        <span class="card-value">{{ totalDigicard }}</span>
+      </div>
+
     </div>
+  </mat-card>
+
+  <mat-card class="account-card active">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Active</span>
+        <span class="card-value">{{ activeDigicard }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+  <mat-card class="account-card inactive">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>cancel</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Inactive</span>
+        <span class="card-value">{{ deactiveDigicard }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+</div>
 
     <div class="pos-relative">
         <div class="btn-pos-list">

@@ -337,19 +337,41 @@
       <mat-icon>error_outline</mat-icon>
       <span>{{ errorMessage }}</span>
     </div>
-    <div class="example-card">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Product Sales&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalSales}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
+   <div class="account-cards">
 
-      <mat-card class="total-amount-card">
-        <mat-card-header>
-          <mat-card-title>Total Amount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹{{totalAmount | number:'1.2-2'}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
+  <!-- Product Sales Count -->
+  <mat-card class="account-card total">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>inventory_2</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Product Sales</span>
+        <span class="card-value">{{ totalSales }}</span>
+      </div>
+
     </div>
+  </mat-card>
+
+  <!-- Total Amount -->
+  <mat-card class="account-card active">
+    <div class="card-content vertical">
+
+      <div class="card-icon">
+        <mat-icon>currency_rupee</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Total Amount</span>
+        <span class="card-value">₹{{ totalAmount | number:'1.2-2' }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+</div>
 
     <div class="pos-relative">
       <div class="btn-pos-list">

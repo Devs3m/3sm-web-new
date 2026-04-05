@@ -182,24 +182,54 @@
 
    
      
-    <div class="example-card">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Instance&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalInstance}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-     <mat-card>
-        <mat-card-header>
-          <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeInstance}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveInstance}}</mat-card-title>
-        </mat-card-header>
-      </mat-card>
+   <div class="account-cards">
+
+  <mat-card class="account-card total">
+    <div class="card-content vertical">
       
+      <div class="card-icon">
+        <mat-icon>dns</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Total Instance</span>
+        <span class="card-value">{{ totalInstance }}</span>
+      </div>
+
     </div>
+  </mat-card>
+
+  <mat-card class="account-card active">
+    <div class="card-content vertical">
+      
+      <div class="card-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Active</span>
+        <span class="card-value">{{ activeInstance }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+  <mat-card class="account-card inactive">
+    <div class="card-content vertical">
+      
+      <div class="card-icon">
+        <mat-icon>cancel</mat-icon>
+      </div>
+
+      <div class="card-text">
+        <span class="card-label">Inactive</span>
+        <span class="card-value">{{ deactiveInstance }}</span>
+      </div>
+
+    </div>
+  </mat-card>
+
+</div>
     <div class="pos-relative">
       <div class="btn-pos-list">
         <button *appHasPermission="'instance:create'" (click)="toggleForm()" class="add-btn" >

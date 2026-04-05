@@ -425,3 +425,210 @@ box-shadow: gray;
   color: #000000 !important;
 }
 
+.account-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 15px;
+}
+
+/* Card */
+.account-card {
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  box-shadow: 0px 0px 4px 2px rgba(0,0,0,0.1)!important;
+}
+
+/* Layout */
+.card-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Icon */
+.card-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-icon mat-icon {
+  font-size: 22px;
+  color: #666;
+}
+
+/* Text */
+.card-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.card-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+}
+
+/* Left color border (simple highlight) */
+
+.account-card.total {
+  border-left: 4px solid #337ab7;
+  background-color: #e8f3fd;
+}
+
+.account-card.active {
+  border-left: 4px solid #27ae60;
+   background-color: #ecfef4;
+}
+
+.account-card.inactive {
+  border-left: 4px solid #e74c3c;
+     background-color: #fff1f0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .account-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .account-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dx-datagrid-headers .dx-datagrid-table .dx-row>td{
+      background: #337ab7;
+    color: #fff;
+}
+.dx-datagrid .dx-header-filter-empty{
+   color: #fff;
+}
+
+/* Make all form fields full width */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+/* Proper spacing */
+.mat-mdc-form-field {
+  margin-bottom: 8px;
+}
+
+/* Outline border clean look */
+.mat-mdc-text-field-wrapper {
+  border-radius: 8px;
+}
+
+/* Default border color */
+.mdc-notched-outline {
+  border-color: #dcdcdc;
+}
+
+/* Focus border color */
+.mat-mdc-form-field.mat-focused .mdc-notched-outline {
+  border-color: #3f51b5;
+  border-width: 1.5px;
+}
+
+/* Label style */
+.mat-mdc-form-field .mdc-floating-label {
+  color: #666;
+  font-size: 14px;
+}
+
+/* Input text */
+.mat-mdc-input-element {
+  font-size: 14px;
+  color: #222;
+}
+
+/* Error color */
+.mat-mdc-form-field.mat-form-field-invalid .mdc-notched-outline {
+  border-color: #e74c3c;
+}
+/* Consistent height */
+.mat-mdc-form-field .mdc-text-field {
+  height: 52px;
+  align-items: center;
+}
+
+/* Remove extra padding issues */
+.mat-mdc-form-field-infix {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.form-section {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 20px;
+}
+
+/* All fields full width inside grid cell */
+.form-section .mat-mdc-form-field {
+  width: 100%;
+}
+
+/* Full width fields (span all 4 columns) */
+.full-width {
+  grid-column: span 4;
+}
+
+/* Half width (optional) */
+.span-2 {
+  grid-column: span 2;
+}
+
+/* 3 column span (optional) */
+.span-3 {
+  grid-column: span 3;
+}
+
+/* Submit button alignment */
+.form-submit {
+  grid-column: span 4;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .form-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .full-width,
+  .span-2,
+  .span-3 {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-section {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width,
+  .span-2,
+  .span-3 {
+    grid-column: span 1;
+  }
+
+  .form-submit {
+    justify-content: center;
+  }
+}
