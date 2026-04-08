@@ -739,6 +739,17 @@ export class FinanceComponent implements OnInit, OnDestroy {
 
   dateCellValue = (rowData: CreditCollectionRow): string => this.formatDateDdMmYyyy(rowData.date);
 
+  /** Compare helper for mat-select customer ids (handles number/string/null safely). */
+  compareCustomerFilter = (a: number | string | null, b: number | string | null): boolean => {
+    if (a == null && b == null) return true;
+    if (a == null || b == null) return false;
+    return Number(a) === Number(b);
+  };
+
+  /** Grid display label for source values. */
+  sourceCellValue = (rowData: CreditCollectionRow): string =>
+    rowData?.source === 'SERVICE_SALES' ? 'Service Sales' : 'Product Sales';
+
   receiptDateCellValue = (rowData: ReceiptRecord): string =>
     this.formatDateDdMmYyyy(String(rowData.receiptdate ?? '').slice(0, 10));
   invoiceDateCellValue = (rowData: ReceiptRecord): string =>
