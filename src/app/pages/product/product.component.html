@@ -201,47 +201,32 @@
     <div class="account-cards">
 
   <mat-card class="account-card total">
-    <div class="card-content vertical">
-
+    <div class="card-content account-stat-row">
       <div class="card-icon">
         <mat-icon>inventory_2</mat-icon>
       </div>
-
-      <div class="card-text">
-        <span class="card-label">Total Products</span>
-        <span class="card-value">{{ totalProduct }}</span>
-      </div>
-
+      <span class="card-label">Total Products</span>
+      <span class="card-value">{{ totalProduct }}</span>
     </div>
   </mat-card>
 
   <mat-card class="account-card active">
-    <div class="card-content vertical">
-
+    <div class="card-content account-stat-row">
       <div class="card-icon">
         <mat-icon>check_circle</mat-icon>
       </div>
-
-      <div class="card-text">
-        <span class="card-label">Active</span>
-        <span class="card-value">{{ activeProduct }}</span>
-      </div>
-
+      <span class="card-label">Active</span>
+      <span class="card-value">{{ activeProduct }}</span>
     </div>
   </mat-card>
 
   <mat-card class="account-card inactive">
-    <div class="card-content vertical">
-
+    <div class="card-content account-stat-row">
       <div class="card-icon">
         <mat-icon>cancel</mat-icon>
       </div>
-
-      <div class="card-text">
-        <span class="card-label">Inactive</span>
-        <span class="card-value">{{ deactiveProduct }}</span>
-      </div>
-
+      <span class="card-label">Inactive</span>
+      <span class="card-value">{{ deactiveProduct }}</span>
     </div>
   </mat-card>
 
@@ -270,20 +255,18 @@
         dataField="productid"
         caption="Prod-ID"
         [allowSorting]="true"
-        [dataType]="'number'"
         [calculateSortValue]="productIdSortValue"
         [sortOrder]="'desc'"
         [sortIndex]="0"
-        [width]="90">
+        [width]="150">
       </dxi-column>
       <dxi-column dataField="productname" caption="Product Name" [width]="200"></dxi-column>
-      <dxi-column dataField="producthsncode" caption="HSN Code" [width]="120"></dxi-column>
+      <dxi-column dataField="producthsncode" caption="HSN Code" [width]="130"></dxi-column>
       <dxi-column dataField="productmanufacturer" caption="Manufacturer" [width]="180"></dxi-column>
       <dxi-column dataField="productpackqty" caption="Packing" [width]="100"></dxi-column>
       <dxi-column dataField="productcategory" caption="Category" [width]="150"></dxi-column>
-      <dxi-column dataField="productsubcategory" caption="Sub Category" [width]="130"></dxi-column>
-      <dxi-column dataField="productisactive" caption="Active" [width]="100"></dxi-column>
-      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="170"></dxi-column>
+      <dxi-column dataField="productisactive" caption="Active" [width]="120"></dxi-column>
+      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="160"></dxi-column>
 
     
       <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">

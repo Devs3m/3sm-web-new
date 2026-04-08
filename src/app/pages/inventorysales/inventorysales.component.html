@@ -337,37 +337,25 @@
       <mat-icon>error_outline</mat-icon>
       <span>{{ errorMessage }}</span>
     </div>
-   <div class="account-cards">
+   <div class="account-cards two-cards">
 
-  <!-- Product Sales Count -->
   <mat-card class="account-card total">
-    <div class="card-content vertical">
-
+    <div class="card-content account-stat-row">
       <div class="card-icon">
         <mat-icon>inventory_2</mat-icon>
       </div>
-
-      <div class="card-text">
-        <span class="card-label">Product Sales</span>
-        <span class="card-value">{{ totalSales }}</span>
-      </div>
-
+      <span class="card-label">Product Sales</span>
+      <span class="card-value">{{ totalSales }}</span>
     </div>
   </mat-card>
 
-  <!-- Total Amount -->
   <mat-card class="account-card active">
-    <div class="card-content vertical">
-
+    <div class="card-content account-stat-row">
       <div class="card-icon">
         <mat-icon>currency_rupee</mat-icon>
       </div>
-
-      <div class="card-text">
-        <span class="card-label">Total Amount</span>
-        <span class="card-value">₹{{ totalAmount | number:'1.2-2' }}</span>
-      </div>
-
+      <span class="card-label">Total Amount</span>
+      <span class="card-value">₹{{ totalAmount | number:'1.2-2' }}</span>
     </div>
   </mat-card>
 
@@ -392,7 +380,7 @@
         <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx', 'pdf']"></dxo-export>
         <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150" [calculateCellValue]="invoiceNoCellValue"></dxi-column>
         <dxi-column dataField="customername" caption="Customer Name"></dxi-column> 
-        <dxi-column dataField="tdisaper" caption="Dis %" [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+        <dxi-column dataField="tdisaper" caption="Dis %" [format]="{ type: 'fixedPoint', precision: 2 }" [width]="100"></dxi-column>
         <dxi-column dataField="grandtotal" caption="Grand Total" alignment="right" [width]="130"
           [format]="{ type: 'currency', currency: 'INR', precision: 2 }"></dxi-column>
         <dxi-column dataField="saledate" caption="Sale Date" [width]="120" [calculateCellValue]="saleDateCellValue"></dxi-column>

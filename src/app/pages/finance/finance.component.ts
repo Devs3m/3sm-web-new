@@ -1,30 +1,23 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { merge, Observable, Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil, tap } from 'rxjs/operators';
 import { DX_FORMAT_FIXED_2 } from '../../core/display-number-format';
+import { environment } from '../../../environments/environment';
 import { AuthService } from '../service/auth.service';
 import { CustomerService } from '../service/customer.service';
 import { InventorysalesService } from '../service/inventorysales.service';
-import { CreateReceiptPayload, ReceiptRecord, ReceiptsService } from '../service/receipts.service';
-
-interface CreditCollectionRow {
-  rowKey: string;
-  date: string;
-  source: 'SERVICE_SALES' | 'PRODUCT_SALES';
-  rawInvoiceno: number;
-  invoiceno: string;
-  customerid: number;
-  customerName: string;
-  amount: number;
-  paymentStatus: string;
-}
+import { ReceiptRecord, ReceiptsService } from '../service/receipts.service';
+import { FinanceCollectionFacade } from './finance-collection.facade';
+import { CreditCollectionRow } from './finance.models';
 
 @Component({
   selector: 'app-finance',
   templateUrl: './finance.component.html',
   styleUrls: ['./finance.component.css'],
 })
-export class FinanceComponent implements OnInit {
+export class FinanceComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   apiData: CreditCollectionRow[] = [];
   selectedRows: CreditCollectionRow[] = [];
@@ -37,25 +30,41 @@ export class FinanceComponent implements OnInit {
   isLoadingReceipts = false;
   /** Populated from GET /customer/list for filter dropdown */
   customerOptions: { customerid: number; customername: string }[] = [];
+  /** Text in the customer field: type to search; shows name when a customer is chosen */
+  customerInputCtrl = new FormControl('', { nonNullable: true });
 
   readonly amountColumnFormat = DX_FORMAT_FIXED_2;
 
   /** Credit collection receipts are always recorded against credit sales. */
   readonly paymentReceiptType = 'Credit';
 
-  /** mat-select: compare null vs "All customers" */
-  compareCustomerFilter = (a: number | null, b: number | null): boolean => {
-    if (a == null && b == null) return true;
-    if (a == null || b == null) return false;
-    return Number(a) === Number(b);
-  };
+  private readonly destroy$ = new Subject<void>();
+  /** Cancel prior credit-collections request when a new one starts (avoids aborted XHR showing as failed). */
+  private creditCollectionsSub?: Subscription;
+  /** Skip duplicate GET while the same query is already in flight (same dates + tenant). */
+  private creditCollectionsInFlightKey = '';
+  /** Last successful credit-collections request key (dates + tenant); used to avoid refetch when only customer filter changes. */
+  private lastCreditCollectionsLoadKey = '';
+  /** Same ref as service shared observable — avoid unsubscribe before 2nd getCreditCollections (would drop shareReplay cache). */
+  private pendingCreditCollectionsObservable$?: Observable<any[]>;
+  /** Cancel stale GET /receipt when a newer request starts (avoids failed/empty response overwriting good data). */
+  private receiptsListSub?: Subscription;
+  /** Deduplicate rapid repeated GET /receipt calls for same account/instance/customer context. */
+  private receiptInFlightKey = '';
+  private lastReceiptLoadKey = '';
+  private lastReceiptLoadMs = 0;
+  /** After a successful receipt save + full page reload, re-apply this customer once options load. */
+  private pendingRestoreCustomerId: number | null = null;
+
+  private static readonly RESTORE_CUSTOMER_SESSION_KEY = '3sm-finance-restore-customer';
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private customerService: CustomerService,
     private inventorysalesService: InventorysalesService,
-    private receiptsService: ReceiptsService
+    private receiptsService: ReceiptsService,
+    private financeCollectionFacade: FinanceCollectionFacade
   ) {}
 
   ngOnInit(): void {
@@ -72,20 +81,157 @@ export class FinanceComponent implements OnInit {
       receivedAmount: [0],
     });
 
-    this.form.get('receivedAmount')?.valueChanges.subscribe(() => {
+    this.form.get('receivedAmount')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.receivedAmountEdited = true;
     });
 
-    this.form.get('customerFilter')?.valueChanges.subscribe(() => {
-      this.selectedRows = [];
-      this.selectedRowKeys = [];
-      this.receivedAmountEdited = false;
-      this.form.patchValue({ receivedAmount: 0 }, { emitEvent: false });
-      this.loadPendingAfterCustomerChange();
+    const customerFilterCtrl = this.form.get('customerFilter');
+    // Pipeline: distinctUntilChanged → tap → debounceTime → takeUntil → maybeLoad.
+    // Silent programmatic updates: patch customerFilter with { emitEvent: false }; syncCustomerInputFromForm() if needed.
+    customerFilterCtrl?.valueChanges
+      .pipe(
+        distinctUntilChanged((a, b) => this.sameCustomerFilterValue(a, b)), // ✅ FIRST
+        tap(() => {
+          this.clearPendingSelectionAndReceived();
+          if (!this.hasSpecificCustomerSelected()) {
+            this.apiData = [];
+            this.receiptRecords = [];
+            this.lastCreditCollectionsLoadKey = '';
+          }
+        }),
+        debounceTime(100),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => this.maybeLoadCreditCollectionsIfNotLoadedForCurrentRange('customerFilter'));
+
+    this.customerInputCtrl.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((text) => {
+      if (text === '' && this.form.get('customerFilter')?.value != null) {
+        this.form.patchValue({ customerFilter: null }, { emitEvent: true });
+      }
     });
 
+    this.resetPendingCreditUiState();
+    this.tryRestorePendingCustomerFromReceiptSave();
+
     this.loadCustomers();
+
+    const startDateCtrl = this.form.get('startDate');
+    const endDateCtrl = this.form.get('endDate');
+    merge(startDateCtrl!.valueChanges, endDateCtrl!.valueChanges)
+      .pipe(debounceTime(400), takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (!this.hasSpecificCustomerSelected()) {
+          return;
+        }
+        if (!startDateCtrl?.value || !endDateCtrl?.value) {
+          return;
+        }
+        const s = this.toIsoDateOnly(startDateCtrl.value);
+        const e = this.toIsoDateOnly(endDateCtrl.value);
+        if (s > e) {
+          return;
+        }
+        this.onView('date-range');
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.creditCollectionsSub?.unsubscribe();
+    this.receiptsListSub?.unsubscribe();
+    this.pendingCreditCollectionsObservable$ = undefined;
+  }
+
+  /** True when a specific customer is chosen (not “All customers”). Pending list loads only in that case. */
+  private hasSpecificCustomerSelected(): boolean {
+    const v = this.form?.get('customerFilter')?.value;
+    if (v == null || v === ('' as any)) {
+      return false;
+    }
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0;
+  }
+
+  /** Empty pending grid and selection (e.g. on navigation). */
+  private resetPendingCreditUiState(): void {
+    this.apiData = [];
+    this.selectedRows = [];
+    this.selectedRowKeys = [];
+    this.errorMessage = '';
+    this.isLoading = false;
+    this.lastCreditCollectionsLoadKey = '';
+    this.pendingCreditCollectionsObservable$ = undefined;
+  }
+
+  /**
+   * When customer filter changes: load if we have not successfully loaded for the current
+   * date range + tenant yet; otherwise rely on client-side filtering only.
+   */
+  private sameCustomerFilterValue(a: unknown, b: unknown): boolean {
+    const toN = (v: unknown): number | null => {
+      if (v == null || v === ('' as any)) return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+    return toN(a) === toN(b);
+  }
+
+  /** Clears pending-invoice selection and received amount (must sync with dx-data-grid via selectedRowKeys). */
+  private clearPendingSelectionAndReceived(): void {
+    this.selectedRows = [];
+    this.selectedRowKeys = [];
+    this.receivedAmountEdited = false;
+    this.form.patchValue({ receivedAmount: 0 }, { emitEvent: false });
+  }
+
+  private maybeLoadCreditCollectionsIfNotLoadedForCurrentRange(source: string): void {
+    const customerId = this.form.get('customerFilter')?.value;
+    if (!this.hasSpecificCustomerSelected()) {
+      this.financeDebug('Skip credit-collections load (select a customer first)', { source, customerId });
+      this.receiptRecords = [];
+      return;
+    }
+    if (this.isLoading) {
+      this.financeDebug('Skip credit-collections load (already loading)', { source, customerId });
+      return;
+    }
+    const startDate = this.form.get('startDate')?.value;
+    const endDate = this.form.get('endDate')?.value;
+    if (!startDate || !endDate) {
+      this.financeDebug('Skip credit-collections load (missing date range)', { source, customerId });
+      return;
+    }
+    const startDateIso = this.toIsoDateOnly(startDate);
+    const endDateIso = this.toIsoDateOnly(endDate);
+    if (startDateIso > endDateIso) {
+      this.financeDebug('Skip credit-collections load (invalid date range)', { source, customerId, startDateIso, endDateIso });
+      return;
+    }
+    const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+    const cid = Number(customerId);
+    const key = this.pendingCollectionsCacheKey(startDateIso, endDateIso, accountId, instanceId, cid);
+    if (this.lastCreditCollectionsLoadKey === key) {
+      this.financeDebug('No API call — pending data already loaded for this range + customer', {
+        source,
+        customerId,
+        rangeKey: key,
+      });
+      return;
+    }
     this.loadReceipts();
+    this.onView('customer-filter');
+  }
+
+  /** Deduplicate loads by date range, tenant, and customer (must match InventorysalesService cache key). */
+  private pendingCollectionsCacheKey(
+    startDateIso: string,
+    endDateIso: string,
+    accountId: number,
+    instanceId: number,
+    customerId: number | 'all'
+  ): string {
+    return `${startDateIso}|${endDateIso}|${accountId}|${instanceId}|c${customerId}`;
   }
 
   private loadCustomers(): void {
@@ -99,95 +245,292 @@ export class FinanceComponent implements OnInit {
           }))
           .filter((c) => c.customerid > 0 && c.customername)
           .sort((a, b) => a.customername.localeCompare(b.customername));
+        if (this.pendingRestoreCustomerId != null) {
+          const cid = this.pendingRestoreCustomerId;
+          this.pendingRestoreCustomerId = null;
+          this.form.patchValue({ customerFilter: cid }, { emitEvent: true });
+        }
+        this.syncCustomerInputFromForm();
       },
       error: () => {
         this.customerOptions = [];
+        if (this.pendingRestoreCustomerId != null) {
+          const cid = this.pendingRestoreCustomerId;
+          this.pendingRestoreCustomerId = null;
+          this.form.patchValue({ customerFilter: cid }, { emitEvent: true });
+        }
+        this.syncCustomerInputFromForm();
       },
     });
   }
 
-  /** Pending rows after optional customer filter */
-  get filteredPendingData(): CreditCollectionRow[] {
-    const cid = this.form.get('customerFilter')?.value;
+  private syncCustomerInputFromForm(): void {
+    const cid = this.form?.get('customerFilter')?.value;
     if (cid == null || cid === ('' as any)) {
-      return this.apiData;
+      this.customerInputCtrl.setValue('', { emitEvent: false });
+      return;
     }
-    const id = Number(cid);
-    return this.apiData.filter((r) => r.customerid === id);
+    const match = this.customerOptions.find((c) => Number(c.customerid) === Number(cid));
+    this.customerInputCtrl.setValue(match?.customername ?? '', { emitEvent: false });
+  }
+
+  /** Customer dropdown options after search filter (typed text in customerInputCtrl) */
+  get filteredCustomerOptions(): { customerid: number; customername: string }[] {
+    const q = (this.customerInputCtrl.value || '').trim().toLowerCase();
+    if (!q) {
+      return this.customerOptions;
+    }
+    return this.customerOptions.filter((c) => c.customername.toLowerCase().includes(q));
+  }
+
+  onCustomerOptionSelected(event: MatAutocompleteSelectedEvent): void {
+    // Runs even when patchValue does not emit (e.g. same option chosen again).
+    this.clearPendingSelectionAndReceived();
+    const raw = event.option.value;
+    if (raw == null) {
+      this.financeDebug('Customer selected', { choice: 'All customers', customerFilter: null });
+      this.form.patchValue({ customerFilter: null }, { emitEvent: true });
+      this.receiptRecords = [];
+      this.customerInputCtrl.setValue('', { emitEvent: false });
+      return;
+    }
+    const id = Number(raw);
+    const c = this.customerOptions.find((x) => Number(x.customerid) === id);
+    const customerFilter = Number.isFinite(id) ? id : null;
+    this.financeDebug('Customer selected', {
+      choice: 'Specific customer',
+      customerid: customerFilter,
+      customerName: c?.customername ?? '(unknown)',
+    });
+    this.form.patchValue({ customerFilter }, { emitEvent: true });
+    /** Receipt list: loadReceipts() runs once from customerFilter debounced pipeline (maybeLoadCreditCollections…). */
+    this.customerInputCtrl.setValue(c?.customername ?? '', { emitEvent: false });
+  }
+
+  /** Pending rows: GET /credit-collections already scopes by customerid when a customer is selected. */
+  get filteredPendingData(): CreditCollectionRow[] {
+    return this.apiData;
   }
 
   /** Receipt history after same customer filter */
   get filteredReceiptData(): ReceiptRecord[] {
     const cid = this.form.get('customerFilter')?.value;
     if (cid == null || cid === ('' as any)) {
-      return this.receiptRecords;
+      return [];
     }
-    const id = Number(cid);
-    return this.receiptRecords.filter((r) => Number(r.customerid) === id);
+    // GET /receipt now supports customerid; keep table binding simple and avoid double-filter mismatches.
+    return this.receiptRecords;
+  }
+
+  get pendingInvoiceCount(): number {
+    return this.filteredPendingData.length;
+  }
+
+  get receiptHistoryCount(): number {
+    return this.filteredReceiptData.length;
+  }
+
+  /** Outstanding after this receipt: pending still due minus received amount entered. */
+  get outstandingAmount(): number {
+    return this.selectedTotalAmount - (Number(this.form?.get('receivedAmount')?.value ?? 0) || 0);
+  }
+
+  /** localStorage key for last assigned receipt sequence (per account + instance). */
+  private receiptSeqStorageKey(): string {
+    const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+    return `3sm-finance-receipt-seq-${accountId}-${instanceId}`;
+  }
+
+  private getLastReceiptSeq(): number {
+    try {
+      const raw = localStorage.getItem(this.receiptSeqStorageKey());
+      const n = parseInt(raw ?? '0', 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  /** Display id: RP 001, RP 002, … (running number; bumped after each successful receipt post). */
+  private formatReceiptNo(seq: number): string {
+    return `RP ${String(seq).padStart(3, '0')}`;
   }
 
   private setReceiptNo(): void {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const suffix = String(Math.floor(Date.now() % 100000)).padStart(5, '0');
-    this.receiptNo = `RP-${yyyy}${mm}${dd}-${suffix}`;
+    const next = this.getLastReceiptSeq() + 1;
+    this.receiptNo = this.formatReceiptNo(next);
+  }
+
+  private bumpReceiptSeqAfterSuccessfulPost(): void {
+    const next = this.getLastReceiptSeq() + 1;
+    try {
+      localStorage.setItem(this.receiptSeqStorageKey(), String(next));
+    } catch {
+      /* ignore quota / private mode */
+    }
+  }
+
+  /** Session flag consumed on next init so the same customer stays selected after reload. */
+  private tryRestorePendingCustomerFromReceiptSave(): void {
+    try {
+      const raw = sessionStorage.getItem(FinanceComponent.RESTORE_CUSTOMER_SESSION_KEY);
+      if (!raw) {
+        return;
+      }
+      sessionStorage.removeItem(FinanceComponent.RESTORE_CUSTOMER_SESSION_KEY);
+      const o = JSON.parse(raw) as { customerId?: unknown; accountId?: unknown; instanceId?: unknown };
+      const cur = this.getCurrentAccountAndInstance();
+      if (Number(o.accountId) !== cur.accountId || Number(o.instanceId) !== cur.instanceId) {
+        return;
+      }
+      const cid = Number(o.customerId);
+      if (!Number.isFinite(cid) || cid <= 0) {
+        return;
+      }
+      this.pendingRestoreCustomerId = cid;
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** Full reload after save; customer is re-applied via sessionStorage + pendingRestoreCustomerId. */
+  private persistCustomerAndReloadAfterReceiptSave(): void {
+    const cid = this.form.get('customerFilter')?.value;
+    const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+    try {
+      if (this.hasSpecificCustomerSelected() && cid != null) {
+        sessionStorage.setItem(
+          FinanceComponent.RESTORE_CUSTOMER_SESSION_KEY,
+          JSON.stringify({
+            customerId: Number(cid),
+            accountId,
+            instanceId,
+          })
+        );
+      }
+    } catch {
+      /* ignore */
+    }
+    window.location.reload();
   }
 
   loadReceipts(): void {
     const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+    const customerFilter = this.form?.get('customerFilter')?.value;
+    const cidRaw = customerFilter != null && customerFilter !== ('' as any) ? Number(customerFilter) : NaN;
+    const cid = Number.isFinite(cidRaw) && cidRaw > 0 ? Math.trunc(cidRaw) : undefined;
+    const receiptKey = `${accountId}|${instanceId}|c${cid ?? 'all'}`;
+    const now = Date.now();
+    if (this.isLoadingReceipts && this.receiptInFlightKey === receiptKey) {
+      return;
+    }
+    if (this.lastReceiptLoadKey === receiptKey && now - this.lastReceiptLoadMs < 1200) {
+      return;
+    }
+    this.receiptsListSub?.unsubscribe();
+    this.receiptInFlightKey = receiptKey;
     this.isLoadingReceipts = true;
-    this.receiptsService.list(accountId, instanceId).subscribe({
-      next: (rows) => {
-        const list = Array.isArray(rows) ? rows : [];
-        this.receiptRecords = [...list].sort((a, b) =>
-          String(b.updateddate ?? '').localeCompare(String(a.updateddate ?? ''))
-        );
+    this.receiptsListSub = this.receiptsService.list(accountId, instanceId, cid).subscribe({
+      next: (rows: any) => {
+        const list = Array.isArray(rows) ? rows : Array.isArray(rows?.data) ? rows.data : [];
+        this.receiptRecords = list
+          .map((r: any) => {
+            const cidRaw = r?.customerid ?? r?.customerId;
+            const customeridNum =
+              cidRaw != null && cidRaw !== '' ? Number(cidRaw) : NaN;
+            const customerid = Number.isFinite(customeridNum) ? Math.trunc(customeridNum) : 0;
+            return {
+              receiptsPaymentsid: String(
+                r?.receiptsPaymentsid ?? r?.receipts_paymentsid ?? r?.receiptspaymentsid ?? r?.receiptId ?? ''
+              ),
+              accountid: Number(r?.accountid ?? r?.accountId ?? 0) || 0,
+              instanceid: Number(r?.instanceid ?? r?.instanceId ?? 0) || 0,
+              invoiceno:
+                r?.invoiceno == null && r?.invoiceNo == null
+                  ? null
+                  : Number(r?.invoiceno ?? r?.invoiceNo ?? 0) || 0,
+              customerid,
+              customername: String(r?.customername ?? r?.customerName ?? ''),
+              invoicedate: String(r?.invoicedate ?? r?.invoiceDate ?? ''),
+              grandtotal: Number(r?.grandtotal ?? r?.grandTotal ?? 0) || 0,
+              receiptamount: Number(r?.receiptamount ?? r?.receiptAmount ?? 0) || 0,
+              receiptbalanceamount: Number(r?.receiptbalanceamount ?? r?.receiptBalanceAmount ?? 0) || 0,
+              vouchertype: String(r?.vouchertype ?? r?.voucherType ?? ''),
+              createdby: Number(r?.createdby ?? r?.createdBy ?? 0) || 0,
+              updatedby: Number(r?.updatedby ?? r?.updatedBy ?? 0) || 0,
+              createddate: String(r?.createddate ?? r?.createdDate ?? ''),
+              updateddate: String(r?.updateddate ?? r?.updatedDate ?? ''),
+              isactive: Boolean(r?.isactive ?? r?.isActive ?? true),
+              receiptdate: String(r?.receiptdate ?? r?.receiptDate ?? ''),
+              invoicepaymenttype: String(r?.invoicepaymenttype ?? r?.invoicePaymentType ?? ''),
+              receiptpaymentmode: String(r?.receiptpaymentmode ?? r?.receiptPaymentMode ?? ''),
+            };
+          })
+          .sort((a: any, b: any) => String(b.updateddate ?? '').localeCompare(String(a.updateddate ?? '')));
+        this.lastReceiptLoadKey = receiptKey;
+        this.lastReceiptLoadMs = Date.now();
+        this.receiptInFlightKey = '';
         this.isLoadingReceipts = false;
       },
-      error: () => {
-        this.receiptRecords = [];
+      error: (err: any) => {
+        this.receiptInFlightKey = '';
+        // Keep previous successful rows on transient failure/race.
         this.isLoadingReceipts = false;
       },
     });
   }
 
   private getCurrentAccountAndInstance(): { accountId: number; instanceId: number } {
-    const user = this.authService.getUser();
     return {
-      accountId: user?.accountid ?? user?.accountId ?? 1,
-      instanceId: user?.instanceid ?? user?.instanceId ?? 1,
+      accountId: this.authService.getAccountId(),
+      instanceId: this.authService.getInstanceId(),
     };
   }
 
+  /** Calendar date in YYYY-MM-DD using local time (avoid UTC shift from toISOString()). */
   private toIsoDateOnly(value: any): string {
     const d = value instanceof Date ? value : new Date(value);
-    return d.toISOString().split('T')[0];
+    if (Number.isNaN(d.getTime())) {
+      const n = new Date();
+      return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+    }
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
   onRefresh(): void {
-    const today = new Date();
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    this.form.patchValue({ startDate: monthStart, endDate: today });
-    this.onView();
-  }
-
-  /** After customer filter changes, reload pending invoices for the current date range (same as View Pending). */
-  private loadPendingAfterCustomerChange(): void {
-    const startDate = this.form.get('startDate')?.value;
-    const endDate = this.form.get('endDate')?.value;
-    if (!startDate || !endDate) {
+    if (!this.hasSpecificCustomerSelected()) {
+      this.errorMessage = 'Select a customer to load pending invoices.';
       return;
     }
-    this.onView();
+    this.errorMessage = '';
+    const today = new Date();
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    this.form.patchValue({ startDate: monthStart, endDate: today }, { emitEvent: false });
+    this.onView('refresh');
   }
 
+  /**
+   * Sum of pending balance on selected rows: (invoice / inventory total − already paid).
+   * Used for the Selected amount card, voucher defaults, and FULL vs PARTIAL collection.
+   */
   get selectedTotalAmount(): number {
-    return this.selectedRows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    return this.selectedRows.reduce((sum, r) => {
+      const p = Number(r.pendingAmount);
+      if (Number.isFinite(p) && p >= 0) {
+        return sum + p;
+      }
+      const inv = Number(r.amount) || 0;
+      const paid = Math.max(0, Number(r.paidAmount) || 0);
+      return sum + Math.max(0, inv - paid);
+    }, 0);
   }
 
-  onView(): void {
+  onView(
+    trigger: 'customer-filter' | 'date-range' | 'refresh' | 'after-partial-payment' = 'customer-filter'
+  ): void {
     this.errorMessage = '';
     const startDate = this.form.get('startDate')?.value;
     const endDate = this.form.get('endDate')?.value;
@@ -203,24 +546,105 @@ export class FinanceComponent implements OnInit {
     }
 
     const { accountId, instanceId } = this.getCurrentAccountAndInstance();
+    const filterVal = this.form.get('customerFilter')?.value;
+    const customerIdForApi =
+      filterVal != null && filterVal !== ('' as any) && Number.isFinite(Number(filterVal)) && Number(filterVal) > 0
+        ? Number(filterVal)
+        : undefined;
+    const requestKey = this.pendingCollectionsCacheKey(
+      startDateIso,
+      endDateIso,
+      accountId,
+      instanceId,
+      customerIdForApi ?? 'all'
+    );
+    if (this.isLoading && this.creditCollectionsInFlightKey === requestKey) {
+      this.financeDebug('Skip getCreditCollections (same request already in flight)', { trigger, requestKey });
+      return;
+    }
+
+    this.creditCollectionsInFlightKey = requestKey;
     this.isLoading = true;
-    this.inventorysalesService.getCreditCollections(startDateIso, endDateIso, accountId, instanceId).subscribe({
+
+    this.financeDebug('API: GET credit collections (inventorysummary)', {
+      trigger,
+      startDate: startDateIso,
+      endDate: endDateIso,
+      accountId,
+      instanceId,
+      customerid: customerIdForApi ?? null,
+    });
+
+    // Single GET below; any OPTIONS to the same URL is browser CORS preflight (see InventorysalesService.getCreditCollections).
+    const obs$ = this.inventorysalesService.getCreditCollections(
+      startDateIso,
+      endDateIso,
+      accountId,
+      instanceId,
+      customerIdForApi
+    );
+    // Always subscribe. The service may return a shared shareReplay observable; skipping subscribe
+    // when `obs$` is the same reference left apiData empty after it was cleared (e.g. customer change).
+    // A fresh subscription still receives the cached replay.
+    this.creditCollectionsSub?.unsubscribe();
+    this.pendingCreditCollectionsObservable$ = obs$;
+    this.creditCollectionsSub = obs$.subscribe({
       next: (rows) => {
         const raw = Array.isArray(rows) ? rows : [];
-        this.apiData = raw.map((r: any) => ({
-          ...r,
-          rowKey: `${r.source}-${r.rawInvoiceno}`,
-        }));
+        this.financeDebug('API: GET credit collections — success', { trigger, rowCount: raw.length, requestKey });
+        this.lastCreditCollectionsLoadKey = requestKey;
+        this.apiData = raw.map((r: any, idx: number) => {
+          const amount = Number(r.amount) || 0;
+          const paidAmount = Math.max(0, Number(r.paidAmount) || 0);
+          const pendingAmount =
+            r.pendingAmount != null && r.pendingAmount !== ''
+              ? Math.max(0, Number(r.pendingAmount))
+              : Math.max(0, amount - paidAmount);
+          const customerid = Number(r.customerid ?? 0) || 0;
+          const rawInvoiceno = Number(r.rawInvoiceno ?? r.rawinvoiceno ?? r.invoiceno ?? 0) || 0;
+          const source = (String(r.source ?? '').toUpperCase() === 'SERVICE_SALES' ? 'SERVICE_SALES' : 'PRODUCT_SALES') as
+            | 'SERVICE_SALES'
+            | 'PRODUCT_SALES';
+          const rowKeyBase = `${source}-${rawInvoiceno || String(r.invoiceno ?? '').trim() || idx}`;
+          return {
+            ...r,
+            source,
+            rawInvoiceno,
+            customerid,
+            amount,
+            paidAmount,
+            pendingAmount,
+            rowKey: `${rowKeyBase}-${idx}`,
+          } as CreditCollectionRow;
+        });
         this.selectedRows = [];
         this.selectedRowKeys = [];
         this.isLoading = false;
+        this.creditCollectionsInFlightKey = '';
       },
       error: (err) => {
+        this.isLoading = false;
+        this.creditCollectionsInFlightKey = '';
+        if (err?.status === 0) {
+          return;
+        }
+        this.financeDebug('API: GET credit collections — error', { trigger, status: err?.status, message: err?.message });
         this.errorMessage = err?.error?.message || err?.message || 'Failed to load credit collections.';
         this.apiData = [];
-        this.isLoading = false;
       },
     });
+  }
+
+  /** Dev-only structured logs for customer selection and credit-collection API calls. */
+  private financeDebug(message: string, data?: Record<string, unknown>): void {
+    if (environment.production) {
+      return;
+    }
+    if (data !== undefined) {
+      console.log(`[Finance] ${message}`, data);
+    } else {
+      console.log(`[Finance] ${message}`);
+    }
   }
 
   collectPayment(row: CreditCollectionRow): void {
@@ -265,92 +689,44 @@ export class FinanceComponent implements OnInit {
     const paymentMode = this.form.get('paymentMode')?.value || null;
     const receivedAmountVal = Number(this.form.get('receivedAmount')?.value ?? 0);
     const receivedAmount = Number.isFinite(receivedAmountVal) ? receivedAmountVal : 0;
-    const totalAmount = this.selectedTotalAmount;
-    const mode: 'FULL' | 'PARTIAL' = receivedAmount + 0.000001 >= totalAmount ? 'FULL' : 'PARTIAL';
+    const totalPending = this.selectedTotalAmount;
+    const mode: 'FULL' | 'PARTIAL' = receivedAmount + 0.000001 >= totalPending ? 'FULL' : 'PARTIAL';
 
-    this.inventorysalesService
-      .collectCreditPayment(invoices, accountId, instanceId, paymentDate, paymentType, paymentMode, mode)
+    this.financeCollectionFacade
+      .collectCreditPayment({
+        invoices,
+        accountId,
+        instanceId,
+        paymentDate,
+        paymentType,
+        paymentMode,
+        mode,
+      })
       .subscribe({
         next: () => {
-          void this.postReceiptsForRows(rows, mode, receivedAmount, paymentDate)
+          void this.financeCollectionFacade
+            .postReceiptRowsForCreditCollection(rows, mode, receivedAmount, paymentDate, {
+              receiptNo: this.receiptNo,
+              paymentReceiptType: this.paymentReceiptType,
+              paymentMode: String(this.form.get('paymentMode')?.value ?? 'Cash'),
+              accountId,
+              instanceId,
+              resolvePaymentDate: (iso) => iso || this.toIsoDateOnly(new Date()),
+            })
             .then(() => {
-              this.setReceiptNo();
-              this.loadReceipts();
+              this.bumpReceiptSeqAfterSuccessfulPost();
+              this.persistCustomerAndReloadAfterReceiptSave();
             })
             .catch((e: any) => {
               this.errorMessage =
                 e?.message ||
                 'Payment was saved, but one or more receipt rows could not be written to possales.receipt.';
-            })
-            .then(() => {
-              this.selectedRows = [];
-              this.selectedRowKeys = [];
-              this.receivedAmountEdited = false;
-              this.form.patchValue({ receivedAmount: 0 }, { emitEvent: false });
-
-              if (mode === 'FULL') {
-                const keySet = new Set(rows.map((r) => r.rowKey));
-                this.apiData = this.apiData.filter((r) => !keySet.has(r.rowKey));
-              } else {
-                this.onView();
-              }
             });
         },
         error: (err) => {
           this.errorMessage = err?.error?.message || err?.message || 'Failed to collect payment.';
         },
       });
-  }
-
-  private async postReceiptsForRows(
-    rows: CreditCollectionRow[],
-    mode: 'FULL' | 'PARTIAL',
-    receivedAmount: number,
-    paymentDateIso: string | null
-  ): Promise<void> {
-    const { accountId, instanceId } = this.getCurrentAccountAndInstance();
-    const paymentDate = paymentDateIso || this.toIsoDateOnly(new Date());
-    const paymentMode = String(this.form.get('paymentMode')?.value ?? 'Cash');
-    const uid = this.authService.getUserId();
-    const userId = Number.isFinite(uid) && (uid as number) > 0 ? (uid as number) : 1;
-    const total = rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
-
-    for (const row of rows) {
-      if (!row.customerid || row.customerid <= 0) {
-        throw new Error('Missing customer id for receipt row.');
-      }
-      const invTotal = Number(row.amount) || 0;
-      let receiptAmt: number;
-      let balance: number;
-      if (mode === 'FULL') {
-        receiptAmt = invTotal;
-        balance = 0;
-      } else {
-        receiptAmt = total > 0 ? (receivedAmount * invTotal) / total : 0;
-        balance = Math.max(0, Number((invTotal - receiptAmt).toFixed(6)));
-      }
-      const invoicenoFk = row.source === 'PRODUCT_SALES' ? row.rawInvoiceno : null;
-
-      const payload: CreateReceiptPayload = {
-        receiptsPaymentsid: `${this.receiptNo}-${row.rawInvoiceno}-${row.source}`,
-        accountid: accountId,
-        instanceid: instanceId,
-        invoiceno: invoicenoFk,
-        customerid: row.customerid,
-        customername: row.customerName,
-        invoicedate: row.date,
-        grandtotal: invTotal,
-        receiptamount: Number(receiptAmt.toFixed(6)),
-        receiptbalanceamount: balance,
-        vouchertype: 'CREDIT_COLLECTION',
-        createdby: userId,
-        updatedby: userId,
-        receiptdate: paymentDate,
-        invoicepaymenttype: this.paymentReceiptType,
-        receiptpaymentmode: paymentMode,
-      };
-      await firstValueFrom(this.receiptsService.create(payload));
-    }
   }
 
   formatDateDdMmYyyy(val: string | null | undefined): string {
@@ -362,8 +738,6 @@ export class FinanceComponent implements OnInit {
   }
 
   dateCellValue = (rowData: CreditCollectionRow): string => this.formatDateDdMmYyyy(rowData.date);
-  sourceCellValue = (rowData: CreditCollectionRow): string =>
-    rowData.source === 'SERVICE_SALES' ? 'Service Sales' : 'Product Sales';
 
   receiptDateCellValue = (rowData: ReceiptRecord): string =>
     this.formatDateDdMmYyyy(String(rowData.receiptdate ?? '').slice(0, 10));

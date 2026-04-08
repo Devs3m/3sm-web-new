@@ -130,52 +130,37 @@
   <!-- Stats Cards + Add Button -->
   <div class="account-cards">
 
-  <mat-card class="account-card total">
-    <div class="card-content vertical">
-
-      <div class="card-icon">
-        <mat-icon>people</mat-icon>
-      </div>
-
-      <div class="card-text">
+    <mat-card class="account-card total">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>people</mat-icon>
+        </div>
         <span class="card-label">Total Customers</span>
         <span class="card-value">{{ totalCustomers }}</span>
       </div>
+    </mat-card>
 
-    </div>
-  </mat-card>
-
-  <mat-card class="account-card active">
-    <div class="card-content vertical">
-
-      <div class="card-icon">
-        <mat-icon>check_circle</mat-icon>
-      </div>
-
-      <div class="card-text">
+    <mat-card class="account-card active">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>check_circle</mat-icon>
+        </div>
         <span class="card-label">Active</span>
         <span class="card-value">{{ activeCustomers }}</span>
       </div>
+    </mat-card>
 
-    </div>
-  </mat-card>
-
-  <mat-card class="account-card inactive">
-    <div class="card-content vertical">
-
-      <div class="card-icon">
-        <mat-icon>cancel</mat-icon>
-      </div>
-
-      <div class="card-text">
+    <mat-card class="account-card inactive">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>cancel</mat-icon>
+        </div>
         <span class="card-label">Inactive</span>
         <span class="card-value">{{ deactiveCustomers }}</span>
       </div>
+    </mat-card>
 
-    </div>
-  </mat-card>
-
-</div>
+  </div>
 
   <div class="pos-relative">
     <div class="btn-pos-list">

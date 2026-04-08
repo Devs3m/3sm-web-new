@@ -1,0 +1,142 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.pending-card {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 18px;
+  margin-top: 0;
+  border: 1px solid var(--finance-border, #d8e1e8);
+  border-radius: var(--finance-radius-lg, 24px);
+  background: var(--finance-panel, #ffffff);
+  box-shadow: var(--finance-shadow, 0 18px 40px rgba(17, 24, 39, 0.08));
+}
+
+.pending-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.pending-section-kicker {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--finance-accent, #0f766e);
+}
+
+.pending-section-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--finance-ink, #16202a);
+}
+
+.pending-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #e8f6f4;
+  color: var(--finance-accent-deep, #115e59);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pending-filter-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.date-field {
+  min-width: 160px;
+  flex: 1 1 160px;
+}
+
+.pending-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.refresh-btn {
+  color: var(--finance-ink, #16202a);
+}
+
+.table-container {
+  overflow: hidden;
+  border: 1px solid rgba(22, 32, 42, 0.08);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.table-container--receivables {
+  flex: 1 1 auto;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.table-container--receivables ::ng-deep dx-data-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: block;
+}
+
+@media (max-width: 860px) {
+  :host {
+    height: auto;
+    flex: none;
+    display: block;
+  }
+
+  .pending-card {
+    flex: none;
+    display: block;
+    min-height: 0;
+  }
+
+  .table-container--receivables {
+    flex: none;
+    display: block;
+    min-height: 280px;
+    height: auto;
+  }
+
+  .pending-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pending-actions,
+  .pending-actions button {
+    width: 100%;
+  }
+
+  .pending-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-field {
+    min-width: 100%;
+  }
+}

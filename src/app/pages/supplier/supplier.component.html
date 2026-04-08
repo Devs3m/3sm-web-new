@@ -111,10 +111,28 @@
     </button>
   </div>
 
-  <div class="example-card">
-    <mat-card><mat-card-header><mat-card-title>Supplier&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalSuppliers}}</mat-card-title></mat-card-header></mat-card>
-    <mat-card><mat-card-header><mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeSuppliers}}</mat-card-title></mat-card-header></mat-card>
-    <mat-card><mat-card-header><mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveSuppliers}}</mat-card-title></mat-card-header></mat-card>
+  <div class="account-cards">
+    <mat-card class="account-card total">
+      <div class="card-content account-stat-row">
+        <div class="card-icon"><mat-icon>store</mat-icon></div>
+        <span class="card-label">Total Supplier</span>
+        <span class="card-value">{{ totalSuppliers }}</span>
+      </div>
+    </mat-card>
+    <mat-card class="account-card active">
+      <div class="card-content account-stat-row">
+        <div class="card-icon"><mat-icon>check_circle</mat-icon></div>
+        <span class="card-label">Active</span>
+        <span class="card-value">{{ activeSuppliers }}</span>
+      </div>
+    </mat-card>
+    <mat-card class="account-card inactive">
+      <div class="card-content account-stat-row">
+        <div class="card-icon"><mat-icon>cancel</mat-icon></div>
+        <span class="card-label">In-Active</span>
+        <span class="card-value">{{ deactiveSuppliers }}</span>
+      </div>
+    </mat-card>
   </div>
 
   <div class="pos-relative">
@@ -136,15 +154,14 @@
       title="Suppliers">
 
       <dxi-column dataField="supplierid" caption="ID" [width]="80" [sortOrder]="'desc'" [sortIndex]="0"></dxi-column>
-      <dxi-column dataField="suppliername" caption="Supplier Name"></dxi-column>
-      <dxi-column dataField="supplierphone" caption="Phone" [width]="140"></dxi-column>
-      <dxi-column dataField="supplieremail" caption="Email" [width]="220"></dxi-column>
-      <dxi-column dataField="suppliercity" caption="City" [width]="130"></dxi-column>
-      <dxi-column dataField="supplierstate" caption="State" [width]="130"></dxi-column>
-      <dxi-column dataField="suppliergst" caption="GST" [width]="170"></dxi-column>
+      <dxi-column dataField="suppliername" caption="Supplier Name" [width]="190"></dxi-column>
+      <dxi-column dataField="supplierphone" caption="Phone" [width]="130"></dxi-column>
+      <dxi-column dataField="supplieremail" caption="Email" [width]="200"></dxi-column>
+      <dxi-column dataField="supplierstate" caption="State" [width]="120"></dxi-column>
+      <dxi-column dataField="suppliergst" caption="GST" [width]="150"></dxi-column>
       <dxi-column dataField="suppliercreditdays" caption="Credit Days" [width]="120"></dxi-column>
       <dxi-column dataField="isactive" caption="Status" alignment="center" [width]="100"></dxi-column>
-      <dxi-column caption="Actions" alignment="center" cellTemplate="actionTemplate" [width]="120"></dxi-column>
+      <dxi-column caption="Actions" alignment="center" cellTemplate="actionTemplate" [width]="130"></dxi-column>
 
       <div *dxTemplate="let data of 'actionTemplate'" style="display:flex; gap:10px; justify-content:center;">
         <a *appHasPermission="'supplier:update'" (click)="editItem(data.data)" style="cursor:pointer;">

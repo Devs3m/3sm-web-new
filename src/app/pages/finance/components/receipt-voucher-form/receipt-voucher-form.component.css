@@ -1,0 +1,161 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.voucher-card {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 18px;
+  margin-top: 0;
+  border: 1px solid var(--finance-border, #d8e1e8);
+  border-radius: var(--finance-radius-lg, 24px);
+  background: var(--finance-panel, #ffffff);
+  box-shadow: var(--finance-shadow, 0 18px 40px rgba(17, 24, 39, 0.08));
+}
+
+.voucher-sidebar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.voucher-sidebar-head-text {
+  min-width: 0;
+}
+
+.voucher-kicker {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--finance-accent, #0f766e);
+}
+
+.voucher-title-main {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--finance-ink, #16202a);
+}
+
+.voucher-id-line {
+  margin: 0;
+}
+
+.voucher-id {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--finance-muted, #5e6b79);
+  letter-spacing: 0.04em;
+}
+
+.voucher-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #e8f6f4;
+  color: var(--finance-accent-deep, #115e59);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.voucher-form-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.voucher-form-block .finance-field {
+  width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep .finance-field--readonly input[readonly] {
+  cursor: default;
+  color: var(--finance-ink, #16202a) !important;
+}
+
+.voucher-money-summary {
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border-radius: var(--finance-radius-sm, 12px);
+  border: 1px solid rgba(22, 32, 42, 0.08);
+  background: var(--finance-panel-soft, #f4f8fb);
+}
+
+.voucher-money-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.voucher-money-line + .voucher-money-line {
+  border-top: 1px solid rgba(22, 32, 42, 0.06);
+}
+
+.voucher-money-label {
+  color: var(--finance-muted, #5e6b79);
+  font-weight: 600;
+}
+
+.voucher-money-fig {
+  font-weight: 800;
+  color: var(--finance-ink, #16202a);
+  font-variant-numeric: tabular-nums;
+}
+
+.voucher-money-line--outstanding .voucher-money-fig {
+  color: #b42318;
+}
+
+.receive-payment-btn--full {
+  margin-top: auto;
+}
+
+@media (max-width: 860px) {
+  :host {
+    height: auto;
+    flex: none;
+    display: block;
+  }
+
+  .voucher-card {
+    flex: none;
+    display: block;
+    min-height: 0;
+  }
+
+  .receive-payment-btn--full {
+    margin-top: 0;
+  }
+
+  .voucher-sidebar-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .voucher-form-block {
+    grid-template-columns: 1fr;
+  }
+
+}

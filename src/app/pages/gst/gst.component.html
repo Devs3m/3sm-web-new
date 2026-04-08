@@ -46,21 +46,27 @@
 </form>
     </div>
     
-        <div class="example-card">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>GST %&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalGst}}</mat-card-title>
-          </mat-card-header>
+        <div class="account-cards">
+        <mat-card class="account-card total">
+          <div class="card-content account-stat-row">
+            <div class="card-icon"><mat-icon>percent</mat-icon></div>
+            <span class="card-label">GST %</span>
+            <span class="card-value">{{ totalGst }}</span>
+          </div>
         </mat-card>
-       <mat-card>
-          <mat-card-header>
-            <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeGst}}</mat-card-title>
-          </mat-card-header>
+       <mat-card class="account-card active">
+          <div class="card-content account-stat-row">
+            <div class="card-icon"><mat-icon>check_circle</mat-icon></div>
+            <span class="card-label">Active</span>
+            <span class="card-value">{{ activeGst }}</span>
+          </div>
         </mat-card>
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveGst}}</mat-card-title>
-          </mat-card-header>
+        <mat-card class="account-card inactive">
+          <div class="card-content account-stat-row">
+            <div class="card-icon"><mat-icon>cancel</mat-icon></div>
+            <span class="card-label">In-Active</span>
+            <span class="card-value">{{ deactiveGst }}</span>
+          </div>
         </mat-card>
       </div>
 
@@ -87,17 +93,17 @@
       <dxi-column dataField="gstid"[allowSorting]="true" [sortOrder]="'asc'"caption="GST ID" [width]="130"></dxi-column>
         <dxi-column dataField="totalgstpercent" caption="Total GST%" [width]="150" alignment="right"
           [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
-        <dxi-column dataField="igstpercent" caption="IGST %" [width]="150" alignment="right"
+        <dxi-column dataField="igstpercent" caption="IGST %" [width]="130" alignment="right"
           [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
-        <dxi-column dataField="cgstpercent" caption="CGST %" [width]="150" alignment="right"
+        <dxi-column dataField="cgstpercent" caption="CGST %" [width]="130" alignment="right"
           [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
-        <dxi-column dataField="sgstpercent" caption="SGST %" [width]="150" alignment="right"
+        <dxi-column dataField="sgstpercent" caption="SGST %" [width]="130" alignment="right"
           [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
-        <dxi-column dataField="ugstpercent" caption="UGST %" [width]="150" alignment="right"
+        <dxi-column dataField="ugstpercent" caption="UGST %" [width]="130" alignment="right"
           [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
-        <dxi-column dataField="chesspercent" caption="CHESS %" [width]="150" alignment="right"
+        <dxi-column dataField="chesspercent" caption="CHESS %" [width]="130" alignment="right"
           [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
-        <dxi-column dataField="gstisactive" caption="Active" [width]="130"></dxi-column>
+        <dxi-column dataField="gstisactive" caption="Active" [width]="150"></dxi-column>
         <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="150"></dxi-column>
     
       

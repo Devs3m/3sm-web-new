@@ -319,35 +319,23 @@
     </div>
    <div class="account-cards two-cards">
 
-  <!-- Service Sales Count -->
   <mat-card class="account-card total">
-    <div class="card-content vertical">
-
+    <div class="card-content account-stat-row">
       <div class="card-icon">
         <mat-icon>point_of_sale</mat-icon>
       </div>
-
-      <div class="card-text">
-        <span class="card-label">Service Sales</span>
-        <span class="card-value">{{ totalSales }}</span>
-      </div>
-
+      <span class="card-label">Service Sales</span>
+      <span class="card-value">{{ totalSales }}</span>
     </div>
   </mat-card>
 
-  <!-- Total Amount -->
   <mat-card class="account-card active">
-    <div class="card-content vertical">
-
+    <div class="card-content account-stat-row">
       <div class="card-icon">
         <mat-icon>currency_rupee</mat-icon>
       </div>
-
-      <div class="card-text">
-        <span class="card-label">Total Amount</span>
-        <span class="card-value">₹{{ totalAmount | number:'1.2-2' }}</span>
-      </div>
-
+      <span class="card-label">Total Amount</span>
+      <span class="card-value">₹{{ totalAmount | number:'1.2-2' }}</span>
     </div>
   </mat-card>
 

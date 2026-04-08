@@ -1,0 +1,22 @@
+<section class="finance-summary-strip" aria-label="Collection summary">
+  <article class="finance-stat-card">
+    <span class="finance-stat-label">Pending invoices</span>
+    <span class="finance-stat-value">{{ pendingInvoiceCount }}</span>
+    <span class="finance-stat-hint">Open receivables</span>
+  </article>
+  <article class="finance-stat-card finance-stat-card--selected">
+    <span class="finance-stat-label">Selected invoices</span>
+    <span class="finance-stat-value finance-stat-value--accent">{{ selectedCount }}</span>
+    <span class="finance-stat-hint">Ready to collect</span>
+  </article>
+  <article class="finance-stat-card">
+    <span class="finance-stat-label">Selected amount</span>
+    <span class="finance-stat-value">₹{{ selectedTotalAmount | number: '1.2-2' }}</span>
+    <span class="finance-stat-hint">Pending (invoice total − paid)</span>
+  </article>
+  <article class="finance-stat-card">
+    <span class="finance-stat-label">Receipt History</span>
+    <span class="finance-stat-value">{{ receiptHistoryCount }}</span>
+    <span class="finance-stat-hint">Posted receipts</span>
+  </article>
+</section>

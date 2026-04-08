@@ -33,21 +33,27 @@
 </form>
     </div>
 
-        <div class="example-card">
-          <mat-card>
-            <mat-card-header>
-              <mat-card-title>City&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{totalCity}}</mat-card-title>
-            </mat-card-header>
+        <div class="account-cards">
+          <mat-card class="account-card total">
+            <div class="card-content account-stat-row">
+              <div class="card-icon"><mat-icon>location_city</mat-icon></div>
+              <span class="card-label">City</span>
+              <span class="card-value">{{ totalCity }}</span>
+            </div>
           </mat-card>
-         <mat-card>
-            <mat-card-header>
-              <mat-card-title>Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{activeCity}}</mat-card-title>
-            </mat-card-header>
+          <mat-card class="account-card active">
+            <div class="card-content account-stat-row">
+              <div class="card-icon"><mat-icon>check_circle</mat-icon></div>
+              <span class="card-label">Active</span>
+              <span class="card-value">{{ activeCity }}</span>
+            </div>
           </mat-card>
-          <mat-card>
-            <mat-card-header>
-              <mat-card-title>In-Active&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{deactiveCity}}</mat-card-title>
-            </mat-card-header>
+          <mat-card class="account-card inactive">
+            <div class="card-content account-stat-row">
+              <div class="card-icon"><mat-icon>cancel</mat-icon></div>
+              <span class="card-label">In-Active</span>
+              <span class="card-value">{{ deactiveCity }}</span>
+            </div>
           </mat-card>
         </div>
 
@@ -75,16 +81,15 @@
           caption="City ID"
           [width]="130"
           [allowSorting]="true"
-          [dataType]="'number'"
           [calculateSortValue]="cityIdSortValue"
           [sortOrder]="'desc'"
           [sortIndex]="0">
         </dxi-column>
         <dxi-column dataField="cityname" caption="City Name" [width]="250"></dxi-column>
-        <dxi-column dataField="createddate" caption="Created Date" [width]="250" [calculateCellValue]="createdDateCellValue"></dxi-column>
-        <dxi-column dataField="updateddate" caption="Updated Date" [width]="250" [calculateCellValue]="updatedDateCellValue"></dxi-column>
+        <dxi-column dataField="createddate" caption="Created Date" [width]="200" [calculateCellValue]="createdDateCellValue"></dxi-column>
+        <dxi-column dataField="updateddate" caption="Updated Date" [width]="200" [calculateCellValue]="updatedDateCellValue"></dxi-column>
         <dxi-column dataField="isactive" caption="Active" [width]="200"></dxi-column>
-        <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
+        <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="240"></dxi-column>
       
         <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
           <a (click)="editItem(data.data)" style="cursor: pointer;">

@@ -393,16 +393,20 @@
       <button type="button" (click)="dismissMessages()" class="banner-dismiss" aria-label="Dismiss">&times;</button>
     </div>
 
-    <div class="example-card">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Purchases &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ purchases.length }}</mat-card-title>
-        </mat-card-header>
+    <div class="account-cards two-cards">
+      <mat-card class="account-card total">
+        <div class="card-content account-stat-row">
+          <div class="card-icon"><mat-icon>receipt_long</mat-icon></div>
+          <span class="card-label">Purchases</span>
+          <span class="card-value">{{ purchases.length }}</span>
+        </div>
       </mat-card>
-      <mat-card class="total-amount-card">
-        <mat-card-header>
-          <mat-card-title>Total Amount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ totalPurchaseAmount | number:'1.2-2' }}</mat-card-title>
-        </mat-card-header>
+      <mat-card class="account-card active">
+        <div class="card-content account-stat-row">
+          <div class="card-icon"><mat-icon>currency_rupee</mat-icon></div>
+          <span class="card-label">Total Amount</span>
+          <span class="card-value">{{ totalPurchaseAmount | number:'1.2-2' }}</span>
+        </div>
       </mat-card>
     </div>
 

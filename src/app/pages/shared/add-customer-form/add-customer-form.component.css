@@ -1,3 +1,8 @@
+/* =============================================================================
+   Screen: Shared — add customer form
+   File: src/app/pages/shared/add-customer-form/add-customer-form.component.css
+   ============================================================================= */
+
 /* Same CSS as Customer module create form (customer-form + customer.component) */
 .add-customer-form-container {
   max-width: 100%;

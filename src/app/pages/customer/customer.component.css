@@ -1,3 +1,8 @@
+/* =============================================================================
+   Screen: Customers
+   File: src/app/pages/customer/customer.component.css
+   ============================================================================= */
+
 /* Delete blocked (409): visible above list when form is closed */
 .customer-delete-caution {
   display: flex;
@@ -202,11 +207,4 @@ body {
 ::ng-deep .form-container .mat-form-field-appearance-outline.mat-form-field-invalid .mat-form-field-outline-thick svg {
   fill: #f44336 !important;
   stroke: #f44336 !important;
-}
-
-/* Override global max-width on example-card for customer module */
-::ng-deep app-customer .example-card {
-  max-width: none !important;
-  border: none !important;
-  box-shadow: none !important;
 }

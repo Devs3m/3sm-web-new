@@ -1,0 +1,55 @@
+<div [formGroup]="form" class="pending-card">
+  <div class="pending-header">
+    <div>
+      <p class="pending-section-kicker">Open receivables</p>
+      <h3 class="pending-section-title">Pending Credit Invoices</h3>
+    </div>
+    <div class="pending-chip">{{ pendingInvoiceCount }} rows</div>
+  </div>
+
+  <div class="pending-filter-row">
+    <mat-form-field appearance="outline" class="date-field">
+      <mat-label>From date</mat-label>
+      <input matInput [matDatepicker]="startPicker" formControlName="startDate" placeholder="dd-mm-yyyy" />
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="date-field">
+      <mat-label>To date</mat-label>
+      <input matInput [matDatepicker]="endPicker" formControlName="endDate" placeholder="dd-mm-yyyy" />
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+
+    <div class="pending-actions">
+      <button mat-icon-button class="refresh-btn" (click)="refreshRange.emit()" [disabled]="isLoading" title="Refresh date range and reload" type="button">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="table-container table-container--receivables">
+    <dx-data-grid
+      [dataSource]="filteredPendingData"
+      [keyExpr]="'rowKey'"
+      [selectedRowKeys]="selectedRowKeys"
+      (selectedRowKeysChange)="selectedRowKeysChange.emit($event)"
+      [allowColumnReordering]="true"
+      [allowColumnResizing]="true"
+      [showBorders]="true"
+      [columnAutoWidth]="true"
+      [selection]="{ mode: 'multiple', showCheckBoxesMode: 'always' }"
+      [headerFilter]="{ visible: true }"
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search…' }"
+      [paging]="{ pageSize: 12 }"
+      [noDataText]="isLoading ? 'Loading...' : 'No credit pending invoices found.'"
+      (onSelectionChanged)="selectionChanged.emit($event)">
+      <dxi-column dataField="date" caption="Date" [minWidth]="100" [calculateCellValue]="dateCellValue"></dxi-column>
+      <dxi-column dataField="invoiceno" caption="Invoice no" [minWidth]="110"></dxi-column>
+      <dxi-column dataField="amount" caption="Invoice total" [minWidth]="130" [format]="amountColumnFormat"></dxi-column>
+      <dxi-column dataField="paidAmount" caption="Paid amount" [minWidth]="120" [format]="amountColumnFormat"></dxi-column>
+      <dxi-column dataField="pendingAmount" caption="Pending amount" [minWidth]="130" [format]="amountColumnFormat"></dxi-column>
+    </dx-data-grid>
+  </div>
+</div>

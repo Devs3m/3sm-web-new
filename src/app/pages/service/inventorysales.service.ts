@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, Observable, of } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   SaveInventorysummaryDto,
@@ -12,6 +13,9 @@ import {
 })
 export class InventorysalesService {
   private apiUrl = environment.apiUrl;
+
+  /** Same GET in flight for identical params → one HTTP request (multiple subscribers share the result). */
+  private readonly creditCollectionsInFlight = new Map<string, Observable<any[]>>();
 
   constructor(private http: HttpClient) {}
 
@@ -181,6 +185,8 @@ export class InventorysalesService {
       paymentType: string;
       paymentStatus: string;
       amount: number;
+      receiptPaidTotal: number;
+      balanceToCollect: number;
     }[]
   > {
     const params: Record<string, string> = {
@@ -201,11 +207,21 @@ export class InventorysalesService {
     return this.http.get<string[]>(`${this.apiUrl}/inventorysummary/sales-ledger-payment-types`, { params });
   }
 
+  /**
+   * GET `/inventorysummary/credit-collections?startDate=&endDate=&accountid=&instanceid=`
+   *
+   * **Preflight (OPTIONS):** DevTools often shows an `OPTIONS` request to the same path *before* this `GET`.
+   * That is the browser **CORS preflight** (cross-origin + `Authorization` from `AuthInterceptor`), not a
+   * second call issued by Angular. It cannot be removed from app code without making the API same-origin
+   * (e.g. dev proxy) or changing server CORS.
+   */
   getCreditCollections(
     startDate: string,
     endDate: string,
     accountId: number,
-    instanceId: number
+    instanceId: number,
+    /** When set, API returns only this customer’s pending rows (Finance customer filter). */
+    customerId?: number
   ): Observable<
     {
       date: string;
@@ -215,6 +231,8 @@ export class InventorysalesService {
       customerid: number;
       customerName: string;
       amount: number;
+      paidAmount: number;
+      pendingAmount: number;
       paymentStatus: string;
     }[]
   > {
@@ -224,7 +242,31 @@ export class InventorysalesService {
       accountid: String(accountId),
       instanceid: String(instanceId),
     };
-    return this.http.get<any[]>(`${this.apiUrl}/inventorysummary/credit-collections`, { params });
+    if (customerId != null && Number.isFinite(customerId) && customerId > 0) {
+      params['customerid'] = String(customerId);
+    }
+    const key = `${startDate}|${endDate}|${accountId}|${instanceId}|c${customerId ?? 'all'}`;
+    const existing = this.creditCollectionsInFlight.get(key);
+    if (existing) {
+      return existing;
+    }
+    const shared$ = this.http.get<any[]>(`${this.apiUrl}/inventorysummary/credit-collections`, { params }).pipe(
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+    this.creditCollectionsInFlight.set(key, shared$);
+    return shared$;
+  }
+
+  /** Drop cached observable for this key so the next getCreditCollections issues a new HTTP GET. */
+  invalidateCreditCollectionsCache(
+    startDate: string,
+    endDate: string,
+    accountId: number,
+    instanceId: number,
+    customerId?: number
+  ): void {
+    const key = `${startDate}|${endDate}|${accountId}|${instanceId}|c${customerId ?? 'all'}`;
+    this.creditCollectionsInFlight.delete(key);
   }
 
   collectCreditPayment(

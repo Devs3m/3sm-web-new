@@ -1,169 +1,52 @@
-<div class="finance-container" [formGroup]="form">
-  <h2>Finance</h2>
+<div class="finance-container">
+  <app-finance-summary-strip
+    [pendingInvoiceCount]="pendingInvoiceCount"
+    [selectedCount]="selectedRows.length"
+    [selectedTotalAmount]="selectedTotalAmount"
+    [receiptHistoryCount]="receiptHistoryCount"
+  />
 
   <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-  <!-- Top row: receipt / payment (left) | pending invoices (right) -->
-  <div class="finance-top-row">
-    <div class="finance-receipt-col">
-      <div class="voucher-card">
-        <div class="voucher-header-row">
-          <div class="voucher-title">Receipt</div>
-        </div>
+  <div class="finance-workspace">
+    <aside class="finance-sidebar">
+      <app-receipt-voucher-form
+        [form]="form"
+        [customerInputCtrl]="customerInputCtrl"
+        [filteredCustomerOptions]="filteredCustomerOptions"
+        [receiptNo]="receiptNo"
+        [paymentReceiptType]="paymentReceiptType"
+        [selectedRowsLength]="selectedRows.length"
+        [selectedTotalAmount]="selectedTotalAmount"
+        [outstandingAmount]="outstandingAmount"
+        [receiveDisabled]="!selectedRows.length || isLoading"
+        (customerOptionSelected)="onCustomerOptionSelected($event)"
+        (collectPayments)="collectSelectedPayments()"
+      />
+    </aside>
 
-        <section class="voucher-section" aria-labelledby="voucher-payment-heading">
-          <div class="voucher-section-head">
-            <h3 id="voucher-payment-heading" class="voucher-section-title">Payment details</h3>
-            <div class="voucher-no voucher-no-inline">
-              <span class="voucher-no-label">Receipt No:</span>
-              <span class="voucher-no-value">{{ receiptNo }}</span>
-            </div>
-          </div>
-
-          <div class="voucher-form-row">
-            <mat-form-field appearance="outline" class="date-field customer-select-field finance-select-field">
-              <mat-label>Customer</mat-label>
-              <mat-select formControlName="customerFilter" panelClass="finance-payment-select-panel" [compareWith]="compareCustomerFilter">
-                <mat-option [value]="null">All customers</mat-option>
-                <mat-option *ngFor="let c of customerOptions" [value]="c.customerid">{{ c.customername }}</mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="date-field">
-              <mat-label>Collection Date</mat-label>
-              <input matInput [matDatepicker]="paymentDatePicker" formControlName="paymentDate" placeholder="dd-mm-yyyy">
-              <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
-              <mat-datepicker #paymentDatePicker></mat-datepicker>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="date-field voucher-readonly-field">
-              <mat-label>Payment Type</mat-label>
-              <input matInput [value]="paymentReceiptType" readonly />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="date-field finance-select-field">
-              <mat-label>Payment Mode</mat-label>
-              <mat-select formControlName="paymentMode" panelClass="finance-payment-select-panel">
-                <mat-option value="Cash">Cash</mat-option>
-                <mat-option value="UPI">UPI</mat-option>
-                <mat-option value="Bank Transfer">Bank Transfer</mat-option>
-                <mat-option value="Cheque">Cheque</mat-option>
-                <mat-option value="Credit Card">Credit Card</mat-option>
-                <mat-option value="Debit Card">Debit Card</mat-option>
-                <mat-option value="Other">Other</mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="date-field">
-              <mat-label>Received Amount</mat-label>
-              <input matInput type="number" step="0.01" formControlName="receivedAmount" placeholder="0.00">
-            </mat-form-field>
-          </div>
-
-          <div class="voucher-summary-row">
-            <div class="voucher-summary-right">
-              <div class="voucher-total">
-                <div class="voucher-total-label">Total Amount</div>
-                <div class="voucher-total-value">{{ selectedTotalAmount | number:'1.2-2' }}</div>
-              </div>
-              <div class="voucher-total">
-                <div class="voucher-total-label">Received</div>
-                <div class="voucher-total-value">
-                  {{ (form.get('receivedAmount')?.value ?? 0) | number:'1.2-2' }}
-                </div>
-              </div>
-              <div class="voucher-actions">
-                <button mat-raised-button type="button" class="receive-payment-btn" (click)="collectSelectedPayments()" [disabled]="!selectedRows.length || isLoading">
-                  Receive Payment ({{ selectedRows.length }})
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-
-    <div class="finance-pending-col">
-      <div class="pending-card">
-        <div class="pending-section-title">Pending credit invoices</div>
-        <div class="pending-filter-row">
-          <mat-form-field appearance="outline" class="date-field">
-            <mat-label>From Date</mat-label>
-            <input matInput [matDatepicker]="startPicker" formControlName="startDate" placeholder="dd-mm-yyyy">
-            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-            <mat-datepicker #startPicker></mat-datepicker>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="date-field">
-            <mat-label>To Date</mat-label>
-            <input matInput [matDatepicker]="endPicker" formControlName="endDate" placeholder="dd-mm-yyyy">
-            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-            <mat-datepicker #endPicker></mat-datepicker>
-          </mat-form-field>
-
-          <div class="pending-actions">
-            <button mat-raised-button type="button" class="btn-primary" (click)="onView()" [disabled]="isLoading">
-              {{ isLoading ? 'Loading...' : 'View Pending' }}
-            </button>
-            <button mat-icon-button class="refresh-btn" (click)="onRefresh()" [disabled]="isLoading" title="Refresh">
-              <mat-icon>refresh</mat-icon>
-            </button>
-          </div>
-        </div>
-
-        <div class="table-container">
-          <dx-data-grid
-            [dataSource]="filteredPendingData"
-            [keyExpr]="'rowKey'"
-            [allowColumnReordering]="true"
-            [allowColumnResizing]="true"
-            [showBorders]="true"
-            [columnAutoWidth]="true"
-            [selection]="{ mode: 'multiple', showCheckBoxesMode: 'always' }"
-            [headerFilter]="{ visible: true }"
-            [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
-            [paging]="{ pageSize: 12 }"
-            [noDataText]="isLoading ? 'Loading...' : 'No credit pending invoices found.'"
-            (onSelectionChanged)="onSelectionChanged($event)">
-            <dxi-column dataField="date" caption="Date" [minWidth]="100" [calculateCellValue]="dateCellValue"></dxi-column>
-            <dxi-column dataField="source" caption="Source" [minWidth]="120" [calculateCellValue]="sourceCellValue"></dxi-column>
-            <dxi-column dataField="invoiceno" caption="Invoice No" [minWidth]="110"></dxi-column>
-            <dxi-column dataField="customerName" caption="Customer" [minWidth]="140"></dxi-column>
-            <dxi-column dataField="amount" caption="Amount" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
-            <dxi-column dataField="paymentStatus" caption="Status" [minWidth]="100"></dxi-column>
-          </dx-data-grid>
-        </div>
-      </div>
+    <div class="finance-main">
+      <app-pending-open-receivables
+        [form]="form"
+        [filteredPendingData]="filteredPendingData"
+        [selectedRowKeys]="selectedRowKeys"
+        (selectedRowKeysChange)="selectedRowKeys = $event"
+        [pendingInvoiceCount]="pendingInvoiceCount"
+        [isLoading]="isLoading"
+        [amountColumnFormat]="amountColumnFormat"
+        [dateCellValue]="dateCellValue"
+        (selectionChanged)="onSelectionChanged($event)"
+        (refreshRange)="onRefresh()"
+      />
     </div>
   </div>
 
-  <!-- Receipt history full width below -->
-  <div class="receipt-history-card">
-    <div class="receipt-history-header">
-      <h3 class="receipt-history-title">Receipt history</h3>
-      <button mat-icon-button type="button" class="refresh-btn" (click)="loadReceipts()" [disabled]="isLoadingReceipts" title="Refresh receipt list">
-        <mat-icon>refresh</mat-icon>
-      </button>
-    </div>
-    <div class="table-container">
-      <dx-data-grid
-        [dataSource]="filteredReceiptData"
-        [allowColumnReordering]="true"
-        [allowColumnResizing]="true"
-        [showBorders]="true"
-        [columnAutoWidth]="true"
-        [searchPanel]="{ visible: true, width: 240, placeholder: 'Search receipts...' }"
-        [paging]="{ pageSize: 10 }"
-        [noDataText]="isLoadingReceipts ? 'Loading...' : 'No receipt rows saved yet.'">
-        <dxi-column dataField="receiptsPaymentsid" caption="Receipt Id" [minWidth]="220"></dxi-column>
-        <dxi-column dataField="receiptdate" caption="Receipt date" [minWidth]="110" [calculateCellValue]="receiptDateCellValue"></dxi-column>
-        <dxi-column dataField="invoiceno" caption="Invoice No" [minWidth]="100"></dxi-column>
-        <dxi-column dataField="customername" caption="Customer" [minWidth]="140"></dxi-column>
-        <dxi-column dataField="invoicedate" caption="Invoice date" [minWidth]="110" [calculateCellValue]="invoiceDateCellValue"></dxi-column>
-        <dxi-column dataField="receiptamount" caption="Amount" [minWidth]="100" [format]="amountColumnFormat"></dxi-column>
-        <dxi-column dataField="receiptbalanceamount" caption="Balance" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
-        <dxi-column dataField="receiptpaymentmode" caption="Mode" [minWidth]="100"></dxi-column>
-      </dx-data-grid>
-    </div>
-  </div>
+  <app-receipt-history-grid
+    [filteredReceiptData]="filteredReceiptData"
+    [isLoadingReceipts]="isLoadingReceipts"
+    [amountColumnFormat]="amountColumnFormat"
+    [receiptDateCellValue]="receiptDateCellValue"
+    [invoiceDateCellValue]="invoiceDateCellValue"
+    (refresh)="loadReceipts()"
+  />
 </div>

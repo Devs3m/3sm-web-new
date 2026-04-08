@@ -1,3 +1,8 @@
+/* =============================================================================
+   Screen: Inventory sales
+   File: src/app/pages/inventorysales/inventorysales.component.css
+   ============================================================================= */
+
 /* Product dropdown: single-line (panel in overlay; primary in styles.css) */
 .inventory-product-autocomplete .product-option-single-line {
   white-space: nowrap !important;
@@ -69,29 +74,6 @@ body {
   font-weight: 700;
   margin-left: 1134px;
   margin-top: -14px;
-}
-
-/* Statistics Cards - same as account (reduced height) */
-::ng-deep app-inventorysales .example-card mat-card-header {
-  display: flex;
-  padding: 10px 12px 10px;
-  background-color: whitesmoke !important;
-  border: 1px solid rgb(247, 243, 243) !important;
-  border-color: whitesmoke !important;
-}
-
-::ng-deep app-inventorysales .example-card .mat-mdc-card-title,
-::ng-deep app-inventorysales .example-card .mat-mdc-card-subtitle {
-  display: block;
-  margin: 4px;
-  width: 196px;
-}
-
-/* Total Amount card - wider width and no wrap to keep label + value on one line */
-::ng-deep app-inventorysales .example-card .total-amount-card .mat-mdc-card-title {
-  width: auto;
-  min-width: 220px;
-  white-space: nowrap;
 }
 
 /* Invoice Form Container */

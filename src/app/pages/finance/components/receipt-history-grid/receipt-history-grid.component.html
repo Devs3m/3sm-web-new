@@ -1,0 +1,32 @@
+<section class="receipt-history-card">
+  <div class="receipt-history-header">
+    <div>
+      <p class="receipt-history-kicker">Posted activity</p>
+      <h3 class="receipt-history-title">Receipt History</h3>
+    </div>
+    <button mat-icon-button type="button" class="refresh-btn" (click)="refresh.emit()" [disabled]="isLoadingReceipts" title="Refresh receipt list">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+  <div class="table-container">
+    <dx-data-grid
+      [dataSource]="filteredReceiptData"
+      [allowColumnReordering]="true"
+      [allowColumnResizing]="true"
+      [showBorders]="true"
+      [columnAutoWidth]="true"
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search receipts…' }"
+      [paging]="{ pageSize: 10 }"
+      [noDataText]="isLoadingReceipts ? 'Loading...' : 'No receipt rows saved yet.'">
+      <dxi-column dataField="receiptsPaymentsid" caption="Receipt ID" [minWidth]="20"></dxi-column>
+      <dxi-column dataField="receiptdate" caption="Receipt date" [minWidth]="110" [calculateCellValue]="receiptDateCellValue"></dxi-column>
+      <dxi-column dataField="invoiceno" caption="Invoice" [minWidth]="100"></dxi-column>
+      <dxi-column dataField="customername" caption="Customer" [minWidth]="140"></dxi-column>
+      <dxi-column dataField="invoicedate" caption="Inv date" [minWidth]="110" [calculateCellValue]="invoiceDateCellValue"></dxi-column>
+      <dxi-column dataField="grandtotal" caption="Grand total" [minWidth]="120" [format]="amountColumnFormat"></dxi-column>
+      <dxi-column dataField="receiptamount" caption="Receipt amount" [minWidth]="100" [format]="amountColumnFormat"></dxi-column>
+      <dxi-column dataField="receiptbalanceamount" caption="Balance" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
+      <dxi-column dataField="receiptpaymentmode" caption="Mode" [minWidth]="100"></dxi-column>
+    </dx-data-grid>
+  </div>
+</section>

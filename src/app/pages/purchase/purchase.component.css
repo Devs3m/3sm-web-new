@@ -1,3 +1,8 @@
+/* =============================================================================
+   Screen: Purchase
+   File: src/app/pages/purchase/purchase.component.css
+   ============================================================================= */
+
 /* Purchase listing cards + grid: styled with sales.component.css (app-purchase selectors there). */
 ::ng-deep app-purchase {
   --mdc-outlined-text-field-focus-outline-color: #f7f5f5 !important;

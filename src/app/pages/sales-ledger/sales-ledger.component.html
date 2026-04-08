@@ -24,6 +24,15 @@
       </mat-select>
     </mat-form-field>
 
+    <mat-form-field appearance="outline" class="payment-status-field">
+      <mat-label>Payment status</mat-label>
+      <mat-select formControlName="paymentStatusFilter" panelClass="sales-ledger-payment-panel">
+        <mat-option value="">All</mat-option>
+        <mat-option value="pending">Pending</mat-option>
+        <mat-option value="paid">Paid</mat-option>
+      </mat-select>
+    </mat-form-field>
+
     <div class="filter-actions">
       <button mat-raised-button type="button" class="btn-primary" (click)="onView()" [disabled]="isLoading">
         {{ isLoading ? 'Loading...' : 'View' }}
@@ -50,11 +59,10 @@
       title="Sales Ledger"
       (onExporting)="onExporting($event)">
       <dxi-column dataField="date" caption="Date" [minWidth]="100" [calculateCellValue]="dateCellValue"></dxi-column>
-      <dxi-column dataField="source" caption="Source" [minWidth]="120"></dxi-column>
       <dxi-column dataField="invoiceno" caption="Invoice No" [minWidth]="110"></dxi-column>
       <dxi-column dataField="customerName" caption="Customer" [minWidth]="140"></dxi-column>
-      <dxi-column dataField="paymentType" caption="Payment Type" [minWidth]="120"></dxi-column>
-      <dxi-column dataField="paymentStatus" caption="Payment Status" [minWidth]="120"></dxi-column>
+      <dxi-column dataField="paymentType" caption="Type" [minWidth]="100"></dxi-column>
+      <dxi-column dataField="paymentStatus" caption="Status" [minWidth]="100"></dxi-column>
       <dxi-column dataField="amount" caption="Amount" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
       <dxi-column dataField="profit" caption="Profit" [minWidth]="110" [format]="amountColumnFormat"></dxi-column>
       <dxi-column
@@ -63,6 +71,9 @@
         [minWidth]="100"
         [customizeText]="profitPercentText"
       ></dxi-column>
+      <dxi-column dataField="receiptPaidTotal" caption="Receipt paid" [minWidth]="120" [format]="amountColumnFormat"></dxi-column>
+      <dxi-column dataField="balanceToCollect" caption="Balance" [minWidth]="130" [format]="amountColumnFormat"></dxi-column>
+     
       <dxo-summary [texts]="summaryTexts">
         <dxi-total-item
           column="date"

@@ -41,50 +41,35 @@
 
   <div class="account-cards">
 
-  <mat-card class="account-card total">
-    <div class="card-content vertical">
-
-      <div class="card-icon">
-        <mat-icon>admin_panel_settings</mat-icon>
-      </div>
-
-      <div class="card-text">
+    <mat-card class="account-card total">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>admin_panel_settings</mat-icon>
+        </div>
         <span class="card-label">Total User Roles</span>
         <span class="card-value">{{ totalUserrole }}</span>
       </div>
+    </mat-card>
 
-    </div>
-  </mat-card>
-
-  <mat-card class="account-card active">
-    <div class="card-content vertical">
-
-      <div class="card-icon">
-        <mat-icon>check_circle</mat-icon>
-      </div>
-
-      <div class="card-text">
+    <mat-card class="account-card active">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>check_circle</mat-icon>
+        </div>
         <span class="card-label">Active</span>
         <span class="card-value">{{ activeUserrole }}</span>
       </div>
+    </mat-card>
 
-    </div>
-  </mat-card>
-
-  <mat-card class="account-card inactive">
-    <div class="card-content vertical">
-
-      <div class="card-icon">
-        <mat-icon>cancel</mat-icon>
-      </div>
-
-      <div class="card-text">
+    <mat-card class="account-card inactive">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>cancel</mat-icon>
+        </div>
         <span class="card-label">Inactive</span>
         <span class="card-value">{{ deactiveUserrole }}</span>
       </div>
-
-    </div>
-  </mat-card>
+    </mat-card>
 
 </div>
 
@@ -107,20 +92,11 @@
       title="User Role"  
       [showBorders]="true" (onExporting)="onExporting($event)">
   
-      <dxi-column
-        dataField="userroleid"
-        caption="Userrole ID"
-        [width]="130"
-        [allowSorting]="true"
-        [dataType]="'number'"
-        [calculateSortValue]="userroleIdSortValue"
-        [sortOrder]="'desc'"
-        [sortIndex]="0">
-      </dxi-column>
-      <dxi-column dataField="userrolename" caption="Userrole Name" [width]="250"></dxi-column>
-      <dxi-column dataField="createddate" caption="Created Date" [width]="250" [calculateCellValue]="createdDateCellValue"></dxi-column>
-      <dxi-column dataField="updateddate" caption="Updated Date" [width]="250" [calculateCellValue]="updatedDateCellValue"></dxi-column>
-      <dxi-column dataField="userroleisactive" caption="Active" [width]="200"></dxi-column>
+      <dxi-column dataField="userroleid" caption="Userrole ID" [width]="150" [allowSorting]="true"  [calculateSortValue]="userroleIdSortValue" [sortOrder]="'desc'" [sortIndex]="0"></dxi-column>
+      <dxi-column dataField="userrolename" caption="Userrole Name" [width]="260"></dxi-column>
+      <dxi-column dataField="createddate" caption="Created Date" [width]="200" [calculateCellValue]="createdDateCellValue"></dxi-column>
+      <dxi-column dataField="updateddate" caption="Updated Date" [width]="200" [calculateCellValue]="updatedDateCellValue"></dxi-column>
+      <dxi-column dataField="userroleisactive" caption="Active" [width]="150"></dxi-column>
       <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="250"></dxi-column>
     
       <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">

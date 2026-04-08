@@ -1,3 +1,8 @@
+/* =============================================================================
+   Screen: Pages shell (layout / sidenav)
+   File: src/app/pages/pages.component.css
+   ============================================================================= */
+
 /* Reports section in sidenav (flat submenu — no expansion panel) */
 .nav-section-divider {
   margin: 8px 0;

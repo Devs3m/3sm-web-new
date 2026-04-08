@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { saveAs } from 'file-saver';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
@@ -9,12 +11,13 @@ import { InventorysalesService } from '../service/inventorysales.service';
 
 interface SalesLedgerRow {
   date: string;
-  source: string;
   invoiceno: string;
   customerName: string;
   paymentType: string;
   paymentStatus: string;
   amount: number;
+  receiptPaidTotal: number;
+  balanceToCollect: number;
   profit: number;
   profitPercent: number;
 }
@@ -24,12 +27,16 @@ interface SalesLedgerRow {
   templateUrl: './sales-ledger.component.html',
   styleUrls: ['./sales-ledger.component.css'],
 })
-export class SalesLedgerComponent implements OnInit {
+export class SalesLedgerComponent implements OnInit, OnDestroy {
   form!: FormGroup;
+  /** Rows after API load; `apiData` is filtered by payment status for the grid. */
+  private fullLedgerData: SalesLedgerRow[] = [];
   apiData: SalesLedgerRow[] = [];
   paymentTypeOptions: string[] = [];
   isLoading = false;
   errorMessage = '';
+
+  private readonly destroy$ = new Subject<void>();
 
   /** Σprofit / Σamount × 100 for loaded rows; drives Profit % footer. */
   footerTotalProfitMarginPct = 0;
@@ -51,19 +58,46 @@ export class SalesLedgerComponent implements OnInit {
       startDate: [today],
       endDate: [today],
       paymentType: [''],
+      /** Client-side filter: all | pending (Unpaid) | paid */
+      paymentStatusFilter: [''],
     });
     this.loadPaymentTypes();
+    this.form
+      .get('paymentStatusFilter')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.applyPaymentStatusFilter());
+    /** Load ledger on open (same expectation as other reports; was empty until user clicked View). */
+    this.onView();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private getCurrentAccountAndInstance(): { accountId: number; instanceId: number } {
     const user = this.authService.getUser();
+    const aid = Number(user?.accountid ?? user?.accountId ?? 1);
+    const iid = Number(user?.instanceid ?? user?.instanceId ?? 1);
     return {
-      accountId: user?.accountid ?? user?.accountId ?? 1,
-      instanceId: user?.instanceid ?? user?.instanceId ?? 1,
+      accountId: Number.isFinite(aid) && aid > 0 ? aid : 1,
+      instanceId: Number.isFinite(iid) && iid > 0 ? iid : 1,
     };
   }
 
   /** Weighted margin from current apiData (matches Amount/Profit sum footers). */
+  private applyPaymentStatusFilter(): void {
+    const f = String(this.form.get('paymentStatusFilter')?.value ?? '').trim();
+    let rows = [...this.fullLedgerData];
+    if (f === 'pending') {
+      rows = rows.filter((r) => r.paymentStatus === 'Unpaid');
+    } else if (f === 'paid') {
+      rows = rows.filter((r) => r.paymentStatus === 'Paid');
+    }
+    this.apiData = rows;
+    this.refreshFooterProfitMarginPct();
+  }
+
   private refreshFooterProfitMarginPct(): void {
     let amount = 0;
     let profit = 0;
@@ -89,7 +123,10 @@ export class SalesLedgerComponent implements OnInit {
 
   onRefresh(): void {
     const today = new Date();
-    this.form.patchValue({ startDate: today, endDate: today, paymentType: '' });
+    this.form.patchValue(
+      { startDate: today, endDate: today, paymentType: '', paymentStatusFilter: '' },
+      { emitEvent: false }
+    );
     this.onView();
   }
 
@@ -118,7 +155,7 @@ export class SalesLedgerComponent implements OnInit {
       .subscribe({
         next: (rows) => {
           const list = Array.isArray(rows) ? rows : [];
-          this.apiData = list.map((r: any) => {
+          this.fullLedgerData = list.map((r: any) => {
             const amount = parseFloat(String(r.amount ?? 0)) || 0;
             const profit = parseFloat(String(r.profit ?? 0)) || 0;
             const profitPercentRaw = r.profitPercent ?? r.profit_percent;
@@ -128,13 +165,25 @@ export class SalesLedgerComponent implements OnInit {
                 : amount > 0
                   ? Math.round((profit / amount) * 10000) / 100
                   : 0;
-            return { ...r, amount, profit, profitPercent } as SalesLedgerRow;
+            return {
+              date: String(r.date ?? ''),
+              invoiceno: String(r.invoiceno ?? ''),
+              customerName: String(r.customerName ?? r.customername ?? ''),
+              paymentType: String(r.paymentType ?? r.paymenttype ?? ''),
+              paymentStatus: String(r.paymentStatus ?? ''),
+              amount,
+              receiptPaidTotal: Math.max(0, parseFloat(String(r.receiptPaidTotal ?? r.receiptpaidtotal ?? 0)) || 0),
+              balanceToCollect: Math.max(0, parseFloat(String(r.balanceToCollect ?? r.balancetocollect ?? 0)) || 0),
+              profit,
+              profitPercent,
+            } as SalesLedgerRow;
           });
-          this.refreshFooterProfitMarginPct();
+          this.applyPaymentStatusFilter();
           this.isLoading = false;
         },
         error: (err) => {
           this.errorMessage = err?.error?.message || err?.message || 'Failed to load sales ledger.';
+          this.fullLedgerData = [];
           this.apiData = [];
           this.footerTotalProfitMarginPct = 0;
           this.isLoading = false;

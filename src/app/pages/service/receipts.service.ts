@@ -55,12 +55,16 @@ export class ReceiptsService {
 
   constructor(private http: HttpClient) {}
 
-  list(accountId: number, instanceId: number): Observable<ReceiptRecord[]> {
+  list(accountId: number, instanceId: number, customerId?: number): Observable<ReceiptRecord[]> {
+    const params: Record<string, string> = {
+      accountid: String(accountId),
+      instanceid: String(instanceId),
+    };
+    if (customerId != null && Number.isFinite(customerId) && customerId > 0) {
+      params['customerid'] = String(customerId);
+    }
     return this.http.get<ReceiptRecord[]>(`${this.apiUrl}/receipt`, {
-      params: {
-        accountid: String(accountId),
-        instanceid: String(instanceId),
-      },
+      params,
     });
   }
 

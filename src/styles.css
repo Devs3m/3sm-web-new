@@ -1,3 +1,8 @@
+/* =============================================================================
+   Screen: Global — app-wide styles & imports
+   File: src/styles.css
+   ============================================================================= */
+
 /* You can add global styles to this file, and also import other style files */
 @import 'assets/css/variable.scss';
 @import 'assets/css/style.css';
@@ -137,7 +142,7 @@ body .mat-drawer-container{
 
 body .mat-mdc-text-field-wrapper{          /* Form Field width*/
   border-bottom:1px solid black !important;
-  width:200px;
+  width:183px;
   height:50px !important;
 }
 .mdc-text-field__input{          /*From Field Label color*/
@@ -373,8 +378,8 @@ box-shadow: gray;
 	z-index:-1 !important; /* Adjust if necessary */
   }
 ::ng-deep .dx-datagrid-headers {
-  background-color: #1976d2; /* Example: Material Blue 700 */
-  color: white;
+  background-color: #fff; /* Example: Material Blue 700 */
+  color: rgb(18, 16, 16);
 }
 .pb-20{
   padding-bottom: 20px;
@@ -425,30 +430,68 @@ box-shadow: gray;
   color: #000000 !important;
 }
 
+/* Listing stat cards — shared layout (icon + label + count one row), neutral B&W theme */
 .account-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 15px;
   margin-bottom: 15px;
 }
 
-/* Card */
+/* .two-cards (service sales, product sales, purchase) — same .account-card width as other listings */
+
 .account-card {
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  background: #fff;
-  box-shadow: 0px 0px 4px 2px rgba(0,0,0,0.1)!important;
+  border: 1px solid #d0d0d0;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 280px;
+  min-width: 240px;
+  max-width: 320px;
 }
 
-/* Layout */
+.account-card.total,
+.account-card.active,
+.account-card.inactive {
+  border-left: 1px solid #d0d0d0;
+  background-color: #ffffff;
+}
+
 .card-content {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-/* Icon */
+.account-stat-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.account-stat-row .card-icon {
+  flex-shrink: 0;
+}
+
+.account-stat-row .card-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-stat-row .card-value {
+  flex-shrink: 0;
+}
+
 .card-icon {
   width: 36px;
   height: 36px;
@@ -459,10 +502,9 @@ box-shadow: gray;
 
 .card-icon mat-icon {
   font-size: 22px;
-  color: #666;
+  color: #212121;
 }
 
-/* Text */
 .card-text {
   display: flex;
   flex-direction: column;
@@ -470,48 +512,33 @@ box-shadow: gray;
 
 .card-label {
   font-size: 14px;
-  color: #666;
+  color: #424242;
 }
 
 .card-value {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  color: #222;
+  color: #000000;
 }
 
-/* Left color border (simple highlight) */
-
-.account-card.total {
-  border-left: 4px solid #337ab7;
-  background-color: #e8f3fd;
-}
-
-.account-card.active {
-  border-left: 4px solid #27ae60;
-   background-color: #ecfef4;
-}
-
-.account-card.inactive {
-  border-left: 4px solid #e74c3c;
-     background-color: #fff1f0;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .account-cards {
-    grid-template-columns: repeat(2, 1fr);
+  .account-card {
+    width: calc(50% - 8px);
+    min-width: 0;
+    max-width: none;
   }
 }
 
 @media (max-width: 480px) {
-  .account-cards {
-    grid-template-columns: 1fr;
+  .account-card {
+    width: 100%;
+    max-width: none;
   }
 }
 
 .dx-datagrid-headers .dx-datagrid-table .dx-row>td{
-      background: #337ab7;
-    color: #fff;
+      background: #fff;
+    color: rgb(18, 16, 16);
 }
 .dx-datagrid .dx-header-filter-empty{
    color: #fff;

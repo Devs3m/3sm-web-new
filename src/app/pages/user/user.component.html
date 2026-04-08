@@ -148,47 +148,32 @@
  <div class="account-cards">
 
   <mat-card class="account-card total">
-    <div class="card-content vertical">
-
+    <div class="card-content account-stat-row">
       <div class="card-icon">
         <mat-icon>person</mat-icon>
       </div>
-
-      <div class="card-text">
-        <span class="card-label">Total Users</span>
-        <span class="card-value">{{ totalUser }}</span>
-      </div>
-
+      <span class="card-label">Total Users</span>
+      <span class="card-value">{{ totalUser }}</span>
     </div>
   </mat-card>
 
   <mat-card class="account-card active">
-    <div class="card-content vertical">
-
+    <div class="card-content account-stat-row">
       <div class="card-icon">
         <mat-icon>check_circle</mat-icon>
       </div>
-
-      <div class="card-text">
-        <span class="card-label">Active</span>
-        <span class="card-value">{{ activeUser }}</span>
-      </div>
-
+      <span class="card-label">Active</span>
+      <span class="card-value">{{ activeUser }}</span>
     </div>
   </mat-card>
 
   <mat-card class="account-card inactive">
-    <div class="card-content vertical">
-
+    <div class="card-content account-stat-row">
       <div class="card-icon">
         <mat-icon>cancel</mat-icon>
       </div>
-
-      <div class="card-text">
-        <span class="card-label">Inactive</span>
-        <span class="card-value">{{ deactiveUser }}</span>
-      </div>
-
+      <span class="card-label">Inactive</span>
+      <span class="card-value">{{ deactiveUser }}</span>
     </div>
   </mat-card>
 
@@ -218,7 +203,6 @@
           caption="User ID"
           [width]="130"
           [allowSorting]="true"
-          [dataType]="'number'"
           [calculateSortValue]="userIdSortValue"
           [sortOrder]="'desc'"
           [sortIndex]="0">

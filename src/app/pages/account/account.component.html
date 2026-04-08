@@ -169,45 +169,37 @@
     </form>
   </div>
 
-<div class="account-cards">
-
-  <mat-card class="account-card total">
-    <div class="card-content">
-      <div class="card-icon">
-        <mat-icon>business</mat-icon>
-      </div>
-      <div class="card-text">
+  <div class="account-cards">
+    <mat-card class="account-card total">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>business</mat-icon>
+        </div>
         <span class="card-label">Total Accounts</span>
         <span class="card-value">{{ totalAccounts }}</span>
       </div>
-    </div>
-  </mat-card>
+    </mat-card>
 
-  <mat-card class="account-card active">
-    <div class="card-content">
-      <div class="card-icon">
-        <mat-icon>check_circle</mat-icon>
-      </div>
-      <div class="card-text">
+    <mat-card class="account-card active">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>check_circle</mat-icon>
+        </div>
         <span class="card-label">Active</span>
         <span class="card-value">{{ activeAccounts }}</span>
       </div>
-    </div>
-  </mat-card>
+    </mat-card>
 
-  <mat-card class="account-card inactive">
-    <div class="card-content">
-      <div class="card-icon">
-        <mat-icon>cancel</mat-icon>
-      </div>
-      <div class="card-text">
+    <mat-card class="account-card inactive">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>cancel</mat-icon>
+        </div>
         <span class="card-label">Inactive</span>
         <span class="card-value">{{ deactiveAccounts }}</span>
       </div>
-    </div>
-  </mat-card>
-
-</div>
+    </mat-card>
+  </div>
 
   <div class="pos-relative">
     <div class="btn-pos-list">
@@ -231,8 +223,8 @@
       <dxi-column dataField="ownername" caption="Owner Name"></dxi-column>
       <dxi-column dataField="ownermobile" caption="Owner Mobile" [width]="150"></dxi-column>
       <dxi-column dataField="owneremail" caption="Owner Email" [width]="300"></dxi-column>
-      <dxi-column dataField="isactive" caption="Active" alignment="center" [width]="150"></dxi-column>
-      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="200"></dxi-column>
+      <dxi-column dataField="isactive" caption="Active" alignment="center" [width]="120"></dxi-column>
+      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="230"></dxi-column>
 
       <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
         <a *appHasPermission="'account:update'" (click)="editItem(data.data)" style="cursor: pointer;">

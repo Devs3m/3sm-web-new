@@ -1,3 +1,8 @@
+/* =============================================================================
+   Screen: Digicard form
+   File: src/app/pages/digicard/digicard-form/digicard-form.component.css
+   ============================================================================= */
+
 .multi-theme {
     width: 100%;
     display: flex;
@@ -31,10 +36,4 @@
   right: 355px;
   width: 40px;
   z-index: 1;
-}
-
-::ng-deep app-digicard-form .example-card {
-  max-width: none !important;
-  border: none !important;
-  box-shadow: none !important;
 }
