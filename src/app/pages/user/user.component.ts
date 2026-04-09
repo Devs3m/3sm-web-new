@@ -242,9 +242,58 @@ export class UserComponent implements OnInit {
         this.userroleDropdownItems = (list || []).filter(
           (r: any) => r.userroleisactive === true || r.userroleisactive === 'true' || r.userroleisactive === 1
         );
+        this.applyServiceUserRoleIfServiceSalesInstance();
       },
       error: (err) => console.error('Error fetching user role list', err),
     });
+  }
+
+  /** Instance `salestype` `sales` = service sales only (matches Instance form / dashboard). */
+  private isInstanceServiceSalesOnly(instance: any): boolean {
+    const s = String(instance?.salestype ?? '').trim().toLowerCase();
+    return s === 'sales';
+  }
+
+  /** Role display name from DB — match case-insensitive. */
+  private findServiceUserRole(): any | null {
+    const target = 'service user';
+    return (
+      this.userroleDropdownItems.find(
+        (r: any) => this.toRoleName(r).toLowerCase() === target
+      ) ?? null
+    );
+  }
+
+  /**
+   * Add user only: when selected instance is service-sales only, default role to "Service user".
+   * Safe if role list loads after instance pick (called from loadUserroleList too).
+   */
+  private applyServiceUserRoleIfServiceSalesInstance(): void {
+    if (this.isEditMode) {
+      return;
+    }
+    const rawId = this.userForm?.get('instanceid')?.value;
+    const instanceId = rawId != null && rawId !== '' ? Number(rawId) : 0;
+    if (!instanceId) {
+      return;
+    }
+    const instance = this.instanceList.find((i: any) => Number(i.instanceid) === instanceId);
+    if (!instance || !this.isInstanceServiceSalesOnly(instance)) {
+      return;
+    }
+    const role = this.findServiceUserRole();
+    if (!role) {
+      return;
+    }
+    const id = this.toRoleId(role);
+    if (id == null) {
+      return;
+    }
+    this.userForm.patchValue({
+      userrole: this.toRoleName(role),
+      userroleid: String(id),
+    });
+    this.cdr.detectChanges();
   }
 
   onInstanceSelectionChange(event: Event): void {
@@ -265,6 +314,7 @@ export class UserComponent implements OnInit {
         userpincode: instance.instancepincode || '',
         cityid: instance.cityid || 1,
       });
+      this.applyServiceUserRoleIfServiceSalesInstance();
     }
   }
 

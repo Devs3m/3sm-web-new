@@ -12,22 +12,27 @@
   box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
   background-color: #ffff;
   margin-top: 1% !important;
-  height: 250px !important;
-width: 1237px !important;
+  height: auto !important;
+  min-height: 280px !important;
+  max-height: calc(100vh - 24px) !important;
+  overflow-y: auto;
+  width: 1237px !important;
 }
 
 
 .form-submit{
-  margin-top: 50px;
+  margin-top: 12px;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-column: 1 / -1;
+}
+.form-submit .btn-primary {
+  margin: 0 auto;
 }
 .mat-icon{
   color: black;
-}
-
-html,
-body {
-    height: 100%;
 }
 
 .btn-pos-list{
@@ -60,15 +65,26 @@ body {
 /* Override Material's default accent color (red/pink) with dark grey */
 
 /* Override Material theme CSS variables */
-::ng-deep app-account {
+::ng-deep app-userrole {
   --mdc-outlined-text-field-focus-outline-color: #f7f5f5  !important;
   --mdc-outlined-text-field-outline-color: #f7f5f5  !important;
 }
 
 /* Global override for all form fields - highest specificity */
-::ng-deep app-account .mat-form-field-appearance-outline .mat-form-field-outline,
-::ng-deep app-account .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+::ng-deep app-userrole .mat-form-field-appearance-outline .mat-form-field-outline,
+::ng-deep app-userrole .mat-form-field-appearance-outline .mat-form-field-outline-thick {
   color: #f7f5f5 !important;
+}
+
+/* Compact MDC fields in slide-over so submit stays visible */
+:host ::ng-deep .form-container .mat-mdc-text-field-wrapper {
+  height: 42px !important;
+}
+
+:host ::ng-deep .form-container .mat-mdc-form-field-infix {
+  min-height: 42px !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
 }
 
 /* For all form fields in the account component */

@@ -23,8 +23,11 @@
     </div>
   </div>
 
-  <p class="dashboard-filter-hint" *ngIf="!isLoading && filterMonthDisplayLabel">
+  <p class="dashboard-filter-hint" *ngIf="!isLoading && filterMonthDisplayLabel && !isInstanceServiceSalesOnly">
     Sales, purchase totals, and the chart use <strong>{{ filterMonthDisplayLabel }}</strong>. Company, customers, suppliers, and stock show overall figures.
+  </p>
+  <p class="dashboard-filter-hint" *ngIf="!isLoading && filterMonthDisplayLabel && isInstanceServiceSalesOnly">
+    Sales and the chart use <strong>{{ filterMonthDisplayLabel }}</strong>. Customer count is shown in the Sales section.
   </p>
 
   <!-- Loading state -->
@@ -36,7 +39,7 @@
   <!-- Stat Cards -->
  <!-- PURCHASE SECTION -->
 <!-- ================= GENERAL SECTION ================= -->
-<div class="card-section">
+<div class="card-section" *ngIf="!showCustomersCardInSalesFirst">
   <h3 class="section-title">Overview</h3>
 
   <div class="stat-cards three-col">
@@ -76,7 +79,7 @@
 
 
 <!-- ================= PURCHASE SECTION ================= -->
-<div class="card-section">
+<div class="card-section" *ngIf="!isInstanceServiceSalesOnly">
   <h3 class="section-title">Purchases</h3>
 
   <div class="stat-cards three-col">
@@ -126,6 +129,15 @@
   <h3 class="section-title">Sales</h3>
 
   <div class="stat-cards three-col">
+    <div class="stat-card customers" *ngIf="showCustomersCardInSalesFirst">
+      <div class="stat-icon-wrap">
+        <mat-icon>people</mat-icon>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Customers</span>
+        <span class="stat-value">{{ customerCount }}</span>
+      </div>
+    </div>
 
     <div class="stat-card service-sales" *ngIf="showServiceSalesDashboard">
       <div class="stat-icon-wrap">
@@ -153,7 +165,7 @@
       </div>
     </div>
 
-    <div class="stat-card total-sales" *ngIf="showTotalSalesCard">
+    <div class="stat-card total-sales" *ngIf="showTotalSalesCard && !isInstanceBothSalesMode">
       <div class="stat-icon-wrap">
         <mat-icon>summarize</mat-icon>
       </div>

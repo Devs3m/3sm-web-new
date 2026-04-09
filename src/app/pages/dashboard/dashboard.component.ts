@@ -102,6 +102,35 @@ export class DashboardComponent implements OnInit {
     return this.showServiceSalesDashboard && this.showProductSalesDashboard;
   }
 
+  /** Only when instance is explicitly configured for both service + product sales. */
+  get isInstanceBothSalesMode(): boolean {
+    return this.instanceSalestype === 'all';
+  }
+
+  /** Product sales only (no service sales dashboard) — inventory or ecommerce instance. */
+  get isInstanceProductSalesOnly(): boolean {
+    return (
+      this.instanceSalestype === 'inventory_sales' || this.instanceSalestype === 'ecommerce'
+    );
+  }
+
+  /** Service sales only — instance `salestype` is `sales`. */
+  get isInstanceServiceSalesOnly(): boolean {
+    return this.instanceSalestype === 'sales';
+  }
+
+  /**
+   * Hide Overview and put Customers first under Sales for instance modes: `all`, `sales`, or product-only.
+   * Super-admin / unknown (`null`) keeps the classic Overview + Sales layout.
+   */
+  get showCustomersCardInSalesFirst(): boolean {
+    return (
+      this.isInstanceBothSalesMode ||
+      this.isInstanceProductSalesOnly ||
+      this.isInstanceServiceSalesOnly
+    );
+  }
+
   /** Stock valuation requires a scoped account (not super admin). */
   get showCurrentStockValueCard(): boolean {
     const a = this.authService.getAccountId();

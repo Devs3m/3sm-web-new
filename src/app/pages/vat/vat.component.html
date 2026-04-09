@@ -3,7 +3,7 @@
   <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">Add VAT %</p>
     <button (click)="restvatForm()" class="close-btn">&times;</button>
-      <form [formGroup]="vatForm" (ngSubmit)="onSubmit()">
+      <form class="form-section" [formGroup]="vatForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">VAT%</mat-label>

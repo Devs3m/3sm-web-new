@@ -458,7 +458,7 @@ box-shadow: gray;
 .account-card.total,
 .account-card.active,
 .account-card.inactive {
-  border-left: 1px solid #d0d0d0;
+  border-left: 6px solid #337ab7;
   background-color: #ffffff;
 }
 

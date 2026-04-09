@@ -6,7 +6,7 @@
         <div *ngIf="errorMessage" class="error-message" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
           {{ errorMessage }}
         </div>
-        <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+        <form class="form-section" [formGroup]="userForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">Instance</mat-label>

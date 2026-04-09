@@ -3,7 +3,7 @@
   <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">{{ isEditMode ? 'Edit Product' : 'Add Product' }}</p>
     <button (click)="restproductForm()" class="close-btn">&times;</button>
-    <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+    <form class="form-section" [formGroup]="productForm" (ngSubmit)="onSubmit()">
       
       <!-- Error Message Display -->
       <div *ngIf="errorMessage" class="error-message" style="color: red; margin-bottom: 10px; padding: 10px; background-color: #ffebee; border-radius: 4px;">
@@ -188,7 +188,7 @@
 
 
       <div class="form-submit">
-        <button mat-raised-button type="submit" 
+        <button mat-raised-button type="submit" class="btn-primary"
                 [disabled]="productForm.invalid || productForm.pending || hasPendingValidators()">
           {{ isEditMode ? 'Update' : 'Submit' }}
         </button>
@@ -260,8 +260,8 @@
         [sortIndex]="0"
         [width]="150">
       </dxi-column>
-      <dxi-column dataField="productname" caption="Product Name" [width]="200"></dxi-column>
-      <dxi-column dataField="producthsncode" caption="HSN Code" [width]="130"></dxi-column>
+      <dxi-column dataField="productname" caption="Product Name" [width]="220"></dxi-column>
+      <dxi-column dataField="producthsncode" caption="HSN Code" [width]="150"></dxi-column>
       <dxi-column dataField="productmanufacturer" caption="Manufacturer" [width]="180"></dxi-column>
       <dxi-column dataField="productpackqty" caption="Packing" [width]="100"></dxi-column>
       <dxi-column dataField="productcategory" caption="Category" [width]="150"></dxi-column>

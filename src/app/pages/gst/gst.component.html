@@ -3,7 +3,7 @@
     <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">Add GST %</p>
     <button (click)="restGstForm()" class="close-btn">&times;</button>
-      <form [formGroup]="gstForm" (ngSubmit)="onSubmit()">
+      <form class="form-section" [formGroup]="gstForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">Total GST%</mat-label>
@@ -56,7 +56,9 @@
         </mat-card>
        <mat-card class="account-card active">
           <div class="card-content account-stat-row">
-            <div class="card-icon"><mat-icon>check_circle</mat-icon></div>
+            <div class="card-icon">
+              <mat-icon>check_circle</mat-icon>
+            </div>
             <span class="card-label">Active</span>
             <span class="card-value">{{ activeGst }}</span>
           </div>

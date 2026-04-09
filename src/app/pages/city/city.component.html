@@ -3,7 +3,7 @@
     <div class="form-container" [class.open]="isFormOpen">
         <p style="font-size: larger;">Add City</p>
         <button (click)="restCityForm()" class="close-btn">&times;</button>
-          <form [formGroup]="cityForm" (ngSubmit)="onSubmit()">
+          <form class="form-section" [formGroup]="cityForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">City Name</mat-label>

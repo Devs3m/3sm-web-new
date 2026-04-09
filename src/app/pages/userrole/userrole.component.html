@@ -7,7 +7,7 @@
   <div class="form-container" [class.open]="isFormOpen">
       <p style="font-size: larger;">{{ isEditMode ? 'Edit User Role' : 'Add User Role' }}</p>
     <button (click)="restuserroleForm()" class="close-btn">&times;</button>
-      <form [formGroup]="userroleForm" (ngSubmit)="onSubmit()">
+      <form class="form-section" [formGroup]="userroleForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
             <mat-label style="color:black">User Role Name</mat-label>
@@ -93,10 +93,10 @@
       [showBorders]="true" (onExporting)="onExporting($event)">
   
       <dxi-column dataField="userroleid" caption="Userrole ID" [width]="150" [allowSorting]="true"  [calculateSortValue]="userroleIdSortValue" [sortOrder]="'desc'" [sortIndex]="0"></dxi-column>
-      <dxi-column dataField="userrolename" caption="Userrole Name" [width]="260"></dxi-column>
-      <dxi-column dataField="createddate" caption="Created Date" [width]="200" [calculateCellValue]="createdDateCellValue"></dxi-column>
-      <dxi-column dataField="updateddate" caption="Updated Date" [width]="200" [calculateCellValue]="updatedDateCellValue"></dxi-column>
-      <dxi-column dataField="userroleisactive" caption="Active" [width]="150"></dxi-column>
+      <dxi-column dataField="userrolename" caption="Userrole Name" [width]="220"></dxi-column>
+      <dxi-column dataField="createddate" caption="Created Date" [width]="225" [calculateCellValue]="createdDateCellValue"></dxi-column>
+      <dxi-column dataField="updateddate" caption="Updated Date" [width]="225" [calculateCellValue]="updatedDateCellValue"></dxi-column>
+      <dxi-column dataField="userroleisactive" caption="Active" [width]="155"></dxi-column>
       <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="250"></dxi-column>
     
       <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">

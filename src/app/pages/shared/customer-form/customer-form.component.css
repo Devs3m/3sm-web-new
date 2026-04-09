@@ -49,8 +49,11 @@
 
 .form-submit {
   grid-column: 1 / -1;
-  margin-top: 50px;
-  text-align: center;
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .close-btn {
@@ -71,9 +74,25 @@
   color: #c0392b;
 }
 
-.btn-primary {
-  background-color: #337ab7;
-  color: white;
+/* Match global .btn-primary (styles.css) — centered in .form-submit */
+.add-customer-form-container .form-submit .btn-primary {
+  margin: 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 15px;
+  background-color: var(--primary-color, #1a5caa);
+  color: #fff;
+}
+
+:host ::ng-deep .form-submit .btn-primary.mat-mdc-raised-button {
+  --mdc-protected-button-container-color: var(--primary-color, #1a5caa);
+  --mdc-protected-button-label-text-color: #fff;
+  background-color: var(--primary-color, #1a5caa) !important;
+  color: #fff !important;
 }
 
 .mat-icon {

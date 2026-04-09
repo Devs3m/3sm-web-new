@@ -9,10 +9,7 @@
       {{ errorMessage }}
     </div>
 
-    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="row g-3">
-      <div class="col-lg-3">
-        
-      </div>
+    <form class="form-section" [formGroup]="customerForm" (ngSubmit)="onSubmit()">
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Customer Name</mat-label>

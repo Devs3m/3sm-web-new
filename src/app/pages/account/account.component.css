@@ -112,6 +112,13 @@
 .form-submit {
   margin-top: 50px;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-submit .btn-primary {
+  margin: 0 auto;
 }
 
 .mat-icon {

@@ -1149,7 +1149,9 @@ body {
   box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
   background-color: #ffff;
   margin-top: 1% !important;
-  height: 400px !important;
+  height: auto !important;
+  min-height: 320px !important;
+  max-height: calc(100vh - 24px) !important;
   width: 1237px !important;
   overflow-y: auto;
 }
@@ -1195,16 +1197,27 @@ body {
   margin-bottom: 4px;
 }
 
-/* Form submit row – same as Customer module */
+/* Form submit row — match Customer / Account slide-over (centered primary button) */
 .sales-add-customer-panel app-customer-form .add-customer-form-container .form-submit {
   grid-column: 1 / -1;
-  margin-top: 50px;
-  text-align: center;
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .sales-add-customer-panel app-customer-form .add-customer-form-container .form-submit .btn-primary {
-  background-color: #337ab7;
-  color: white;
+  margin: 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 15px;
+  background-color: var(--primary-color, #1a5caa);
+  color: #fff;
 }
 
 /* Mat form field outline – same as customer module create form */

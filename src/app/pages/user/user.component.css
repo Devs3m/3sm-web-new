@@ -12,14 +12,23 @@
   box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
   background-color: #ffff;
   margin-top: 1% !important;
-  height: 500px !important;
-width: 1237px !important;
+  height: auto !important;
+  min-height: 400px !important;
+  max-height: calc(100vh - 24px) !important;
+  overflow-y: auto;
+  width: 1237px !important;
 }
 
 
 .form-submit{
-  margin-top: 50px;
+  margin-top: 12px;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.form-submit button {
+  margin: 0 auto;
 }
 .mat-icon{
   color: black;

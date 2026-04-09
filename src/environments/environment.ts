@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://api.connectsite.in',
+  apiUrl: 'http://localhost:3002',
   apiHost: 'https://connectsite.in/',
   /** Base URL for V Card API (VCardMaster). Falls back to apiHost if not set. */
   vcardApiUrl: 'https://connectsite.in/' as string,

@@ -11,19 +11,29 @@
     box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
     background-color: #ffff;
     margin-top: 1% !important;
-    height: 350px !important;
+    height: auto !important;
+    min-height: 320px !important;
+    max-height: calc(100vh - 24px) !important;
+    overflow-y: auto;
   width: 1237px !important;
   }
 
   
   .form-submit{
-    margin-top: 50px;
+    margin-top: 12px;
     text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-column: 1 / -1;
+  }
+  .form-submit .btn-primary {
+    margin: 0 auto;
   }
 
   .mat-icon{
     color: black;
-    height: 10px;
+    height: 21px;
   }
   
   html,
@@ -56,4 +66,14 @@
     margin-left: 1134px;
     margin-top: -14px;
   }
+
+:host ::ng-deep .form-container .mat-mdc-text-field-wrapper {
+  height: 42px !important;
+}
+:host ::ng-deep .form-container .mat-mdc-form-field-infix {
+  min-height: 42px !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
   

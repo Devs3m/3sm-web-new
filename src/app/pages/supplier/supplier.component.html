@@ -8,7 +8,7 @@
       {{ errorMessage }}
     </div>
 
-    <form [formGroup]="supplierForm" (ngSubmit)="onSubmit()">
+    <form class="form-section" [formGroup]="supplierForm" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Supplier Name</mat-label>
         <input matInput formControlName="suppliername" placeholder="Supplier Name">
