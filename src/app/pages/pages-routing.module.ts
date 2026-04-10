@@ -153,6 +153,13 @@ const routes: Routes = [
         loadChildren: () => import(`./settings/settings.module`).then(m => m.SettingsModule),
         canActivate: [RoleGuard]
       },
+      {
+        path: 'offline-installer',
+        loadChildren: () =>
+          import(`./offline-installer/offline-installer.module`).then((m) => m.OfflineInstallerModule),
+        canActivate: [RoleGuard],
+        data: { superAdminOnly: true },
+      },
     ]
   }
  

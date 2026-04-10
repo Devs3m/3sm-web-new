@@ -142,6 +142,20 @@
   text-decoration: underline;
 }
 
+.setup-link {
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+a.link-anchor {
+  text-decoration: none;
+  color: #1a5caa;
+}
+
+a.link-anchor:hover {
+  text-decoration: underline;
+}
+
 .forgot-section .forgot-title {
   color: #555;
   font-size: 1.1rem;

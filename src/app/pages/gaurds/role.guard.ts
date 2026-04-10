@@ -20,6 +20,14 @@ export class RoleGuard implements CanActivate {
       return false;
     }
 
+    if (route.data['superAdminOnly'] === true) {
+      if (!this.permissionService.isSuperAdmin()) {
+        this.router.navigate(['/pages/dashboard']);
+        return false;
+      }
+      return true;
+    }
+
     // RBAC: Only Super Admin can access Role & Permission screens
     const path = route.routeConfig?.path || '';
     if (path === 'userrole') {

@@ -77,6 +77,12 @@
          mat-list-item routerLink='userrole' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">settings_applications</mat-icon>User Role
       </a>
+
+      <!-- Offline installer bundle — Super Admin only -->
+      <a *ngIf="permissionService.isSuperAdmin()"
+         mat-list-item routerLink='offline-installer' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">cloud_download</mat-icon>Offline installer
+      </a>
       
       <!-- Digicard - show if user has ANY digicard permission -->
       <a *ngIf="permissionService.hasAnyPermissionForResource('digicard')" 

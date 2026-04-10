@@ -1,0 +1,29 @@
+<div class="offline-installer-page">
+  <h1 class="page-title">Offline installer bundle</h1>
+  <p class="page-lead">
+    Super Admin only. Downloads the same JSON bundle used for local / offline setup (account, instances, users,
+    roles, permissions). Use the file on the offline machine: open <strong>/setup</strong> and import it, or call
+    <code>POST /provision/import</code> with header <code>X-Enrollment-Token</code>.
+  </p>
+
+  <div class="card">
+    <div class="form-group">
+      <label for="oi-owner-email">Account owner email</label>
+      <input
+        id="oi-owner-email"
+        type="email"
+        class="form-control"
+        [(ngModel)]="ownerEmail"
+        placeholder="owner@company.com"
+        [disabled]="busy"
+      />
+    </div>
+
+    <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+    <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+
+    <button type="button" class="btn-primary" [disabled]="busy" (click)="download()">
+      {{ busy ? 'Preparing download…' : 'Download bundle (.json)' }}
+    </button>
+  </div>
+</div>

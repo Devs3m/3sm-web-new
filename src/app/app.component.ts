@@ -17,7 +17,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.tokenCheckInterval = setInterval(() => {
-      if (this.router.url !== '/login' && !this.router.url.startsWith('/login')) {
+      const url = this.router.url;
+      const isPublic =
+        url === '/login' ||
+        url.startsWith('/login') ||
+        url === '/setup' ||
+        url.startsWith('/setup');
+      if (!isPublic) {
         this.authService.logoutIfTokenExpired();
       }
     }, 60000);

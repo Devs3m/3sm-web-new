@@ -9,6 +9,7 @@ const routes: Routes = [
       { path: '', redirectTo: 'login', pathMatch: 'full' },
       { path: 'pages', loadChildren: () => import(`./pages/pages.module`).then(m => m.PagesModule) },
       { path: 'login', loadChildren: () => import(`./login/login.module`).then(m => m.LoginModule) },
+      { path: 'setup', loadChildren: () => import(`./setup/setup.module`).then(m => m.SetupModule) },
       { path: 'card/:id', redirectTo: 'pages/digicard/card/:id', pathMatch: 'full' }
     ]
   }

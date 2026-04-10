@@ -1,0 +1,129 @@
+<div class="setup-page">
+  <div class="setup-card">
+    <h1 class="setup-title">Offline setup</h1>
+
+    <section class="setup-section">
+      <h2 class="section-title">1. Pull from online (this machine reaches both)</h2>
+      <p class="setup-lead">
+        Your <strong>local</strong> API must set <code>ONLINE_API_URL</code> and the same
+        <code>ENROLLMENT_TOKEN</code> as the online server. Uses
+        <code>POST /provision/pull-and-import</code>.
+      </p>
+
+      <div class="form-group">
+        <label for="owner-email">Account owner email</label>
+        <input
+          id="owner-email"
+          type="email"
+          class="form-control"
+          [(ngModel)]="ownerEmail"
+          placeholder="owner@company.com"
+          autocomplete="username"
+          [disabled]="busy || fileBusy"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="enrollment-token">Enrollment token</label>
+        <input
+          id="enrollment-token"
+          type="password"
+          class="form-control"
+          [(ngModel)]="enrollmentToken"
+          placeholder="Same value as ENROLLMENT_TOKEN on the APIs"
+          autocomplete="off"
+          [disabled]="busy || fileBusy"
+        />
+      </div>
+
+      <button type="button" class="primary-btn" [disabled]="busy || fileBusy" (click)="submit()">
+        {{ busy ? 'Pulling and importing…' : 'Pull from online and import' }}
+      </button>
+    </section>
+
+    <hr class="section-rule" />
+
+    <section class="setup-section">
+      <h2 class="section-title">2. Download bundle, then import locally</h2>
+      <p class="setup-lead">
+        Use these on any PC that can reach the <strong>online</strong> API. Save the JSON file, copy it to the
+        offline machine, then use section 3. The token is sent in the
+        <code>X-Enrollment-Token</code> header (not in the URL).
+      </p>
+
+      <div class="form-group">
+        <label for="online-base">Online API base URL</label>
+        <input
+          id="online-base"
+          type="url"
+          class="form-control"
+          [(ngModel)]="onlineBaseUrl"
+          placeholder="https://api.example.com"
+          [disabled]="busy || fileBusy"
+        />
+      </div>
+
+      <p class="hint" *ngIf="!downloadUrl">Enter online base URL and owner email to enable copy buttons.</p>
+
+      <div class="button-row" *ngIf="downloadUrl">
+        <button
+          type="button"
+          class="secondary-btn"
+          [disabled]="busy || fileBusy"
+          (click)="copyText('Download URL', downloadUrl)"
+        >
+          Copy download URL
+        </button>
+        <button
+          type="button"
+          class="secondary-btn"
+          [disabled]="busy || fileBusy"
+          (click)="copyText('curl (GET)', curlGetCommand)"
+        >
+          Copy curl (GET file)
+        </button>
+        <button
+          type="button"
+          class="secondary-btn"
+          [disabled]="busy || fileBusy"
+          (click)="copyText('curl (POST)', curlPostCommand)"
+        >
+          Copy curl (POST file)
+        </button>
+      </div>
+
+      <pre class="code-block" *ngIf="downloadUrl">{{ downloadUrl }}</pre>
+      <pre class="code-block small" *ngIf="curlGetCommand">{{ curlGetCommand }}</pre>
+      <p class="copy-hint" *ngIf="copyHint">{{ copyHint }}</p>
+    </section>
+
+    <hr class="section-rule" />
+
+    <section class="setup-section">
+      <h2 class="section-title">3. Import a bundle file (local API only)</h2>
+      <p class="setup-lead">
+        Choose the JSON you downloaded (or saved from export). Requires enrollment token for
+        <strong>this</strong> (offline) API.
+      </p>
+
+      <div class="form-group">
+        <label for="bundle-file">Provisioning bundle (.json)</label>
+        <input
+          id="bundle-file"
+          type="file"
+          accept=".json,application/json"
+          [disabled]="fileBusy || busy"
+          (change)="onBundleFileSelected($event)"
+        />
+      </div>
+      <p class="hint" *ngIf="fileBusy">Importing…</p>
+    </section>
+
+    <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+    <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+
+    <p class="back-row">
+      <button type="button" class="link-button" (click)="goLogin()">Back to login</button>
+    </p>
+  </div>
+</div>

@@ -4,7 +4,13 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3002',
+  /**apiUrl: 'https://api.connectsite.in',*/
+   apiUrl: 'http://localhost:3002',
+  /**
+   * Online API base URL (no trailing slash) shown on /setup for download links and curl.
+   * Leave empty to type it on the page; set when building an “online admin” UI.
+   */
+  provisionOnlineBaseUrl: '' as string,
   apiHost: 'https://connectsite.in/',
   /** Base URL for V Card API (VCardMaster). Falls back to apiHost if not set. */
   vcardApiUrl: 'https://connectsite.in/' as string,

@@ -33,7 +33,9 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(cloned).pipe(
         catchError((error: HttpErrorResponse) => {
           // Handle 401 Unauthorized (token expired or invalid) - auto logout
-          if (error.status === 401) {
+          // Skip provisioning: wrong X-Enrollment-Token returns 401 but must not clear JWT session.
+          const url = req.url || '';
+          if (error.status === 401 && !url.includes('/provision/')) {
             this.injector.get(AuthService).logout();
           }
           return throwError(() => error);
