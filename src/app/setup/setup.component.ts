@@ -159,27 +159,32 @@ export class SetupComponent implements OnInit {
   private parseBundleJson(text: string): object {
     const parsed = JSON.parse(text) as Record<string, unknown>;
     const bundle =
-      parsed?.version === 1 && parsed.account !== undefined
+      parsed['version'] === 1 && parsed['account'] !== undefined
         ? parsed
-        : (parsed?.bundle as Record<string, unknown> | undefined);
-    if (!bundle || bundle.version !== 1) {
+        : (parsed['bundle'] as Record<string, unknown> | undefined);
+    if (!bundle || bundle['version'] !== 1) {
       throw new Error('File must be a version 1 provisioning bundle (from export or download).');
     }
     return bundle as object;
   }
 
   private formatHttpError(err: unknown): string {
-    const e = err as {
-      error?: { message?: unknown; error?: unknown } | string;
-      message?: string;
-    };
-    const msg =
-      e?.error?.message ??
-      e?.error?.error ??
-      (typeof e?.error === 'string' ? e.error : null) ??
-      e?.message ??
-      'Request failed.';
-    return Array.isArray(msg) ? msg.join(' ') : String(msg);
+    const e = err as { error?: unknown; message?: string };
+    const body = e?.error;
+    if (typeof body === 'string') {
+      return body;
+    }
+    if (body && typeof body === 'object') {
+      const o = body as { message?: unknown; error?: unknown };
+      const msg = o['message'] ?? o['error'];
+      if (msg != null) {
+        return Array.isArray(msg) ? msg.join(' ') : String(msg);
+      }
+    }
+    if (e?.message) {
+      return e.message;
+    }
+    return 'Request failed.';
   }
 
   goLogin(): void {

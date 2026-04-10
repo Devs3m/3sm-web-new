@@ -7,6 +7,7 @@
     "start:server": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng serve --configuration=local-server",
     "build": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build",
     "build:join": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=join",
+    "build:offline-installer": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=offline-installer",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
