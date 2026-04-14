@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://api.connectsite.in',
-   /**apiUrl: 'http://localhost:3002',
+  /** Devlocal: Web local + API local */
+  apiUrl: 'http://localhost:3002',
   /**
    * Online API base URL (no trailing slash) shown on /setup for download links and curl.
    * Leave empty to type it on the page; set when building an “online admin” UI.

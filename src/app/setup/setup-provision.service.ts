@@ -15,10 +15,11 @@ export class SetupProvisionService {
   constructor(private readonly http: HttpClient) {}
 
   pullAndImport(ownerEmail: string, enrollmentToken: string): Observable<PullImportResult> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'X-Enrollment-Token': enrollmentToken,
-    });
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const t = enrollmentToken.trim();
+    if (t) {
+      headers = headers.set('X-Enrollment-Token', t);
+    }
     return this.http.post<PullImportResult>(
       `${this.base}/provision/pull-and-import`,
       { ownerEmail: ownerEmail.trim() },
@@ -27,10 +28,11 @@ export class SetupProvisionService {
   }
 
   importBundle(bundle: object, enrollmentToken: string): Observable<PullImportResult> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'X-Enrollment-Token': enrollmentToken,
-    });
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const t = enrollmentToken.trim();
+    if (t) {
+      headers = headers.set('X-Enrollment-Token', t);
+    }
     return this.http.post<PullImportResult>(
       `${this.base}/provision/import`,
       { bundle },

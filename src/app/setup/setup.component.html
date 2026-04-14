@@ -6,7 +6,8 @@
       <h2 class="section-title">1. Pull from online (this machine reaches both)</h2>
       <p class="setup-lead">
         Your <strong>local</strong> API must set <code>ONLINE_API_URL</code> and the same
-        <code>ENROLLMENT_TOKEN</code> as the online server. Uses
+        <code>ENROLLMENT_TOKEN</code> as the online server (or trusted local-only:
+        <code>PROVISION_ALLOW_EMPTY_ENROLLMENT=true</code> with no token). Uses
         <code>POST /provision/pull-and-import</code>.
       </p>
 
@@ -30,7 +31,7 @@
           type="password"
           class="form-control"
           [(ngModel)]="enrollmentToken"
-          placeholder="Same value as ENROLLMENT_TOKEN on the APIs"
+          placeholder="Same as ENROLLMENT_TOKEN on APIs (optional if local API allows empty enrollment)"
           autocomplete="off"
           [disabled]="busy || fileBusy"
         />

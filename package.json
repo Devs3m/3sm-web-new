@@ -3,11 +3,13 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng serve",
-    "start:server": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng serve --configuration=local-server",
-    "build": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build",
-    "build:join": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=join",
-    "build:offline-installer": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=offline-installer",
+    "start": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng serve --configuration=devlocal",
+    "start:devlocal": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng serve --configuration=devlocal",
+    "start:devapiprod": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng serve --configuration=devapiprod",
+    "build": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=production",
+    "build:production": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=production",
+    "build:devlocal": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=development",
+    "build:devapiprod": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=devapiprod",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

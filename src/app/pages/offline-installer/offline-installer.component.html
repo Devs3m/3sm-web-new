@@ -1,29 +1,176 @@
 <div class="offline-installer-page">
-  <h1 class="page-title">Offline installer bundle</h1>
-  <p class="page-lead">
-    Super Admin only. Downloads the same JSON bundle used for local / offline setup (account, instances, users,
-    roles, permissions). Use the file on the offline machine: open <strong>/setup</strong> and import it, or call
-    <code>POST /provision/import</code> with header <code>X-Enrollment-Token</code>.
+  <h1 class="page-title">Customer offline</h1>
+  <p class="page-intro">
+    Super Admin and ops: tenant packages, or how to build the Windows installer from the maintainer repo.
   </p>
 
-  <div class="card">
-    <div class="form-group">
-      <label for="oi-owner-email">Account owner email</label>
-      <input
-        id="oi-owner-email"
-        type="email"
-        class="form-control"
-        [(ngModel)]="ownerEmail"
-        placeholder="owner@company.com"
-        [disabled]="busy"
-      />
-    </div>
+  <mat-tab-group class="oi-tabs" animationDuration="200ms" dynamicHeight>
+    <mat-tab label="Offline setup">
+      <div class="tab-panel">
+        <p class="page-lead">
+          For <strong>Super Admin</strong> (or RBAC managers). Confirm the cloud account, then download a
+          <strong>Windows installer package</strong> for the customer. When the API is configured with a prebuilt bootstrapper,
+          the ZIP includes <strong>S3M-Offline-Setup.exe</strong> (graphical wizard). The customer must already have the
+          <strong>native Windows platform install</strong> from IT (WiX <code>S3M-Offline-Burn-Setup.exe</code> or
+          <code>Product.msi</code> — see <code>deploy/offline/wix</code> in the maintainer repo).
+        </p>
 
-    <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
-    <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+        <div class="meta-banner" *ngIf="metadata && metadata.bootstrapperPresent">
+          <strong>Windows bootstrapper:</strong> enabled — ZIP will include <code>S3M-Offline-Setup.exe</code>
+          <span *ngIf="metadata.bootstrapperSizeBytes"> (~{{ formatBytes(metadata.bootstrapperSizeBytes) }} template on server)</span>
+          <span *ngIf="metadata.installerVersion"> · bootstrapper version {{ metadata.installerVersion }}</span>
+          <span *ngIf="metadata.includesAssets"> · custom <code>assets/</code> included</span>
+        </div>
+        <div class="meta-banner warn" *ngIf="metadata && !metadata.bootstrapperPresent">
+          <strong>Windows bootstrapper:</strong> not configured on this server. The ZIP still includes
+          <code>Run-S3M-Offline-Setup.cmd</code> / tenant JSON. Set <code>OFFLINE_BOOTSTRAPPER_EXE_PATH</code> on the API to
+          embed the graphical EXE (build from <code>deploy/offline/bootstrapper</code>).
+        </div>
+        <p class="meta-error" *ngIf="metadataError">{{ metadataError }}</p>
 
-    <button type="button" class="btn-primary" [disabled]="busy" (click)="download()">
-      {{ busy ? 'Preparing download…' : 'Download bundle (.json)' }}
-    </button>
-  </div>
+        <ol class="steps" aria-label="Steps">
+          <li [class.active]="step === 'email'" [class.done]="step !== 'email'">
+            <span class="step-num">1</span>
+            <span class="step-label">Owner email</span>
+          </li>
+          <li [class.active]="step === 'confirm'" [class.done]="step === 'done'">
+            <span class="step-num">2</span>
+            <span class="step-label">Confirm &amp; download</span>
+          </li>
+          <li [class.active]="step === 'done'">
+            <span class="step-num">3</span>
+            <span class="step-label">Hand off</span>
+          </li>
+        </ol>
+
+        <div class="card">
+          <ng-container *ngIf="step === 'email'">
+            <h2 class="card-title">Account owner email</h2>
+            <p class="card-hint">Must match <code>master.account.owneremail</code> for a single tenant.</p>
+            <div class="form-group">
+              <label for="oi-owner-email">Owner email</label>
+              <input
+                id="oi-owner-email"
+                type="email"
+                class="form-control"
+                [(ngModel)]="ownerEmail"
+                placeholder="owner@company.com"
+                autocomplete="off"
+                [disabled]="busy"
+                (keyup.enter)="verifyAccount()"
+              />
+            </div>
+            <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+            <button type="button" class="btn-primary" [disabled]="busy" (click)="verifyAccount()">
+              {{ busy ? 'Checking…' : 'Verify account' }}
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="step === 'confirm' && preview">
+            <h2 class="card-title">Confirm this tenant</h2>
+            <dl class="preview-dl">
+              <dt>Company</dt>
+              <dd>{{ preview.companyName }}</dd>
+              <dt>Owner name</dt>
+              <dd>{{ preview.ownerName }}</dd>
+              <dt>Owner email</dt>
+              <dd>{{ preview.ownerEmail }}</dd>
+              <dt>Account ID</dt>
+              <dd>{{ preview.accountid }}</dd>
+            </dl>
+            <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+            <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+            <div class="button-row">
+              <button type="button" class="btn-primary" [disabled]="busy" (click)="downloadCustomerPackage()">
+                {{ busy ? 'Preparing…' : 'Download Windows installer package (.zip)' }}
+              </button>
+              <button type="button" class="btn-secondary" [disabled]="busy" (click)="downloadJsonOnly()">
+                JSON only (advanced)
+              </button>
+            </div>
+            <p class="fine-print">
+              Package contains tenant data, <code>s3m-setup-config.json</code> (branding strings), optional
+              <code>S3M-Offline-Setup.exe</code>, optional <code>assets/</code>, and script fallback
+              <code>Run-S3M-Offline-Setup.cmd</code>.
+            </p>
+            <button type="button" class="btn-link" [disabled]="busy" (click)="reset()">Start over</button>
+          </ng-container>
+
+          <ng-container *ngIf="step === 'done'">
+            <h2 class="card-title">Next steps for the customer</h2>
+            <ol class="customer-steps" *ngIf="metadata && metadata.bootstrapperPresent">
+              <li>Complete the <strong>native Windows install</strong> from IT (WiX Setup / MSI) so the API and UI run locally (typically <code>http://localhost:8080</code>).</li>
+              <li>Extract the <strong>tenant package ZIP</strong> you downloaded — keep <code>S3M-Offline-Setup.exe</code> and the <code>.json</code> files together.</li>
+              <li>Double-click <strong>S3M-Offline-Setup.exe</strong> and follow the wizard, or use <strong>Run-S3M-Offline-Setup.cmd</strong> to open <strong>/setup</strong> and import <code>s3m-tenant-bundle.json</code>.</li>
+              <li>Use the wizard’s “open app” action or browse to the local URL IT provided.</li>
+            </ol>
+            <ol class="customer-steps" *ngIf="metadata && !metadata.bootstrapperPresent">
+              <li>Complete the <strong>native Windows install</strong> from IT.</li>
+              <li>Extract the <strong>tenant package ZIP</strong>.</li>
+              <li>Double-click <strong>Run-S3M-Offline-Setup.cmd</strong> — it opens <strong>http://localhost:8080/setup</strong>; import <code>s3m-tenant-bundle.json</code> there.</li>
+              <li>Sign in at the local URL when the browser opens.</li>
+            </ol>
+            <ol class="customer-steps" *ngIf="!metadata && !metadataError">
+              <li>Loading installer hints…</li>
+            </ol>
+            <ol class="customer-steps" *ngIf="metadataError">
+              <li>Complete the <strong>native Windows install</strong> from IT, then extract this <strong>tenant ZIP</strong>.</li>
+              <li>If the ZIP contains <code>S3M-Offline-Setup.exe</code>, run it; otherwise run <code>Run-S3M-Offline-Setup.cmd</code>.</li>
+              <li>Open <code>http://localhost:8080</code> (or your IT URL) when setup finishes.</li>
+            </ol>
+            <p *ngIf="successMessage" class="success-message">{{ successMessage }}</p>
+            <div class="button-row">
+              <button type="button" class="btn-secondary" [disabled]="busy" (click)="downloadCustomerPackage()">
+                Download again (.zip)
+              </button>
+              <button type="button" class="btn-link" [disabled]="busy" (click)="reset()">New tenant</button>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Offline build setup">
+      <div class="tab-panel build-tab">
+        <p class="page-lead">
+          For <strong>maintainers</strong> building the native Windows installer (WiX) and testing API + UI on one port.
+          Run these steps on a Windows build machine with <strong>Node.js</strong>, <strong>WiX Toolset v3.11+</strong> (with Bal), and optional EDB PostgreSQL / Node MSIs for the Burn bundle.
+        </p>
+
+        <div class="card build-card">
+          <h2 class="card-title">1. Web (Angular)</h2>
+          <p class="card-hint">Production build with <code>apiUrl</code> pointing at <code>http://localhost:8080</code>.</p>
+          <pre class="code-block" tabindex="0"><code>cd 3sm-web
+npm ci
+npm run build:production</code></pre>
+          <p class="fine-print">Output: <code>dist/3sm-web/</code> (or your project output path).</p>
+        </div>
+
+        <div class="card build-card">
+          <h2 class="card-title">2. API (Nest)</h2>
+          <p class="card-hint">Compile the API; for local smoke test, serve static UI from the same process.</p>
+          <pre class="code-block" tabindex="0"><code>cd 3sm-api
+npm ci
+npm run build</code></pre>
+          <p class="card-hint">One-port dev (after web build): copy <code>.env.oneport.example</code> to <code>.env.oneport</code>, set <code>S3M_STATIC_WEB_ROOT</code> to the web <code>dist</code> folder, then:</p>
+          <pre class="code-block" tabindex="0"><code>npm run start:oneport</code></pre>
+          <p class="fine-print">Open <code>http://localhost:8080/setup</code> to verify import flows.</p>
+        </div>
+
+        <div class="card build-card">
+          <h2 class="card-title">3. WiX installer</h2>
+          <p class="card-hint">From the API repo, on Windows:</p>
+          <ul class="build-list">
+            <li>Download <strong>NSSM</strong> and optional <code>prerequisites/postgresql-installer.exe</code>, <code>prerequisites/node-lts.msi</code> (see <code>deploy/offline/wix/prerequisites/README.txt</code>).</li>
+            <li>Run <code>deploy\offline\wix\build.ps1</code> with <code>-WebDist</code>, <code>-ApiDist</code>, <code>-NssmExe</code> (see <code>deploy/offline/wix/README.md</code>).</li>
+          </ul>
+          <pre class="code-block" tabindex="0"><code>cd deploy\offline\wix
+.\build.ps1 -WebDist "C:\path\to\3sm-web\dist\3sm-web" `
+  -ApiDist "C:\path\to\3sm-api\dist" `
+  -NssmExe "C:\path\to\nssm.exe"</code></pre>
+          <p class="fine-print">Produces <code>Product.msi</code> and <code>S3M-Offline-Burn-Setup.exe</code> (unless <code>-SkipBundle</code>). Upgrade rules: <code>UPGRADES.md</code>. Full checklist: <code>NATIVE-ONLY-ROADMAP.md</code>.</p>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
 </div>

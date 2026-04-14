@@ -21,7 +21,7 @@ export class RoleGuard implements CanActivate {
     }
 
     if (route.data['superAdminOnly'] === true) {
-      if (!this.permissionService.isSuperAdmin()) {
+      if (!this.permissionService.canManageRbac()) {
         this.router.navigate(['/pages/dashboard']);
         return false;
       }

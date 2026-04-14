@@ -388,7 +388,7 @@ export class PermissionService {
         // Handle CORS errors
         if (error.message && (error.message.includes('CORS') || error.message.includes('Failed to fetch'))) {
           console.error('CORS Error: Make sure the backend server is running on', this.apiUrl);
-          console.error('If using a proxy, ensure proxy.conf.json is configured correctly');
+          console.error('If using a proxy, ensure proxy.conf.devapiprod.json is configured correctly');
         }
         
         // Handle 403 Forbidden (Super Admin required)

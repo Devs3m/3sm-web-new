@@ -90,8 +90,8 @@ export class SetupComponent implements OnInit {
     this.successMessage = '';
     const email = this.ownerEmail.trim();
     const token = this.enrollmentToken.trim();
-    if (!email || !token) {
-      this.errorMessage = 'Enter account owner email and enrollment token.';
+    if (!email) {
+      this.errorMessage = 'Enter account owner email.';
       return;
     }
     this.persistOnlineBase();
@@ -123,12 +123,6 @@ export class SetupComponent implements OnInit {
         const text = String(reader.result ?? '');
         const bundle = this.parseBundleJson(text);
         const token = this.enrollmentToken.trim();
-        if (!token) {
-          this.errorMessage = 'Enter the enrollment token for your local API.';
-          this.fileBusy = false;
-          input.value = '';
-          return;
-        }
         this.provision.importBundle(bundle, token).subscribe({
           next: (res) => {
             this.fileBusy = false;
