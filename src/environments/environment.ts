@@ -14,7 +14,8 @@ export const environment = {
   apiHost: 'https://connectsite.in/',
   /** Base URL for V Card API (VCardMaster). Falls back to apiHost if not set. */
   vcardApiUrl: 'https://connectsite.in/' as string,
-  authHeaderFormat: 'Bearer' as 'Bearer' | 'token'
+  authHeaderFormat: 'Bearer' as 'Bearer' | 'token',
+  portalApiKey: ''
 };
 
 /*

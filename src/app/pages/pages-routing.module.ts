@@ -148,8 +148,14 @@ const routes: Routes = [
         redirectTo: 'finance',
         pathMatch: 'full',
       },
-      { 
-        path: 'settings', 
+      {
+        path: 'orders',
+        loadChildren: () => import(`./orders/orders.module`).then(m => m.OrdersModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'orders', action: 'view' } }
+      },
+      {
+        path: 'settings',
         loadChildren: () => import(`./settings/settings.module`).then(m => m.SettingsModule),
         canActivate: [RoleGuard]
       },

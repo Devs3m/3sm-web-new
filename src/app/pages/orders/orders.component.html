@@ -1,0 +1,251 @@
+<section>
+
+  <!-- Edit / View Panel -->
+  <ng-container *ngIf="isViewPanelOpen">
+  <div class="form-backdrop open" (click)="closeViewPanel()"></div>
+  <div class="form-container view-panel open">
+
+    <div class="view-panel-header">
+      <div class="panel-title-wrap">
+        <mat-icon style="color:#1a5c42;">receipt_long</mat-icon>
+        <p style="font-size:1rem; font-weight:700; margin:0;">Order #{{ selectedOrder?.orderid }}</p>
+      </div>
+      <button (click)="closeViewPanel()" class="close-btn" title="Close">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="view-panel-body" *ngIf="selectedOrder">
+      <div class="panel-columns">
+
+        <!-- LEFT: Customer info + order items -->
+        <div class="panel-col-left">
+
+          <div class="order-meta">
+            <div class="meta-row"><span class="meta-label">Customer</span><span>{{ selectedOrder.customername }}</span></div>
+            <div class="meta-row"><span class="meta-label">Phone</span><span>{{ selectedOrder.customerphone }}</span></div>
+            <div class="meta-row"><span class="meta-label">Date</span><span>{{ selectedOrder.orderdate | date:'dd/MM/yyyy' }}</span></div>
+            <div class="meta-row">
+              <span class="meta-label">Status</span>
+              <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.orderstatus)">{{ selectedOrder.orderstatus }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Grand Total</span>
+              <strong>&#8377; {{ selectedOrder.order_grand_total | number:'1.2-2' }}</strong>
+            </div>
+          </div>
+
+          <p class="items-heading">Order Items</p>
+          <div class="items-loading" *ngIf="itemsLoading">Loading items...</div>
+          <div class="items-table-wrap">
+            <table class="items-table" *ngIf="!itemsLoading && selectedOrderItems.length > 0">
+              <thead>
+                <tr><th>#</th><th>Product</th><th>Qty</th><th>MRP</th><th>Total</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of selectedOrderItems; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ item.productname }}</td>
+                  <td>{{ item.salequantity }}</td>
+                  <td>&#8377; {{ item.salemrp | number:'1.2-2' }}</td>
+                  <td>&#8377; {{ item.saletotalamount | number:'1.2-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="no-items" *ngIf="!itemsLoading && selectedOrderItems.length === 0">No items found.</p>
+
+        </div>
+
+        <!-- RIGHT: Status update -->
+        <div class="panel-col-right">
+          <div class="status-update-section">
+            <p class="items-heading">Update Status</p>
+            <div class="status-update-row">
+              <span class="meta-label" style="font-size:0.82rem;">Current</span>
+              <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.orderstatus)">
+                {{ selectedOrder.orderstatus }}
+              </span>
+            </div>
+            <div class="status-update-row" style="margin-top:12px;">
+              <span class="meta-label" style="font-size:0.82rem;">Change to</span>
+              <select
+                class="status-select status-select--panel"
+                [value]="editStatus"
+                (change)="editStatus = $any($event.target).value">
+                <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+            <button
+              class="status-save-btn status-save-btn--full"
+              [class.status-save-btn--active]="editStatus !== selectedOrder.orderstatus"
+              [disabled]="editStatus === selectedOrder.orderstatus || savingStatus[selectedOrder.orderid]"
+              (click)="saveEditStatus()">
+              {{ savingStatus[selectedOrder?.orderid] ? 'Saving...' : 'Save Status' }}
+            </button>
+            <p class="status-hint" *ngIf="editStatus === selectedOrder.orderstatus">
+              Select a different status to enable save.
+            </p>
+            <p class="status-hint status-hint--changed" *ngIf="editStatus !== selectedOrder.orderstatus">
+              {{ selectedOrder.orderstatus }} → <strong>{{ editStatus }}</strong>
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  </ng-container>
+
+  <!-- Add Order Panel -->
+  <div class="form-backdrop" [class.open]="isAddPanelOpen" (click)="closeAddPanel()"></div>
+  <div class="form-container" [class.open]="isAddPanelOpen">
+    <p style="font-size:larger;">Add Order</p>
+    <button (click)="closeAddPanel()" class="add-close-btn">&times;</button>
+
+    <form [formGroup]="orderForm" (ngSubmit)="submitOrder()" class="form-section">
+
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Customer Name</mat-label>
+        <input matInput formControlName="customername" placeholder="Customer name" />
+        <mat-error *ngIf="orderForm.get('customername')?.invalid && orderForm.get('customername')?.touched">Required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Phone Number</mat-label>
+        <input matInput formControlName="customerphone" placeholder="10-digit mobile" maxlength="10" />
+        <mat-error *ngIf="orderForm.get('customerphone')?.invalid && orderForm.get('customerphone')?.touched">Valid 10-digit number required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Order Date</mat-label>
+        <input matInput type="date" formControlName="orderdate" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="orderstatus">
+          <mat-option *ngFor="let s of statusOptions" [value]="s">{{ s }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Order Items -->
+      <div class="add-items-section" formArrayName="items">
+        <div class="add-items-header">
+          <span class="items-heading" style="margin:0;">Order Items</span>
+          <button type="button" class="add-item-btn" (click)="addItem()">+ Add Item</button>
+        </div>
+
+        <div *ngFor="let item of itemControls; let i = index" [formGroupName]="i" class="item-row">
+          <mat-form-field appearance="fill" class="item-field-product">
+            <mat-label>Product</mat-label>
+            <mat-select formControlName="productid" (selectionChange)="onProductSelect(i, $event)">
+              <mat-option *ngFor="let p of availableProducts" [value]="p.productid">{{ p.productname }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="item-field-small">
+            <mat-label>MRP</mat-label>
+            <input matInput type="number" formControlName="salemrp" readonly />
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="item-field-small">
+            <mat-label>Qty</mat-label>
+            <input matInput type="number" min="1" formControlName="qty" (input)="recalcItem(i)" />
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="item-field-small">
+            <mat-label>Amount</mat-label>
+            <input matInput type="number" formControlName="amount" readonly />
+          </mat-form-field>
+
+          <button type="button" class="remove-item-btn" (click)="removeItem(i)" title="Remove">&#10005;</button>
+        </div>
+      </div>
+
+      <div class="grand-total-row">
+        <span>Grand Total</span>
+        <strong>&#8377; {{ getFormGrandTotal() | number:'1.2-2' }}</strong>
+      </div>
+
+      <div class="form-submit">
+        <button mat-raised-button type="submit" [disabled]="orderForm.invalid || submittingOrder">
+          {{ submittingOrder ? 'Saving...' : 'Save Order' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="account-cards">
+    <mat-card class="account-card total">
+      <div class="card-content account-stat-row">
+        <div class="card-icon"><mat-icon>shopping_bag</mat-icon></div>
+        <span class="card-label">Total Orders</span>
+        <span class="card-value">{{ totalOrders }}</span>
+      </div>
+    </mat-card>
+    <mat-card class="account-card active">
+      <div class="card-content account-stat-row">
+        <div class="card-icon"><mat-icon>hourglass_empty</mat-icon></div>
+        <span class="card-label">Pending</span>
+        <span class="card-value">{{ pendingOrders }}</span>
+      </div>
+    </mat-card>
+    <mat-card class="account-card inactive">
+      <div class="card-content account-stat-row">
+        <div class="card-icon"><mat-icon>check_circle</mat-icon></div>
+        <span class="card-label">Confirmed</span>
+        <span class="card-value">{{ confirmedOrders }}</span>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Grid -->
+  <div class="pos-relative">
+    <div class="btn-pos-list">
+      <button (click)="openAddPanel()" class="add-btn">
+        <mat-icon>add_circle</mat-icon>
+      </button>
+    </div>
+    <dx-data-grid
+      [dataSource]="orders"
+      [allowColumnReordering]="true"
+      [allowColumnResizing]="true"
+      [showBorders]="true"
+      [headerFilter]="{ visible: true }"
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Search orders...' }"
+      [paging]="{ pageSize: 15 }"
+      title="Orders">
+
+      <dxi-column dataField="orderid" caption="Order ID" [width]="100"
+        [allowSorting]="true" [dataType]="'number'"
+        [calculateSortValue]="orderIdSortValue" [sortOrder]="'desc'" [sortIndex]="0">
+      </dxi-column>
+      <dxi-column dataField="orderdate"          caption="Date"          [width]="120" dataType="date" format="dd/MM/yyyy"></dxi-column>
+      <dxi-column dataField="customername"       caption="Customer Name"></dxi-column>
+      <dxi-column dataField="customerphone"      caption="Phone"         [width]="130"></dxi-column>
+      <dxi-column dataField="order_grand_total"  caption="Grand Total"   [width]="130" dataType="number" format="₹ #,##0.00"></dxi-column>
+      <dxi-column caption="Status" [width]="130" alignment="center" cellTemplate="statusTemplate"></dxi-column>
+      <dxi-column caption="Actions" [width]="100" alignment="center" cellTemplate="actionTemplate"></dxi-column>
+
+      <div *dxTemplate="let data of 'statusTemplate'">
+        <span class="status-badge" [ngClass]="getStatusClass(data.data.orderstatus)">
+          {{ data.data.orderstatus }}
+        </span>
+      </div>
+
+      <div *dxTemplate="let data of 'actionTemplate'" style="display:flex; gap:10px; justify-content:center;">
+        <a (click)="viewOrder(data.data)" style="cursor:pointer;" title="Edit / View">
+          <span class="material-symbols-outlined action-icon edit-icon">edit</span>
+        </a>
+        <a (click)="deleteOrder(data.data)" style="cursor:pointer;" title="Delete">
+          <span class="material-symbols-outlined action-icon delete-icon">delete</span>
+        </a>
+      </div>
+
+      <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+    </dx-data-grid>
+  </div>
+
+</section>

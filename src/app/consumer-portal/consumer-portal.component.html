@@ -1,0 +1,226 @@
+<div class="cp-page">
+
+  <div class="cp-card">
+
+    <!-- Shop Header -->
+    <div class="cp-shop-header">
+      <div class="cp-logo-wrap">
+        <img *ngIf="getLogoUrl()" [src]="getLogoUrl()" alt="logo" class="cp-logo-img" />
+        <div *ngIf="!getLogoUrl()" class="cp-logo-fallback">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="36" height="36">
+            <path d="M20 4H4v2l16-.01V4zm1 10v-2l-1-5H4L3 12v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="cp-shop-info">
+        <h1 class="cp-shop-name">{{ getShopName() }}</h1>
+        <div class="cp-shop-meta" *ngIf="getAddress()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          <span>{{ getAddress() }}</span>
+        </div>
+        <div class="cp-shop-meta" *ngIf="getPhone()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.61 21 3 13.39 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z"/></svg>
+          <span>{{ getPhone() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Section -->
+    <div class="cp-order-section">
+
+      <!-- Section title -->
+      <div class="cp-section-title">
+        <div class="cp-title-line"></div>
+        <div class="cp-title-center">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" class="cp-title-icon">
+            <path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6C4.9 6 4 6.9 4 8v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm0 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+          </svg>
+          <span>PLACE YOUR ORDER</span>
+        </div>
+        <div class="cp-title-line"></div>
+      </div>
+
+      <!-- Loading / Error -->
+      <div *ngIf="loading" class="cp-state">Loading products&#8230;</div>
+      <div *ngIf="loadError" class="cp-state cp-error">{{ loadError }}</div>
+      <div *ngIf="!loading && !loadError && products.length === 0" class="cp-state">No products available for this store.</div>
+      <div *ngIf="!loading && !loadError && products.length > 0 && filteredProducts.length === 0" class="cp-state">No products in this category.</div>
+
+      <!-- Category Filter Buttons -->
+      <div class="category-filter" *ngIf="!loading && !loadError && products.length > 0">
+        <button
+          *ngFor="let cat of categories"
+          class="cat-btn"
+          [class.cat-btn--active]="selectedCategory === cat"
+          (click)="selectCategory(cat)">
+          {{ cat }}
+        </button>
+      </div>
+
+      <!-- Product Table -->
+      <div class="cp-table-wrap" *ngIf="!loading && !loadError && products.length > 0">
+        <table class="cp-table">
+          <thead>
+            <tr>
+              <th class="col-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+                ITEM
+              </th>
+              <th class="col-mrp">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M21.41 11.58l-9-9A2 2 0 0011 2H4a2 2 0 00-2 2v7a2 2 0 00.59 1.42l9 9A2 2 0 0013 22a2 2 0 001.41-.59l7-7A2 2 0 0022 13a2 2 0 00-.59-1.42zM6.5 8C5.67 8 5 7.33 5 6.5S5.67 5 6.5 5 8 5.67 8 6.5 7.33 8 6.5 8z"/></svg>
+                MRP
+              </th>
+              <th class="col-qty">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+                QTY
+              </th>
+              <th class="col-amt">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                AMOUNT
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of filteredProducts">
+              <td class="col-item">{{ p.productname }}</td>
+              <td class="col-mrp">Rs. {{ getMrp(p) | number:'1.0-0' }}</td>
+              <td class="col-qty">
+                <div class="qty-stepper">
+                  <button class="qty-btn" (click)="decrement(p)" [disabled]="p.orderQty === 0">&#8722;</button>
+                  <input type="number" min="0" [(ngModel)]="p.orderQty" class="qty-input" />
+                  <button class="qty-btn" (click)="increment(p)">+</button>
+                </div>
+              </td>
+              <td class="col-amt amt-value">Rs. {{ getAmount(p) | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Footer -->
+        <div class="cp-table-footer">
+          <div class="cp-grand-wrap">
+            <div class="cp-grand-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+              </svg>
+            </div>
+            <div class="cp-grand-text">
+              <span class="cp-grand-label">GRAND TOTAL</span>
+              <span class="cp-grand-value">Rs. {{ getGrandTotal() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+          <button class="btn-place-order" [disabled]="!hasAnyQty()" (click)="openCheckout()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6C4.9 6 4 6.9 4 8v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm0 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+            </svg>
+            PLACE ORDER
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="cp-footer">
+    Powered by&nbsp;<a href="https://www.connectsite.in" target="_blank" rel="noopener" class="cp-footer-link">www.connectsite.in</a>
+  </div>
+
+</div>
+
+<!-- Checkout Modal -->
+<div class="modal-backdrop" *ngIf="showCheckoutModal" (click)="closeCheckout()"></div>
+<div class="modal-box" *ngIf="showCheckoutModal">
+  <!-- Header -->
+  <div class="modal-header">
+    <button class="modal-back-btn" (click)="closeCheckout()" title="Back">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+    </button>
+    <div class="modal-header-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
+        <path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6C4.9 6 4 6.9 4 8v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm0 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+      </svg>
+    </div>
+    <div class="modal-header-text">
+      <div class="modal-title">COMPLETE YOUR ORDER</div>
+      <div class="modal-subtitle">{{ getShopName() }}</div>
+    </div>
+  </div>
+  <!-- Order total summary strip -->
+  <div class="modal-summary">
+    <span class="modal-summary-label">ORDER TOTAL</span>
+    <span class="modal-summary-value">Rs. {{ getGrandTotal() | number:'1.2-2' }}</span>
+  </div>
+  <!-- Form -->
+  <div class="modal-body">
+    <form [formGroup]="checkoutForm" (ngSubmit)="submitOrder()">
+      <div class="modal-field">
+        <label>Your Name</label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </span>
+          <input type="text" formControlName="name" placeholder="Enter your full name" />
+        </div>
+        <span class="field-err" *ngIf="checkoutForm.get('name')?.invalid && checkoutForm.get('name')?.touched">
+          Please enter a valid name (min 2 characters).
+        </span>
+      </div>
+      <div class="modal-field">
+        <label>Phone Number</label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.61 21 3 13.39 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z"/></svg>
+          </span>
+          <input type="tel" formControlName="phone" placeholder="10-digit mobile number" maxlength="10" />
+        </div>
+        <span class="field-err" *ngIf="checkoutForm.get('phone')?.invalid && checkoutForm.get('phone')?.touched">
+          Please enter a valid 10-digit mobile number.
+        </span>
+      </div>
+      <div class="modal-error" *ngIf="submitError">{{ submitError }}</div>
+      <button type="submit" class="btn-submit" [disabled]="checkoutForm.invalid || submitting">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        {{ submitting ? 'PLACING ORDER&#8230;' : 'CONFIRM ORDER' }}
+      </button>
+    </form>
+    <p class="modal-footer-note">
+      &#9432; Thank you for your order. We will deliver the products based on current availability and confirmed quantities.
+    </p>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-backdrop" *ngIf="showSuccessModal"></div>
+<div class="modal-box success-modal" *ngIf="showSuccessModal">
+  <div class="success-top">
+    <div class="success-check">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="30" height="30">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      </svg>
+    </div>
+    <div class="success-title">ORDER ACCEPTED!</div>
+  </div>
+  <div class="success-body">
+    <div class="success-row" *ngIf="orderInvoiceNo">
+      <span>Order Number</span><span>#{{ orderInvoiceNo }}</span>
+    </div>
+    <div class="success-row">
+      <span>Date</span><span>{{ orderDate }}</span>
+    </div>
+    <div class="success-row">
+      <span>Name</span><span>{{ checkoutForm.get('name')?.value }}</span>
+    </div>
+    <div class="success-row">
+      <span>Phone</span><span>{{ checkoutForm.get('phone')?.value }}</span>
+    </div>
+    <div class="success-row">
+      <span>Amount</span><span>Rs. {{ getGrandTotal() | number:'1.2-2' }}</span>
+    </div>
+    <button class="btn-ok" (click)="closeSuccess()">DONE</button>
+  </div>
+</div>

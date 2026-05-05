@@ -4,6 +4,16 @@ import { Router } from '@angular/router';
 import { AuthService } from '../pages/service/auth.service';
 import { PermissionService } from '../pages/service/permission.service';
 
+interface BgWord {
+  text: string;
+  top: number;
+  left: number;
+  fontSize: number;
+  opacity: number;
+  fontFamily: string;
+  rotate: number;
+}
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -12,6 +22,57 @@ import { PermissionService } from '../pages/service/permission.service';
 export class LoginComponent {
   loginForm!: FormGroup;
   errorMessage = '';
+
+  private wordList = [
+    'Customer', 'Client', 'Guest', 'Buyer', 'Patron',
+    'Consumer', 'Member', 'Subscriber', 'Visitor', 'Vendor',
+    'Supplier', 'Merchant', 'Retailer', 'Distributor', 'Partner',
+    'Franchisee', 'Wholesaler', 'Reseller', 'Order', 'Booking',
+    'Reservation', 'Appointment', 'Inquiry', 'Request', 'Ticket',
+    'Interaction', 'Engagement', 'Session', 'Contact', 'Conversation',
+    'Chat', 'Message', 'Notification', 'Feedback', 'Complaint',
+    'Support Request', 'Follow-up', 'Transaction', 'Payment', 'Loyalty Member',
+    'Reward Points', 'Referral', 'Membership', 'Subscription', 'Campaign',
+    'Offer', 'Promotion', 'Invoice', 'Shopper', 'Walk-in Customer',
+    'Repeat Customer', 'Diner', 'Table Booking', 'Host', 'Billing',
+    'Patient', 'Caregiver', 'Practitioner', 'Checkout', 'Appointment Holder',
+    'Service Requester', 'Receipt', 'Settlement', 'Refund', 'Credit',
+    'Debit', 'Account', 'Stakeholder', 'Decision Maker', 'Organization Contact'
+  ];
+
+  private fontFamilies = [
+    'Georgia, serif',
+    'Arial, sans-serif',
+    'Courier New, monospace',
+    '"Trebuchet MS", sans-serif',
+    'Verdana, sans-serif',
+    '"Times New Roman", serif',
+    'Impact, sans-serif',
+    '"Palatino Linotype", serif',
+    '"Comic Sans MS", cursive',
+    '"Brush Script MT", cursive',
+    'Tahoma, sans-serif',
+    '"Century Gothic", sans-serif'
+  ];
+
+  bgWords: BgWord[] = [];
+
+  private seededRandom(seed: number): number {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  }
+
+  private generateBgWords(): void {
+    this.bgWords = this.wordList.map((text, i) => ({
+      text,
+      top:        Math.round(this.seededRandom(i * 3 + 1) * 90),
+      left:       Math.round(this.seededRandom(i * 3 + 2) * 88),
+      fontSize:   10 + Math.round(this.seededRandom(i * 3 + 3) * 26),
+      opacity:    0.05 + parseFloat((this.seededRandom(i * 7) * 0.12).toFixed(2)),
+      fontFamily: this.fontFamilies[i % this.fontFamilies.length],
+      rotate:     Math.round((this.seededRandom(i * 5) - 0.5) * 50)
+    }));
+  }
 
   /** Forgot password flow: get question -> validate answer -> reset password */
   forgotStep: 'login' | 'forgot-email' | 'forgot-answer' | 'forgot-reset' = 'login';
@@ -28,6 +89,7 @@ export class LoginComponent {
     private fb: FormBuilder,
     private permissionService: PermissionService
   ) {
+    this.generateBgWords();
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]

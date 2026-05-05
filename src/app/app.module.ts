@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
 import { DxTemplateModule } from 'devextreme-angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthInterceptor } from './core/auth.interceptor';
+import { ConsumerPortalInterceptor } from './consumer-portal/consumer-portal.interceptor';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -49,6 +50,11 @@ const routes: Routes = [
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ConsumerPortalInterceptor,
       multi: true
     }
   ],

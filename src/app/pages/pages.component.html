@@ -78,11 +78,6 @@
         <mat-icon class="aligned-icon">settings_applications</mat-icon>User Role
       </a>
 
-      <!-- Customer offline ZIP — same access as User Role (Super Admin / RBAC.MANAGE) -->
-      <a *ngIf="permissionService.canManageRbac()"
-         mat-list-item routerLink='offline-installer' href="#" class="aligned-list-item">
-        <mat-icon class="aligned-icon">cloud_download</mat-icon>Customer offline
-      </a>
       
       <!-- Digicard - show if user has ANY digicard permission -->
       <a *ngIf="permissionService.hasAnyPermissionForResource('digicard')" 
@@ -132,8 +127,13 @@
         <mat-icon class="aligned-icon">receipt_long</mat-icon>Purchase
       </a>
       
+      <!-- Orders - consumer portal orders -->
+      <a mat-list-item routerLink='orders' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">shopping_bag</mat-icon>Orders
+      </a>
+
       <!-- City - show if user has ANY city permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('city')" 
+      <a *ngIf="permissionService.hasAnyPermissionForResource('city')"
          mat-list-item routerLink='city' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">location_on</mat-icon>City
       </a>

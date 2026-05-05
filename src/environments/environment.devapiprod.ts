@@ -9,4 +9,5 @@ export const environment = {
   apiHost: 'https://connectsite.in/',
   vcardApiUrl: 'https://connectsite.in/' as string,
   authHeaderFormat: 'Bearer' as 'Bearer' | 'token',
+  portalApiKey: ''
 };

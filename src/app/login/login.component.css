@@ -13,28 +13,48 @@
   align-items: center;
   height: 100vh;
   background-color: #f5f5f5;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background word cloud */
+.bg-words {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-word {
+  position: absolute;
+  color: #555;
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1;
 }
 
 .login-card {
+  position: relative;
+  z-index: 1;
   background: rgb(215, 215, 215);
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 400px;
+  width: min(400px, calc(100vw - 32px));
   text-align: center;
-  height:650px;
+  min-height: fit-content;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
   align-items: top;
   display: flex;
   flex-direction: column;
-  
 }
 
-.logo{
-  width:200px; 
-  height:200px;
-  margin-bottom: 5px;
-  margin-top: 1px;
-  
+.logo {
+  width: 150px;
+  height: 150px;
+  margin-bottom: 4px;
+  margin-top: 0;
 }
 
 .project-name h2 {
@@ -51,7 +71,7 @@
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   text-align: left;
 }
 

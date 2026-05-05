@@ -18,7 +18,19 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(req);
     }
 
-    // Get the token from localStorage
+    // Consumer portal public endpoints — never send JWT
+    const isPortalRequest =
+      req.url.includes('/ordersummary/saveorder') ||
+      req.url.includes('/ordersummary/updateorder') ||
+      req.url.includes('/ordersummary/list') ||
+      req.url.includes('/orderdetails/byorder/') ||
+      req.url.includes('/product/portal') ||
+      req.url.includes('/instance/details/') ||
+      req.url.includes('/account/details/');
+    if (isPortalRequest) {
+      return next.handle(req);
+    }
+
     const token = localStorage.getItem('token');
 
     // If token exists, clone the request and add the Authorization header

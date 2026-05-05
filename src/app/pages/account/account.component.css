@@ -16,7 +16,7 @@
   margin-top: 1% !important;
   height: auto !important;
   min-height: 400px !important;
-  width: 1237px !important;
+  width: calc(100vw - 170px) !important;
 }
 
 /* --- Company logo upload --- */
@@ -148,7 +148,7 @@
   font-size: 30px;
   color: black;
   font-weight: 700;
-  margin-left: 1134px;
+  margin-left: auto; display: block;
   margin-top: -14px;
 }
 

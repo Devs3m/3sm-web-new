@@ -223,13 +223,14 @@ html, body {
   position: fixed;
   z-index: 999;
   top: 0;
-  right: -100%; /* Initially hidden */
-  width: 1000px;
+  right: -100%;
+  width: calc(100vw - 170px); /* leave sidenav (170px) uncovered */
   height: 100vh;
   background: #f8f9fa;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
   padding: 20px;
   transition: right 0.3s ease-in-out;
+  overflow-y: auto;
 }
 
 .form-container.open {
@@ -398,6 +399,9 @@ box-shadow: gray;
 }
 .print-icon {
   color: #c62828;
+}
+.view-icon {
+  color: #337ab7;
 }
 
 /* Mat Datepicker calendar overlay - ensure visible above other content */

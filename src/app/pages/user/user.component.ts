@@ -296,9 +296,8 @@ export class UserComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  onInstanceSelectionChange(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const instanceId = select.value ? Number(select.value) : 0;
+  onInstanceSelectionChange(event: any): void {
+    const instanceId = event?.value != null ? Number(event.value) : 0;
     if (!instanceId) {
       return;
     }
@@ -318,9 +317,9 @@ export class UserComponent implements OnInit {
     }
   }
 
-  onSelectionChange(event:Event):void{
-    const selectedValue=  (event.target  as HTMLSelectElement).value;
-    console.log('Selected City Name:',selectedValue)
+  onSelectionChange(event: any): void {
+    const selectedValue = event?.value ?? event?.target?.value ?? '';
+    console.log('Selected City Name:', selectedValue);
     const selectedItem = this.dropdownItems.find((item) => item.cityname === selectedValue);
     console.log('Selected City',selectedValue)
     if (selectedItem) {

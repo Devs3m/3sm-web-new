@@ -2,6 +2,18 @@
 
 
 <div class="login-container">
+  <div class="bg-words">
+    <span
+      *ngFor="let w of bgWords"
+      class="bg-word"
+      [style.top.%]="w.top"
+      [style.left.%]="w.left"
+      [style.font-size.px]="w.fontSize"
+      [style.opacity]="w.opacity"
+      [style.font-family]="w.fontFamily"
+      [style.transform]="'rotate(' + w.rotate + 'deg)'"
+    >{{ w.text }}</span>
+  </div>
   <div class="login-card">
     <div >
       <img src="assets/logo.png" class="logo" alt="Logo" >
@@ -32,9 +44,6 @@
       <button type="submit" class="login-button" [disabled]="loginForm.invalid">Login</button>
       <p class="forgot-link">
         <button type="button" class="link-button" (click)="showForgotPassword()">Forgot password?</button>
-      </p>
-      <p class="setup-link">
-        <a routerLink="/setup" class="link-button link-anchor">Offline setup (pull from online)</a>
       </p>
     </form>
 

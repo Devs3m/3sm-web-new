@@ -16,7 +16,7 @@
     min-height: 280px !important;
     max-height: calc(100vh - 24px) !important;
     overflow-y: auto;
-  width: 1237px !important;
+  width: calc(100vw - 170px) !important;
   }
 
   
@@ -57,7 +57,7 @@
     font-size: 30px;
     color: black;
     font-weight: 700px;
-    margin-left: 1134px;
+    margin-left: auto; display: block;
     margin-top: -14px;
   }
 

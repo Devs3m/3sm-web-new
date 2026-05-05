@@ -4,19 +4,29 @@
    ============================================================================= */
 
 
-.form-container {          /*Form Container with form fields inside*/
-  max-width: 100%;
-  margin: 15px auto;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
-  background-color: #ffff;
-  margin-top: 1% !important;
-  height: auto !important;
-  min-height: 400px !important;
-  max-height: calc(100vh - 24px) !important;
+.form-container {
+  position: fixed !important;
+  width: calc(100vw - 170px) !important;
+  max-width: calc(100vw - 170px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0;
+  background-color: #f8f9fa;
+  height: 100vh !important;
+  min-height: unset !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+  top: 0 !important;
+  right: -100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+.form-container.open { right: 0 !important; }
+
+.form-body {
+  flex: 1;
   overflow-y: auto;
-  width: 1237px !important;
+  padding: 20px;
 }
 
 
@@ -30,8 +40,40 @@
 .form-submit button {
   margin: 0 auto;
 }
-.mat-icon{
-  color: black;
+.mat-icon { color: black; }
+
+/* Labels always black */
+::ng-deep .form-container .mat-mdc-floating-label,
+::ng-deep .form-container label.mdc-floating-label {
+  color: black !important;
+}
+
+/* mat-select value text */
+::ng-deep .form-container .mat-mdc-select-value,
+::ng-deep .form-container .mat-mdc-select-placeholder {
+  color: black !important;
+}
+
+/* Dropdown arrow icon */
+::ng-deep .form-container .mat-mdc-select-arrow svg,
+::ng-deep .form-container .mat-mdc-select-arrow {
+  color: black !important;
+  fill: black !important;
+}
+
+/* Bottom line only — remove fill background, keep underline */
+::ng-deep .form-container .mat-mdc-text-field-wrapper {
+  background: transparent !important;
+  padding: 0 8px 0 0 !important;
+}
+::ng-deep .form-container .mat-mdc-form-field-focus-overlay {
+  background: transparent !important;
+}
+::ng-deep .form-container .mdc-line-ripple::before {
+  border-bottom-color: rgba(0,0,0,0.42) !important;
+}
+::ng-deep .form-container .mdc-line-ripple::after {
+  border-bottom-color: #1a5c42 !important;
 }
 
 html,
@@ -54,13 +96,43 @@ body {
 ::ng-deep .dx-datagrid .dx-row > td {
  vertical-align: middle !important;
 }
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f0f0f0;
+  flex-shrink: 0;
+  min-height: 52px;
+}
+
+.form-header-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a3a2e;
+  white-space: nowrap;
+}
+
 .close-btn {
-  background: transparent;
-  box-shadow: none;
-  border: none;
-  font-size: 30px;
-  color: black;
-  font-weight: 700px;
-  margin-left: 1134px;
-  margin-top: -14px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
 }
