@@ -272,3 +272,31 @@
     grid-template-columns: 1fr;
   }
 }
+/* 5 cards in one row — Orders section */
+.stat-cards.five-col {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+@media (max-width: 1100px) {
+  .stat-cards.five-col { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .stat-cards.five-col { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .stat-cards.five-col { grid-template-columns: 1fr; }
+}
+
+/* Order card colours */
+.stat-card.orders-total     .stat-icon-wrap { background: linear-gradient(135deg, #1a5c42, #144d37); }
+.stat-card.orders-pending   .stat-icon-wrap { background: linear-gradient(135deg, #e67e22, #ca6f1e); }
+.stat-card.orders-confirmed .stat-icon-wrap { background: linear-gradient(135deg, #27ae60, #1e8449); }
+.stat-card.orders-cancelled .stat-icon-wrap { background: linear-gradient(135deg, #c0392b, #922b21); }
+.stat-card.orders-value     .stat-icon-wrap { background: linear-gradient(135deg, #2980b9, #1f618d); }
+
+.stat-card.orders-total     { border-left: 4px solid #1a5c42; }
+.stat-card.orders-pending   { border-left: 4px solid #e67e22; }
+.stat-card.orders-confirmed { border-left: 4px solid #27ae60; }
+.stat-card.orders-cancelled { border-left: 4px solid #c0392b; }
+.stat-card.orders-value     { border-left: 4px solid #2980b9; }

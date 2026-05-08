@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import * as QRCode from 'qrcode';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { OrdersService } from './orders.service';
 import { AuthService } from '../service/auth.service';
 import { ConsumerPortalService } from '../../consumer-portal/consumer-portal.service';
 import { SaveOrderDto, OrderDetailDto } from '../../consumer-portal/models/consumer-order.dto';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-orders',
@@ -23,6 +25,9 @@ export class OrdersComponent implements OnInit {
   editStatus = '';
   savingStatus: Record<number, boolean> = {};
 
+  deliveryItems: any[] = [];
+  savingDelivery = false;
+
   // Add panel
   isAddPanelOpen = false;
   orderForm!: FormGroup;
@@ -34,6 +39,10 @@ export class OrdersComponent implements OnInit {
 
   orderIdSortValue = (row: any): number => Number(row?.orderid ?? 0);
   statusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED'];
+
+  readonly upiId    = environment.upiId;
+  readonly upiName  = environment.upiName;
+  readonly upiPhone = environment.upiPhone;
 
   constructor(
     private ordersService: OrdersService,
@@ -172,6 +181,10 @@ export class OrdersComponent implements OnInit {
     this.ordersService.getOrderDetails(order.orderid).subscribe({
       next: (items) => {
         this.selectedOrderItems = Array.isArray(items) ? items : [];
+        this.deliveryItems = this.selectedOrderItems.map(it => ({
+          ...it,
+          deliveredqty: it.deliveredqty ?? 0
+        }));
         this.itemsLoading = false;
       },
       error: (err) => {
@@ -220,6 +233,248 @@ export class OrdersComponent implements OnInit {
       },
       error: (err) => console.error('Error deleting order', err)
     });
+  }
+
+  printOrderFromGrid(order: any): void {
+    this.selectedOrder = order;
+    this.ordersService.getOrderDetails(order.orderid).subscribe({
+      next: (items) => {
+        this.deliveryItems = (Array.isArray(items) ? items : []).map(it => ({
+          ...it, deliveredqty: it.deliveredqty ?? 0
+        }));
+        this.printOrder();
+      },
+      error: () => this.printOrder()
+    });
+  }
+
+  async printOrder(): Promise<void> {
+    const order = this.selectedOrder;
+    const items = this.selectedOrderItems;
+    const upiUrl = `upi://pay?pa=${this.upiId}&pn=${encodeURIComponent(this.upiName)}&cu=INR`;
+    const qrDataUrl = await QRCode.toDataURL(upiUrl, { width: 100, margin: 1 });
+
+    const fmt = (n: any) => parseFloat(String(n || 0)).toFixed(2);
+    const deliveredItems = this.deliveryItems.filter(it => (Number(it.deliveredqty) || 0) > 0);
+    const deliveredTotal = deliveredItems.reduce((s, it) => s + (Number(it.salemrp) || 0) * (Number(it.deliveredqty) || 0), 0);
+    const itemRows = deliveredItems.map((it: any, i: number) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${it.productname ?? ''}</td>
+        <td class="r">${it.deliveredqty}</td>
+        <td class="r">&#8377;${fmt(it.salemrp)}</td>
+        <td class="r">&#8377;${fmt(it.salemrp * it.deliveredqty)}</td>
+      </tr>`).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>order-${order.orderid}</title>
+<style>
+  @page { size: 105mm 148mm; margin: 4mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt; color: #111; width: 97mm; margin-top: 0; }
+
+  /* Shop header — single line */
+  .header { display: flex; align-items: center; justify-content: center; gap: 8px; padding-bottom: 4px; flex-wrap: wrap; }
+  .shop-name { font-size: 10.5pt; font-weight: 700; }
+  .shop-divider { color: #bbb; font-size: 9pt; }
+  .shop-sub  { font-size: 8pt; color: #555; }
+
+  hr { border: none; border-top: 1px dashed #aaa; margin: 4px 0; }
+  hr.solid { border-top: 1.5px solid #000; margin: 4px 0; }
+
+  /* Order info card — 2×2 grid */
+  .order-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 4px 0;
+  }
+  .oc-cell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .oc-cell:nth-child(2n) { border-right: none; }
+  .oc-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .oc-label { font-size: 7pt; color: #888; font-weight: 600; white-space: nowrap; }
+  .oc-label::after { content: ':'; }
+  .oc-value { font-size: 8pt; font-weight: 600; color: #111; }
+  .oc-id    { font-size: 8.5pt; font-weight: 700; color: #1a5c42; }
+
+  .items-gap { margin-top: 8px; }
+
+  /* Items table */
+  table.items { width: 100%; border-collapse: collapse; font-size: 8pt; margin: 3px 0; table-layout: fixed; }
+  table.items col.c-no   { width: 7%; }
+  table.items col.c-name { width: 43%; }
+  table.items col.c-qty  { width: 10%; }
+  table.items col.c-mrp  { width: 20%; }
+  table.items col.c-tot  { width: 20%; }
+  table.items th { border-bottom: 1.5px solid #000; padding: 3px 2px; font-weight: 700; text-align: left; font-size: 7.5pt; }
+  table.items th.r, table.items td.r { text-align: right; }
+  table.items td { padding: 2.5px 2px; border-bottom: 0.5px solid #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Total */
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+  .total-label { font-weight: 700; font-size: 9pt; }
+  .total-value { font-weight: 700; font-size: 10pt; }
+
+  /* UPI section */
+  .upi-section { margin-top: 5px; }
+  .upi-title { font-weight: 700; font-size: 7.5pt; letter-spacing: 0.04em; margin-bottom: 4px; text-align: center; }
+  .upi-body { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .qr-img { width: 72px; height: 72px; }
+  .upi-info { text-align: left; }
+  .upi-id   { font-size: 7pt; font-weight: 700; word-break: break-all; }
+  .upi-name { font-size: 7.5pt; font-weight: 600; margin-bottom: 3px; }
+  .upi-apps { font-size: 6.5pt; color: #666; margin-top: 4px; line-height: 1.5; }
+
+  .footer { text-align: center; font-size: 7pt; color: #888; margin-top: 6px; padding-top: 4px; border-top: 1px solid #ddd; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="shop-name">${this.upiName}</span>
+  <span class="shop-divider">|</span>
+  <span class="shop-sub">${this.upiPhone}</span>
+</div>
+
+<hr class="solid"/>
+
+<!-- Order info card -->
+<div class="order-card">
+  <div class="oc-cell">
+    <div class="oc-label">Order #</div>
+    <div class="oc-value oc-id">#${order.orderid}</div>
+  </div>
+  <div class="oc-cell">
+    <div class="oc-label">Date</div>
+    <div class="oc-value">${new Date(order.orderdate).toLocaleDateString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric' })}</div>
+  </div>
+  <div class="oc-cell">
+    <div class="oc-label">Customer</div>
+    <div class="oc-value">${order.customername ?? ''}</div>
+  </div>
+  <div class="oc-cell">
+    <div class="oc-label">Phone</div>
+    <div class="oc-value">${order.customerphone ?? ''}</div>
+  </div>
+</div>
+
+<div class="items-gap"></div>
+
+<table class="items">
+  <colgroup>
+    <col class="c-no"/>
+    <col class="c-name"/>
+    <col class="c-qty"/>
+    <col class="c-mrp"/>
+    <col class="c-tot"/>
+  </colgroup>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Product</th>
+      <th class="r">Qty</th>
+      <th class="r">MRP</th>
+      <th class="r">Total</th>
+    </tr>
+  </thead>
+  <tbody>${itemRows || '<tr><td colspan="5" style="text-align:center;color:#999;padding:10px;">No delivered items</td></tr>'}</tbody>
+</table>
+
+<hr class="solid"/>
+
+<div class="total-row">
+  <span class="total-label">Grand Total</span>
+  <span class="total-value">&#8377; ${fmt(deliveredTotal)}</span>
+</div>
+
+<hr/>
+
+<div class="upi-section">
+  <div class="upi-title">&#9654; Pay via UPI</div>
+  <div class="upi-body">
+    <img class="qr-img" src="${qrDataUrl}" alt="UPI QR"/>
+    <div class="upi-info">
+      <div class="upi-name">${this.upiName}</div>
+      <div class="upi-id">${this.upiId}</div>
+      <div class="upi-apps">GPay &bull; Paytm &bull; PhonePe<br/>BHIM &bull; Amazon Pay</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">Thank you for your order!</div>
+
+<script>
+  window.onload = function() {
+    setTimeout(function() { window.print(); }, 500);
+  };
+</script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank', 'width=600,height=800');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    }
+  }
+
+  getPendingQty(item: any): number {
+    return Math.max(0, (item.salequantity ?? 0) - (item.deliveredqty ?? 0));
+  }
+
+  getDeliveredTotal(): number {
+    return this.deliveryItems.reduce(
+      (sum, it) => sum + (Number(it.salemrp) || 0) * (Number(it.deliveredqty) || 0), 0
+    );
+  }
+
+  saveDelivery(): void {
+    this.savingDelivery = true;
+    const payload = this.deliveryItems.map(it => ({
+      orderdetailid: it.orderdetailid ?? it.id,
+      deliveredqty:  Math.min(Number(it.deliveredqty) || 0, it.salequantity ?? 0)
+    }));
+    this.ordersService.updateDelivery(this.selectedOrder.orderid, payload).subscribe({
+      next: () => {
+        // sync back to selectedOrderItems
+        this.selectedOrderItems = this.selectedOrderItems.map(it => {
+          const d = this.deliveryItems.find(x => (x.orderdetailid ?? x.id) === (it.orderdetailid ?? it.id));
+          return d ? { ...it, deliveredqty: d.deliveredqty } : it;
+        });
+        // update grid row delivery status
+        this.updateGridDeliveryStatus(this.selectedOrder.orderid);
+        this.savingDelivery = false;
+      },
+      error: (err) => { console.error(err); this.savingDelivery = false; }
+    });
+  }
+
+  private updateGridDeliveryStatus(orderid: number): void {
+    const row = this.orders.find(o => o.orderid === orderid);
+    if (!row) return;
+    const total     = this.deliveryItems.reduce((s, it) => s + (it.salequantity ?? 0), 0);
+    const delivered = this.deliveryItems.reduce((s, it) => s + (Number(it.deliveredqty) || 0), 0);
+    row.deliverystatus = delivered === 0 ? 'PENDING' : delivered >= total ? 'DELIVERED' : 'PARTIAL';
+  }
+
+  getDeliveryStatusClass(status: string): string {
+    switch (status) {
+      case 'DELIVERED': return 'delivery-delivered';
+      case 'PARTIAL':   return 'delivery-partial';
+      default:          return 'delivery-pending';
+    }
   }
 
   getStatusClass(status: string): string {

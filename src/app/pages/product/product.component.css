@@ -4,19 +4,16 @@
    ============================================================================= */
 
 
-.form-container {          /*Form Container with form fields inside*/
+.form-container {
     max-width: 100%;
-    margin: 15px auto;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
-    background-color: #ffff;
-    margin-top: 1% !important;
+    background-color: #fff;
+    /* Height fits content — no scroll unless truly needed */
     height: auto !important;
-    min-height: 400px !important;
-    max-height: calc(100vh - 24px) !important;
+    min-height: unset !important;
+    max-height: 100vh !important;
     overflow-y: auto;
-  width: calc(100vw - 170px) !important;
+    width: calc(100vw - 170px) !important;
   }
   
   

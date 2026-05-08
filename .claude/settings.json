@@ -6,7 +6,11 @@
       "Bash(awk '{print $NF}')",
       "Bash(Get-ChildItem -Path \"e:\\\\3sm\\\\development\\\\3sm-web\\\\src\\\\app\\\\pages\" -Recurse)",
       "Bash(Select-Object -First 50)",
-      "Bash(node_modules/.bin/ng build *)"
+      "Bash(node_modules/.bin/ng build *)",
+      "Bash(Get-ChildItem -Path \"e:\\\\3sm\\\\development\\\\3sm-web\\\\src\\\\app\\\\pages\\\\\" -Directory | Select-Object Name)",
+      "PowerShell(Get-ChildItem -Path \"e:\\\\3sm\\\\development\\\\3sm-web\\\\src\\\\app\\\\pages\\\\\" | Where-Object {$_.PSIsContainer})",
+      "Bash(findstr /i \"qr\")",
+      "Bash(npm install *)"
     ]
   }
 }

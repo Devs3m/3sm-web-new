@@ -288,14 +288,15 @@ html, body {
   visibility: visible;}
 
   .close-btn{
-    background:transparent ;
+    background: transparent;
     box-shadow: none;
     border: none;
     font-size: 30px;
     color: black;
-    font-weight: 700px;
-    margin-left: 1182px;
-    margin-top: -28px;
+    font-weight: 700;
+    margin-left: auto;
+    margin-top: 0;
+    cursor: pointer;
   }
   /* Body*/
   .container-body{
@@ -313,6 +314,19 @@ html, body {
   top: 1px;
   right: 347px;
 }
+/* Add button positioned near DxDataGrid search panel — shared across all listing pages */
+.btn-pos-list {
+  position: absolute;
+  top: 0;
+  right: 355px;
+  width: 40px;
+  z-index: 1;
+}
+
+.pos-relative {
+  position: relative;
+}
+
 .add-btn{
   border-radius: 2px;
   background: transparent ;

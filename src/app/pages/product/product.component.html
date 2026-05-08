@@ -10,7 +10,7 @@
         {{ errorMessage }}
       </div>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productname')">
         <mat-label style="color:black">Product Name *</mat-label>
         <input matInput placeholder="Product Name" class="mat-input-element custom-placeholder"
           formControlName="productname">
@@ -22,28 +22,31 @@
         </mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productgeneric')">
         <mat-label style="color:black">Generic Name</mat-label>
         <input matInput placeholder="Generic Name" class="mat-input-element custom-placeholder"
           formControlName="productgeneric">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productmanufacturer')">
         <mat-label style="color:black">Manufacturer Name</mat-label>
         <input matInput placeholder="Manufacturer Name" class="mat-input-element custom-placeholder"
           formControlName="productmanufacturer">
       </mat-form-field>
-      <mat-form-field appearance="outline" class="form-field">
+
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productpackname')">
         <mat-label style="color:black">Pack Name</mat-label>
         <input matInput placeholder="Pack Name" class="mat-input-element custom-placeholder"
           formControlName="productpackname">
       </mat-form-field>
-      <mat-form-field appearance="outline" class="form-field">
+
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productpackqty')">
         <mat-label style="color:black">Pack Quantity</mat-label>
         <input matInput placeholder="Pack Quantity" class="mat-input-element custom-placeholder"
           formControlName="productpackqty">
       </mat-form-field>
-      <mat-form-field appearance="outline" class="form-field">
+
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('gstid')">
         <mat-label style="color:black">GST %</mat-label>
         <mat-select formControlName="gstid" (selectionChange)="onGstChange($event)" [compareWith]="compareGstById">
           <mat-option value="">Select GST</mat-option>
@@ -58,7 +61,8 @@
           GST is required
         </mat-error>
       </mat-form-field>
-      <mat-form-field appearance="outline" class="form-field">
+
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('taxid')">
         <mat-label style="color:black">TAX %</mat-label>
         <mat-select formControlName="taxid" (selectionChange)="onTaxChange($event)" [compareWith]="compareTaxById">
           <mat-option value="">Select Tax</mat-option>
@@ -70,83 +74,85 @@
           Tax is required
         </mat-error>
       </mat-form-field>
-      <mat-form-field appearance="outline" class="form-field">
+
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productcategory')">
         <mat-label style="color:black">Category</mat-label>
         <input matInput placeholder="category" class="mat-input-element custom-placeholder"
           formControlName="productcategory">
       </mat-form-field>
-      <mat-form-field appearance="outline" class="form-field">
+
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productsubcategory')">
         <mat-label style="color:black">Sub Category</mat-label>
         <input matInput placeholder="Sub Category" class="mat-input-element custom-placeholder"
           formControlName="productsubcategory">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productlastmrp')">
         <mat-label style="color:black">Previous MRP</mat-label>
         <input matInput placeholder="MRP" class="mat-input-element custom-placeholder" formControlName="productlastmrp">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productlastprice')">
         <mat-label style="color:black">Previous Price</mat-label>
         <input matInput placeholder="MRP" class="mat-input-element custom-placeholder"
           formControlName="productlastprice">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productlastcost')">
         <mat-label style="color:black">Previous Cost</mat-label>
         <input matInput placeholder="MRP" class="mat-input-element custom-placeholder"
           formControlName="productlastcost">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productsaledisper')">
         <mat-label style="color:black">Sales Discount %</mat-label>
         <input matInput placeholder="Sales Discount %" class="mat-input-element custom-placeholder"
           formControlName="productsaledisper">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
-        <mat-label style="color:black">Pruchase Discount %</mat-label>
-        <input matInput placeholder="Pruchase Discount %" class="mat-input-element custom-placeholder"
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productpurdisper')">
+        <mat-label style="color:black">Purchase Discount %</mat-label>
+        <input matInput placeholder="Purchase Discount %" class="mat-input-element custom-placeholder"
           formControlName="productpurdisper">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productlastpuroffqty')">
         <mat-label style="color:black">Purchase Offer Qty</mat-label>
         <input matInput placeholder="Purchase Offer Qty" class="mat-input-element custom-placeholder"
           formControlName="productlastpuroffqty">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productlastpurofffreeqty')">
         <mat-label style="color:black">Purchase Offer Free Qty</mat-label>
         <input matInput placeholder="Previous Offer Free Qty" class="mat-input-element custom-placeholder"
           formControlName="productlastpurofffreeqty">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productdescription')">
         <mat-label style="color:black">Product Description</mat-label>
         <input matInput placeholder="Product Description" class="mat-input-element custom-placeholder"
           formControlName="productdescription">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('producthsncode')">
         <mat-label style="color:black">HSN Code</mat-label>
         <input matInput placeholder="HSN Code" class="mat-input-element custom-placeholder"
           formControlName="producthsncode">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productlastsaloffqty')">
         <mat-label style="color:black">Sale Offer Qty</mat-label>
         <input matInput placeholder="Sale Offer Qty" class="mat-input-element custom-placeholder"
           formControlName="productlastsaloffqty">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productlastsalofffreeqty')">
         <mat-label style="color:black">Sale Offer Free Qty</mat-label>
         <input matInput placeholder="Sale Offer Free Qty" class="mat-input-element custom-placeholder"
           formControlName="productlastsalofffreeqty">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="form-field">
+      <mat-form-field appearance="outline" class="form-field" *ngIf="showField('productisactive')">
         <mat-label style="color:black">Active *</mat-label>
         <select matNativeControl formControlName="productisactive">
           <option value="" disabled>Select</option>
@@ -159,32 +165,29 @@
       </mat-form-field>
 
       <!-- Product Image Upload (enabled only for ecommerce instance) -->
-      <div class="image-upload-field form-field" *ngIf="canEditProductImage; else imageUploadDisabledNote">
-        <label class="image-upload-label">Product Image</label>
-        <div class="image-upload-area" (click)="imageInput.click()">
-          <ng-container *ngIf="!imagePreview">
-            <mat-icon class="upload-icon">add_photo_alternate</mat-icon>
-            <span class="upload-text">Click to upload image</span>
-            <span class="upload-hint">PNG, JPG, GIF up to 2MB</span>
-          </ng-container>
-          <ng-container *ngIf="imagePreview">
-            <img [src]="imagePreview" class="image-preview" alt="Product">
-            <button
-              type="button"
-              class="remove-image-btn"
-              (click)="$event.stopPropagation(); removeImage()"
-              title="Remove image">
-              <mat-icon>close</mat-icon>
-            </button>
-          </ng-container>
+      <ng-container *ngIf="showField('productimage')">
+        <div class="image-upload-field form-field" *ngIf="canEditProductImage">
+          <label class="image-upload-label">Product Image</label>
+          <div class="image-upload-area" (click)="imageInput.click()">
+            <ng-container *ngIf="!imagePreview">
+              <mat-icon class="upload-icon">add_photo_alternate</mat-icon>
+              <span class="upload-text">Click to upload image</span>
+              <span class="upload-hint">PNG, JPG, GIF up to 2MB</span>
+            </ng-container>
+            <ng-container *ngIf="imagePreview">
+              <img [src]="imagePreview" class="image-preview" alt="Product">
+              <button
+                type="button"
+                class="remove-image-btn"
+                (click)="$event.stopPropagation(); removeImage()"
+                title="Remove image">
+                <mat-icon>close</mat-icon>
+              </button>
+            </ng-container>
+          </div>
+          <input #imageInput type="file" accept="image/*" style="display:none" (change)="onImageSelected($event)">
         </div>
-        <input #imageInput type="file" accept="image/*" style="display:none" (change)="onImageSelected($event)">
-      </div>
-      <ng-template #imageUploadDisabledNote>
-        <div class="form-field" style="padding: 8px 0; color: #666;">
-          Product image upload is available only when instance sales page type is set to Ecommerce.
-        </div>
-      </ng-template>
+      </ng-container>
 
 
       <div class="form-submit">

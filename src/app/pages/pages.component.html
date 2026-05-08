@@ -50,108 +50,110 @@
 <mat-sidenav-container>
   <mat-sidenav mode="side" opened style="width: 170px;">
     <mat-nav-list style="width: 100%;">
-      <!-- Dashboard - always visible if authenticated -->
-      <a mat-list-item routerLink='dashboard' href="#" class="aligned-list-item"><mat-icon
-          class="aligned-icon">dashboard</mat-icon>Dashboard</a>
+      <!-- Dashboard -->
+      <a *ngIf="menuSettings.isEnabled('dashboard')"
+         mat-list-item routerLink='dashboard' href="#" class="aligned-list-item">
+        <mat-icon class="aligned-icon">dashboard</mat-icon>Dashboard
+      </a>
       
-      <!-- Account - show if user has ANY account permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('account')" 
+      <!-- Account -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('account') && menuSettings.isEnabled('account')"
          mat-list-item routerLink='account' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">perm_identity</mat-icon>Account
       </a>
-      
-      <!-- Instance - show if user has ANY instance permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('instance')" 
+
+      <!-- Instance -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('instance') && menuSettings.isEnabled('instance')"
          mat-list-item routerLink='instance' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">business</mat-icon>Instance
       </a>
-      
-      <!-- User - show if user has ANY user permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('user')" 
+
+      <!-- User -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('user') && menuSettings.isEnabled('user')"
          mat-list-item routerLink='user' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">person_add</mat-icon>User
       </a>
-      
-      <!-- User Role / RBAC - only Super Admin (or RBAC.MANAGE) can access -->
-      <a *ngIf="permissionService.canManageRbac()" 
+
+      <!-- User Role -->
+      <a *ngIf="permissionService.canManageRbac() && menuSettings.isEnabled('userrole')"
          mat-list-item routerLink='userrole' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">settings_applications</mat-icon>User Role
       </a>
 
-      
-      <!-- Digicard - show if user has ANY digicard permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('digicard')" 
+      <!-- Digicard -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('digicard') && menuSettings.isEnabled('digicard')"
          mat-list-item routerLink='digicard' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">local_activity</mat-icon>Digicard
       </a>
 
-      <!-- V Card - opens card preview page -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('digicard')"
+      <!-- V Card -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('digicard') && menuSettings.isEnabled('vcard')"
          mat-list-item routerLink='digicard/card' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">badge</mat-icon>V Card
       </a>
-      
-      <!-- Product - show if user has ANY product permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('product')" 
+
+      <!-- Product -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('product') && menuSettings.isEnabled('product')"
          mat-list-item routerLink='product' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">fastfood</mat-icon>Product
       </a>
-      
-      <!-- Service Sales - show if user has sales permission and (instance uses Sales page, all pages, or super admin) -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('sales') && (instanceSalestype === null || instanceSalestype === 'sales' || instanceSalestype === 'all')" 
+
+      <!-- Service Sales -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('sales') && menuSettings.isEnabled('sales') && (instanceSalestype === null || instanceSalestype === 'sales' || instanceSalestype === 'all')"
          mat-list-item routerLink='sales' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">point_of_sale</mat-icon>Service Sales
       </a>
-      
-      <!-- Product Sales - show if user has sales permission and (instance uses Product Sales/Ecommerce page, all pages, or super admin) -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('sales') && (instanceSalestype === null || instanceSalestype === 'inventory_sales' || instanceSalestype === 'ecommerce' || instanceSalestype === 'all')" 
+
+      <!-- Product Sales -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('sales') && menuSettings.isEnabled('inventorysales') && (instanceSalestype === null || instanceSalestype === 'inventory_sales' || instanceSalestype === 'ecommerce' || instanceSalestype === 'all')"
          mat-list-item routerLink='inventorysales' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">inventory_2</mat-icon>Product Sales
       </a>
-      
-      <!-- Customer - show if user has ANY customer permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('customer')" 
+
+      <!-- Customer -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('customer') && menuSettings.isEnabled('customer')"
          mat-list-item routerLink='customer' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">contacts</mat-icon>Customer
       </a>
 
-      <!-- Supplier - show if user has ANY supplier permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('supplier')"
+      <!-- Supplier -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('supplier') && menuSettings.isEnabled('supplier')"
          mat-list-item routerLink='supplier' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">local_shipping</mat-icon>Supplier
       </a>
 
-      <!-- Purchase (GRN) - show if user has ANY purchase permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('purchase')"
+      <!-- Purchase -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('purchase') && menuSettings.isEnabled('purchase')"
          mat-list-item routerLink='purchase' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">receipt_long</mat-icon>Purchase
       </a>
-      
-      <!-- Orders - consumer portal orders -->
-      <a mat-list-item routerLink='orders' href="#" class="aligned-list-item">
+
+      <!-- Orders -->
+      <a *ngIf="menuSettings.isEnabled('orders')"
+         mat-list-item routerLink='orders' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">shopping_bag</mat-icon>Orders
       </a>
 
-      <!-- City - show if user has ANY city permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('city')"
+      <!-- City -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('city') && menuSettings.isEnabled('city')"
          mat-list-item routerLink='city' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">location_on</mat-icon>City
       </a>
-      
-      <!-- GST - show if user has ANY gst permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('gst')" 
+
+      <!-- GST -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('gst') && menuSettings.isEnabled('gst')"
          mat-list-item routerLink='gst' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">money</mat-icon>Gst
       </a>
-      
-      <!-- VAT - show if user has ANY vat permission -->
-      <a *ngIf="permissionService.hasAnyPermissionForResource('vat')" 
+
+      <!-- VAT -->
+      <a *ngIf="permissionService.hasAnyPermissionForResource('vat') && menuSettings.isEnabled('vat')"
          mat-list-item routerLink='vat' href="#" class="aligned-list-item">
         <mat-icon class="aligned-icon">money</mat-icon>Vat
       </a>
 
-      <!-- Reports: flat section (no expansion) so Product Ledger stays visible in narrow sidenav -->
-      <ng-container *ngIf="permissionService.hasAnyPermissionForResource('sales')">
+      <!-- Reports -->
+      <ng-container *ngIf="permissionService.hasAnyPermissionForResource('sales') && menuSettings.isEnabled('reports')">
        <!-- Reports Menu -->
 <button mat-list-item [matMenuTriggerFor]="reportsMenu" class="aligned-list-item">
   <mat-icon class="aligned-icon">bar_chart</mat-icon>
@@ -186,6 +188,7 @@
     <router-outlet></router-outlet>
   </div>
 </mat-sidenav-container>
+<app-whatsapp-widget></app-whatsapp-widget>
 </ng-container>
 
 <ng-template #fullPageVCard>

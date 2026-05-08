@@ -206,3 +206,72 @@
   vertical-align: middle;
 }
 
+
+/* Menu Settings */
+.menu-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 4px 16px;
+}
+
+.menu-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.menu-setting-row:hover { background: #f4faf7; }
+
+.menu-setting-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.menu-setting-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #1a5c42;
+}
+
+/* Quick Product Fields */
+.qp-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 4px 16px;
+}
+
+.qp-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.qp-field-row:hover { background: #f4faf7; }
+
+.qp-field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #333;
+}
+
+.qp-mandatory-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #1a5c42;
+  background: #e8f5e9;
+  border: 1px solid #c8e6d4;
+  border-radius: 10px;
+  padding: 1px 7px;
+  letter-spacing: 0.03em;
+}

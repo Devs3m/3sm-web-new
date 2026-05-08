@@ -1,3 +1,72 @@
+/* Override global form-container padding so header can span full width */
+:host ::ng-deep .form-container:not(.view-panel) {
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  background: #fff !important;
+}
+
+/* Add panel header/body structure */
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f5f5f5;
+  flex-shrink: 0;
+}
+
+.form-header-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.form-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Light fill for form fields in add panel */
+.form-body ::ng-deep .mat-mdc-text-field-wrapper {
+  background-color: #f9f9f9 !important;
+  width: 100% !important;
+}
+
+/* Close button style override for add panel */
+.form-header .close-btn {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0;
+  margin: 0;
+  transition: background 0.2s, color 0.2s;
+}
+.form-header .close-btn:hover {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
+}
+
+.btn-pos-list {
+  position: absolute;
+  top: 0;
+  right: 355px;
+  width: 40px;
+  z-index: 1;
+}
+
 /* Add panel close button */
 .add-close-btn {
   background: transparent;
@@ -63,6 +132,21 @@
 
 .form-submit { width: 100%; display: flex; justify-content: center; margin-top: 16px; }
 
+/* ── Delivery tracking ─────────────────────────────────── */
+.pending-qty {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 0.78rem; font-weight: 700; background: #fff3e0; color: #e65100;
+}
+.done-qty {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 0.78rem; font-weight: 700; background: #e8f5e9; color: #2e7d32;
+}
+.delivery-actions { margin-top: 10px; display: flex; justify-content: flex-end; }
+.delivery-delivered { color: #2e7d32; }
+.delivery-partial   { color: #e65100; }
+.delivery-pending   { color: #9e9e9e; }
+.items-sub { font-size: 0.75rem; color: #999; font-weight: 400; margin-left: 6px; }
+
 .status-badge {
   padding: 4px 10px;
   border-radius: 12px;
@@ -71,9 +155,9 @@
   letter-spacing: 0.04em;
 }
 
-.status-pending   { background: #fff3e0; color: #e65100; }
-.status-confirmed { background: #e8f5e9; color: #2e7d32; }
-.status-cancelled { background: #fce4ec; color: #c62828; }
+.status-pending   { color: #e65100; }
+.status-confirmed { color: #2e7d32; }
+.status-cancelled { color: #c62828; }
 
 .status-select {
   border: 1px solid #ccc;
@@ -150,10 +234,10 @@
   flex: 1;
 }
 
-/* Two-column layout */
+/* Single column layout — status moved to bottom */
 .panel-columns {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
   height: 100%;
 }
 
@@ -165,12 +249,51 @@
   gap: 12px;
 }
 
-.panel-col-right {
-  width: 220px;
-  flex-shrink: 0;
+/* Status bottom bar */
+.status-bottom-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 0 4px;
+  margin-top: 8px;
+  border-top: 1.5px solid #e0e0e0;
+}
+
+/* Order info card — compact grid replacing individual meta rows */
+.order-info-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  margin-bottom: 12px;
+}
+
+.order-info-cell {
   display: flex;
   flex-direction: column;
+  padding: 8px 12px;
+  border-right: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
 }
+.order-info-cell:nth-child(3n) { border-right: none; }
+.order-info-cell:nth-last-child(-n+3) { border-bottom: none; }
+
+.oic-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #9e9e9e;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+.oic-value { font-size: 0.88rem; color: #222; font-weight: 500; }
+.oic-orderid    { font-size: 1rem; font-weight: 700; color: #1a5c42; }
+.oic-total      { font-size: 0.95rem; font-weight: 700; color: #1a5c42; }
+.oic-order-total { font-size: 0.72rem; color: #9e9e9e; margin-top: 1px; }
 
 .order-meta { margin-bottom: 4px; }
 .meta-row {
@@ -302,9 +425,7 @@
   }
   .form-container.view-panel.open { right: 0 !important; }
 
-  /* Stack columns vertically on mobile */
-  .panel-columns { flex-direction: column; }
-  .panel-col-right { width: 100%; }
+  .status-bottom-bar { flex-direction: column; align-items: flex-start; }
 
   .view-panel-header { padding: 12px 16px; }
   .view-panel-body   { padding: 14px 16px; gap: 12px; }
@@ -359,6 +480,135 @@
 
   .items-heading { font-size: 0.88rem; margin: 10px 0 6px; }
 }
+
+/* Edit button in view panel header */
+.edit-order-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: #1565c0;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.edit-order-btn:hover { background: #0d47a1; }
+
+/* Edit form inside view panel — native inputs, no Material dark fill */
+.edit-order-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.edit-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edit-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.edit-input, .edit-select {
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.88rem;
+  color: #222;
+  background: #fff;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+.edit-input:focus, .edit-select:focus { border-color: #1a5c42; }
+.edit-err { font-size: 0.75rem; color: #c62828; }
+
+/* Qty input inside items table */
+.qty-input {
+  width: 70px;
+  border: 1.5px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.85rem;
+  text-align: center;
+  outline: none;
+}
+.qty-input:focus { border-color: #1a5c42; }
+
+/* Grand total row in edit mode */
+.edit-grand-total {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  font-size: 1rem;
+  padding: 10px 0 4px;
+  border-top: 1.5px solid #e0e0e0;
+  margin-top: 4px;
+}
+
+.edit-actions {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+.save-order-btn {
+  padding: 8px 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #1a5c42;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.save-order-btn:hover:not(:disabled) { background: #144d37; }
+.save-order-btn:disabled { background: #ccc; color: #888; cursor: not-allowed; }
+
+.cancel-edit-btn {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #f5f5f5;
+  color: #444;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cancel-edit-btn:hover { background: #eeeeee; }
+
+/* Print button in view panel header */
+.print-order-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: #1a5c42;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.print-order-btn:hover { background: #144d37; }
+
 
 /* Extra-small: ≤ 380px */
 @media (max-width: 380px) {

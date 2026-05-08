@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ConsumerPortalRoutingModule } from './consumer-portal-routing.module';
 import { ConsumerPortalComponent } from './consumer-portal.component';
+import { WhatsappWidgetModule } from '../shared/whatsapp-widget/whatsapp-widget.module';
 
 @NgModule({
   declarations: [ConsumerPortalComponent],
@@ -12,7 +13,8 @@ import { ConsumerPortalComponent } from './consumer-portal.component';
     ReactiveFormsModule,
     FormsModule,
     HttpClientModule,
-    ConsumerPortalRoutingModule
+    ConsumerPortalRoutingModule,
+    WhatsappWidgetModule
   ],
   providers: []
 })

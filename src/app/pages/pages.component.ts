@@ -4,6 +4,7 @@ import { AuthService } from './service/auth.service';
 import { UserService } from './service/user.service';
 import { PermissionService } from './service/permission.service';
 import { InstanceService } from './service/instance.service';
+import { MenuSettingsService } from './service/menu-settings.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -27,9 +28,10 @@ export class PagesComponent implements OnInit {
     private userService: UserService,
     public permissionService: PermissionService,
     private instanceService: InstanceService,
+    public menuSettings: MenuSettingsService,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {} // Inject AuthService here
+  ) {}
 
   ngOnInit(): void {
     this.updateLayoutVisibility(this.router.url);
@@ -41,6 +43,7 @@ export class PagesComponent implements OnInit {
     this.fetchUserDetailsFromAPI();
     this.getUserRole();
     this.loadInstanceSalestype();
+    this.menuSettings.loadFromApi().subscribe();
     
     // Wait for permissions to load before showing menus
     // Check periodically for permissions to be loaded

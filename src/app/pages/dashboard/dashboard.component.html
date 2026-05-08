@@ -36,6 +36,54 @@
     <p>Loading dashboard...</p>
   </div>
 
+  <!-- ================= ORDERS SECTION ================= -->
+  <div class="card-section" *ngIf="!isLoading && showOrdersCard">
+    <h3 class="section-title">Orders</h3>
+    <div class="stat-cards five-col">
+
+      <div class="stat-card orders-total">
+        <div class="stat-icon-wrap"><mat-icon>shopping_bag</mat-icon></div>
+        <div class="stat-body">
+          <span class="stat-label">Total Orders</span>
+          <span class="stat-value">{{ orderTotal }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card orders-pending">
+        <div class="stat-icon-wrap"><mat-icon>hourglass_empty</mat-icon></div>
+        <div class="stat-body">
+          <span class="stat-label">Pending</span>
+          <span class="stat-value">{{ orderPending }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card orders-confirmed">
+        <div class="stat-icon-wrap"><mat-icon>check_circle</mat-icon></div>
+        <div class="stat-body">
+          <span class="stat-label">Confirmed</span>
+          <span class="stat-value">{{ orderConfirmed }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card orders-cancelled">
+        <div class="stat-icon-wrap"><mat-icon>cancel</mat-icon></div>
+        <div class="stat-body">
+          <span class="stat-label">Cancelled</span>
+          <span class="stat-value">{{ orderCancelled }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card orders-value">
+        <div class="stat-icon-wrap"><mat-icon>currency_rupee</mat-icon></div>
+        <div class="stat-body">
+          <span class="stat-label">Confirmed Value</span>
+          <span class="stat-value">&#8377; {{ orderValue | number:'1.0-0' }}</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Stat Cards -->
  <!-- PURCHASE SECTION -->
 <!-- ================= GENERAL SECTION ================= -->
@@ -79,12 +127,12 @@
 
 
 <!-- ================= PURCHASE SECTION ================= -->
-<div class="card-section" *ngIf="!isInstanceServiceSalesOnly">
+<div class="card-section" *ngIf="!isInstanceServiceSalesOnly && (menuSettings.isEnabled('purchase') || menuSettings.isEnabled('supplier'))">
   <h3 class="section-title">Purchases</h3>
 
   <div class="stat-cards three-col">
 
-    <div class="stat-card suppliers">
+    <div class="stat-card suppliers" *ngIf="menuSettings.isEnabled('supplier')">
       <div class="stat-icon-wrap">
         <mat-icon>local_shipping</mat-icon>
       </div>
@@ -94,7 +142,7 @@
       </div>
     </div>
 
-    <div class="stat-card purchases">
+    <div class="stat-card purchases" *ngIf="menuSettings.isEnabled('purchase')">
       <div class="stat-icon-wrap">
         <mat-icon>shopping_bag</mat-icon>
       </div>
@@ -107,7 +155,7 @@
       </div>
     </div>
 
-    <div class="stat-card stock-value" *ngIf="showCurrentStockValueCard">
+    <div class="stat-card stock-value" *ngIf="showCurrentStockValueCard && menuSettings.isEnabled('purchase')">
       <div class="stat-icon-wrap">
         <mat-icon>warehouse</mat-icon>
       </div>
@@ -125,7 +173,7 @@
 
 
 <!-- ================= SALES SECTION ================= -->
-<div class="card-section">
+<div class="card-section" *ngIf="menuSettings.isEnabled('sales') || menuSettings.isEnabled('inventorysales')">
   <h3 class="section-title">Sales</h3>
 
   <div class="stat-cards three-col">
@@ -139,7 +187,7 @@
       </div>
     </div>
 
-    <div class="stat-card service-sales" *ngIf="showServiceSalesDashboard">
+    <div class="stat-card service-sales" *ngIf="showServiceSalesDashboard && menuSettings.isEnabled('sales')">
       <div class="stat-icon-wrap">
         <mat-icon>handyman</mat-icon>
       </div>
@@ -152,7 +200,7 @@
       </div>
     </div>
 
-    <div class="stat-card product-sales" *ngIf="showProductSalesDashboard">
+    <div class="stat-card product-sales" *ngIf="showProductSalesDashboard && menuSettings.isEnabled('inventorysales')">
       <div class="stat-icon-wrap">
         <mat-icon>inventory_2</mat-icon>
       </div>
@@ -165,7 +213,7 @@
       </div>
     </div>
 
-    <div class="stat-card total-sales" *ngIf="showTotalSalesCard && !isInstanceBothSalesMode">
+    <div class="stat-card total-sales" *ngIf="showTotalSalesCard && !isInstanceBothSalesMode && menuSettings.isEnabled('sales') && menuSettings.isEnabled('inventorysales')">
       <div class="stat-icon-wrap">
         <mat-icon>summarize</mat-icon>
       </div>
@@ -182,7 +230,7 @@
 </div>
 
   <!-- Chart -->
-  <div class="chart-card" *ngIf="!isLoading">
+  <div class="chart-card" *ngIf="!isLoading && (menuSettings.isEnabled('sales') || menuSettings.isEnabled('inventorysales'))">
     <highcharts-chart
       [Highcharts]="Highcharts"
       [options]="chartOptions"

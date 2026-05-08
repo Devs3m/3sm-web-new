@@ -7,6 +7,126 @@
   </div>
 
   <div class="settings-content">
+
+    <!-- Menu Settings Card -->
+    <mat-card class="settings-section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>menu</mat-icon>
+        <mat-card-title>Menu Settings</mat-card-title>
+        <mat-card-subtitle>Show or hide sidebar menu items for your account</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="menu-settings-grid">
+          <div class="menu-setting-row" *ngFor="let item of menuItems">
+            <div class="menu-setting-label">
+              <mat-icon class="menu-setting-icon">{{ item.icon }}</mat-icon>
+              <span>{{ item.label }}</span>
+            </div>
+            <mat-slide-toggle
+              [(ngModel)]="item.enabled"
+              [disabled]="item.key === 'settings'"
+              color="primary">
+            </mat-slide-toggle>
+          </div>
+        </div>
+        <div class="form-submit" style="margin-top:16px;">
+          <button mat-raised-button type="button" class="btn-primary" (click)="saveMenuSettings()">
+            <mat-icon>save</mat-icon>
+            Save Menu Settings
+          </button>
+          <span class="saved-message" *ngIf="menuSavedMessage">{{ menuSavedMessage }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <!-- Admin: Manage other users' menu settings -->
+    <mat-card class="settings-section-card" *ngIf="isAdmin">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>admin_panel_settings</mat-icon>
+        <mat-card-title>User Menu Access</mat-card-title>
+        <mat-card-subtitle>Set menu visibility for users in your account</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+
+        <!-- User selector -->
+        <div class="setting-row" style="margin-bottom:16px;">
+          <div class="setting-label"><span>Select User</span></div>
+          <mat-form-field appearance="outline" style="width:260px;">
+            <mat-label>Select a user</mat-label>
+            <mat-select [(ngModel)]="selectedUserId" (selectionChange)="onUserSelect($event.value)">
+              <mat-option *ngFor="let u of accountUsers" [value]="u.userid ?? u.userId">
+                {{ u.username ?? u.userName }} — {{ u.userrolename ?? u.rolename ?? u.role ?? 'User' }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Menu toggles for selected user -->
+        <ng-container *ngIf="selectedUserId && targetMenuItems.length > 0">
+          <div class="menu-settings-grid">
+            <div class="menu-setting-row" *ngFor="let item of targetMenuItems">
+              <div class="menu-setting-label">
+                <mat-icon class="menu-setting-icon">{{ item.icon }}</mat-icon>
+                <span>{{ item.label }}</span>
+              </div>
+              <mat-slide-toggle
+                [(ngModel)]="item.enabled"
+                [disabled]="item.key === 'settings'"
+                color="primary">
+              </mat-slide-toggle>
+            </div>
+          </div>
+
+          <div class="form-submit" style="margin-top:16px;">
+            <button mat-raised-button type="button" class="btn-primary"
+              (click)="saveTargetMenuSettings()" [disabled]="targetSaving">
+              <mat-icon>save</mat-icon>
+              {{ targetSaving ? 'Saving...' : 'Save for User' }}
+            </button>
+            <span class="saved-message" *ngIf="targetSavedMessage">{{ targetSavedMessage }}</span>
+          </div>
+        </ng-container>
+
+        <p *ngIf="!selectedUserId" class="setting-hint">
+          Select a user above to manage their menu access.
+        </p>
+        <p *ngIf="accountUsers.length === 0" class="setting-hint">
+          No other users found in your account and instance.
+        </p>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Quick Product Fields Card -->
+    <mat-card class="settings-section-card" *ngIf="isQuickProductEnabled()">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>add_box</mat-icon>
+        <mat-card-title>Quick Product Fields</mat-card-title>
+        <mat-card-subtitle>Choose which fields appear when adding a product quickly</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="qp-fields-grid">
+          <div class="qp-field-row" *ngFor="let field of quickProductFields">
+            <div class="qp-field-label">
+              <span>{{ field.label }}</span>
+              <span class="qp-mandatory-badge" *ngIf="field.mandatory">Mandatory</span>
+            </div>
+            <mat-slide-toggle
+              [(ngModel)]="field.enabled"
+              [disabled]="field.mandatory"
+              color="primary">
+            </mat-slide-toggle>
+          </div>
+        </div>
+        <div class="form-submit" style="margin-top:16px;">
+          <button mat-raised-button type="button" class="btn-primary" (click)="saveQuickProductFields()">
+            <mat-icon>save</mat-icon>
+            Save Field Settings
+          </button>
+          <span class="saved-message" *ngIf="quickProductSavedMessage">{{ quickProductSavedMessage }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
     <!-- Sales Section -->
     <mat-card class="settings-section-card">
       <mat-card-header>

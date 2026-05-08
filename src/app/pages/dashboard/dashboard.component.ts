@@ -10,6 +10,8 @@ import { AuthService } from '../service/auth.service';
 import { PermissionService } from '../service/permission.service';
 import { SupplierService } from '../service/supplier.service';
 import { PurchaseService } from '../service/purchase.service';
+import { OrdersService } from '../orders/orders.service';
+import { MenuSettingsService } from '../service/menu-settings.service';
 import * as Highcharts from 'highcharts';
 import { formatDisplayDecimal } from '../../core/display-number-format';
 
@@ -107,6 +109,17 @@ export class DashboardComponent implements OnInit {
     return this.instanceSalestype === 'all';
   }
 
+  // Order metrics
+  orderTotal = 0;
+  orderPending = 0;
+  orderConfirmed = 0;
+  orderCancelled = 0;
+  orderValue = 0;
+
+  get showOrdersCard(): boolean {
+    return this.menuSettings.isEnabled('orders');
+  }
+
   /** Product sales only (no service sales dashboard) — inventory or ecommerce instance. */
   get isInstanceProductSalesOnly(): boolean {
     return (
@@ -156,13 +169,36 @@ export class DashboardComponent implements OnInit {
     private inventorysalesService: InventorysalesService,
     private supplierService: SupplierService,
     private purchaseService: PurchaseService,
+    private ordersService: OrdersService,
     private authService: AuthService,
-    private permissionService: PermissionService
+    private permissionService: PermissionService,
+    public menuSettings: MenuSettingsService
   ) {}
 
   ngOnInit(): void {
     this.filterMonth = this.getCurrentMonthYm();
     this.loadDashboardData();
+    if (this.showOrdersCard) {
+      this.loadOrderMetrics();
+    }
+  }
+
+  loadOrderMetrics(): void {
+    const accountId = this.authService.getAccountId();
+    const instanceId = this.authService.getInstanceId();
+    if (!accountId || !instanceId) return;
+    this.ordersService.getOrders(accountId, instanceId)
+      .pipe(catchError(() => of([])))
+      .subscribe((orders: any[]) => {
+        const list = Array.isArray(orders) ? orders : [];
+        this.orderTotal     = list.length;
+        this.orderPending   = list.filter(o => o.orderstatus === 'PENDING').length;
+        this.orderConfirmed = list.filter(o => o.orderstatus === 'CONFIRMED').length;
+        this.orderCancelled = list.filter(o => o.orderstatus === 'CANCELLED').length;
+        this.orderValue     = list
+          .filter(o => o.orderstatus === 'CONFIRMED')
+          .reduce((sum: number, o: any) => sum + (Number(o.order_grand_total ?? o.grandtotal ?? 0) || 0), 0);
+      });
   }
 
   private getCurrentMonthYm(): string {

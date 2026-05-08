@@ -11,6 +11,8 @@ import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
 import { environment } from '../../../environments/environment';
+import { QuickProductSettingsService } from '../service/quick-product-settings.service';
+import { MenuSettingsService } from '../service/menu-settings.service';
 
 @Component({
   selector: 'app-product',
@@ -58,8 +60,16 @@ export class ProductComponent implements OnInit {
     private gstService: GstService,
     private vatService: VatService,
     private instanceService: InstanceService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private quickProductSettings: QuickProductSettingsService,
+    private menuSettings: MenuSettingsService
   ) { }
+
+  /** Returns true if the field should be visible in the add/edit form. */
+  showField(key: string): boolean {
+    if (!this.menuSettings.isEnabled('quickproduct')) return true;
+    return this.quickProductSettings.isFieldEnabled(key);
+  }
 
   ngOnInit(): void {
     // Get logged-in user ID, account ID, and instance ID from JWT token

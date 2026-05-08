@@ -29,6 +29,14 @@ export class OrdersService {
     return this.http.get<any[]>(`${this.apiUrl}/orderdetails/byorder/${orderid}`);
   }
 
+  updateOrder(dto: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/ordersummary/updateorder`, dto);
+  }
+
+  updateDelivery(orderid: number, items: { orderdetailid: number; deliveredqty: number }[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/orderdetails/updatedelivery`, { orderid, items });
+  }
+
   deleteOrder(orderid: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/ordersummary/delete/${orderid}`);
   }

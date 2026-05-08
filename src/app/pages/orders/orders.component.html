@@ -10,9 +10,15 @@
         <mat-icon style="color:#1a5c42;">receipt_long</mat-icon>
         <p style="font-size:1rem; font-weight:700; margin:0;">Order #{{ selectedOrder?.orderid }}</p>
       </div>
-      <button (click)="closeViewPanel()" class="close-btn" title="Close">
-        <mat-icon>close</mat-icon>
-      </button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button (click)="printOrder()" class="print-order-btn" title="Print / Save PDF">
+          <mat-icon style="font-size:18px;width:18px;height:18px;">print</mat-icon>
+          Print
+        </button>
+        <button (click)="closeViewPanel()" class="close-btn" title="Close">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
     </div>
 
     <div class="view-panel-body" *ngIf="selectedOrder">
@@ -21,75 +27,107 @@
         <!-- LEFT: Customer info + order items -->
         <div class="panel-col-left">
 
-          <div class="order-meta">
-            <div class="meta-row"><span class="meta-label">Customer</span><span>{{ selectedOrder.customername }}</span></div>
-            <div class="meta-row"><span class="meta-label">Phone</span><span>{{ selectedOrder.customerphone }}</span></div>
-            <div class="meta-row"><span class="meta-label">Date</span><span>{{ selectedOrder.orderdate | date:'dd/MM/yyyy' }}</span></div>
-            <div class="meta-row">
-              <span class="meta-label">Status</span>
-              <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.orderstatus)">{{ selectedOrder.orderstatus }}</span>
+          <div class="order-info-card">
+              <div class="order-info-cell">
+                <span class="oic-label">Order #</span>
+                <span class="oic-value oic-orderid">#{{ selectedOrder.orderid }}</span>
+              </div>
+              <div class="order-info-cell">
+                <span class="oic-label">Date</span>
+                <span class="oic-value">{{ selectedOrder.orderdate | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="order-info-cell">
+                <span class="oic-label">Customer</span>
+                <span class="oic-value">{{ selectedOrder.customername }}</span>
+              </div>
+              <div class="order-info-cell">
+                <span class="oic-label">Phone</span>
+                <span class="oic-value">{{ selectedOrder.customerphone }}</span>
+              </div>
+              <div class="order-info-cell">
+                <span class="oic-label">Status</span>
+                <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.orderstatus)">{{ selectedOrder.orderstatus }}</span>
+              </div>
+              <div class="order-info-cell">
+                <span class="oic-label">{{ getDeliveredTotal() < selectedOrder.order_grand_total ? 'Delivered Total' : 'Grand Total' }}</span>
+                <span class="oic-value oic-total">&#8377; {{ getDeliveredTotal() | number:'1.2-2' }}</span>
+                <span class="oic-order-total" *ngIf="getDeliveredTotal() < selectedOrder.order_grand_total">
+                  Order: &#8377; {{ selectedOrder.order_grand_total | number:'1.2-2' }}
+                </span>
+              </div>
             </div>
-            <div class="meta-row">
-              <span class="meta-label">Grand Total</span>
-              <strong>&#8377; {{ selectedOrder.order_grand_total | number:'1.2-2' }}</strong>
-            </div>
-          </div>
 
-          <p class="items-heading">Order Items</p>
-          <div class="items-loading" *ngIf="itemsLoading">Loading items...</div>
-          <div class="items-table-wrap">
-            <table class="items-table" *ngIf="!itemsLoading && selectedOrderItems.length > 0">
-              <thead>
-                <tr><th>#</th><th>Product</th><th>Qty</th><th>MRP</th><th>Total</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of selectedOrderItems; let i = index">
-                  <td>{{ i + 1 }}</td>
-                  <td>{{ item.productname }}</td>
-                  <td>{{ item.salequantity }}</td>
-                  <td>&#8377; {{ item.salemrp | number:'1.2-2' }}</td>
-                  <td>&#8377; {{ item.saletotalamount | number:'1.2-2' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="no-items" *ngIf="!itemsLoading && selectedOrderItems.length === 0">No items found.</p>
-
-        </div>
-
-        <!-- RIGHT: Status update -->
-        <div class="panel-col-right">
-          <div class="status-update-section">
-            <p class="items-heading">Update Status</p>
-            <div class="status-update-row">
-              <span class="meta-label" style="font-size:0.82rem;">Current</span>
-              <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.orderstatus)">
-                {{ selectedOrder.orderstatus }}
-              </span>
+            <p class="items-heading">Order Items</p>
+            <div class="items-loading" *ngIf="itemsLoading">Loading items...</div>
+            <div class="items-table-wrap">
+              <table class="items-table" *ngIf="!itemsLoading && deliveryItems.length > 0">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Product</th>
+                    <th style="text-align:center;">Ordered</th>
+                    <th style="text-align:center;width:86px;">Delivered</th>
+                    <th style="text-align:center;">Pending</th>
+                    <th style="text-align:right;">MRP</th>
+                    <th style="text-align:right;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of deliveryItems; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ item.productname }}</td>
+                    <td style="text-align:center;">{{ item.salequantity }}</td>
+                    <td style="text-align:center;">
+                      <input class="qty-input" type="number" min="0"
+                             [max]="item.salequantity"
+                             [(ngModel)]="item.deliveredqty"
+                             [ngModelOptions]="{standalone:true}" />
+                    </td>
+                    <td style="text-align:center;">
+                      <span [class]="getPendingQty(item) > 0 ? 'pending-qty' : 'done-qty'">
+                        {{ getPendingQty(item) }}
+                      </span>
+                    </td>
+                    <td style="text-align:right;">&#8377; {{ item.salemrp | number:'1.2-2' }}</td>
+                    <td style="text-align:right;">&#8377; {{ item.saletotalamount | number:'1.2-2' }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div class="status-update-row" style="margin-top:12px;">
-              <span class="meta-label" style="font-size:0.82rem;">Change to</span>
-              <select
-                class="status-select status-select--panel"
-                [value]="editStatus"
-                (change)="editStatus = $any($event.target).value">
-                <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
-              </select>
+            <p class="no-items" *ngIf="!itemsLoading && deliveryItems.length === 0">No items found.</p>
+
+            <!-- Save Delivery -->
+            <div class="delivery-actions" *ngIf="!itemsLoading && deliveryItems.length > 0">
+              <button class="save-order-btn" (click)="saveDelivery()" [disabled]="savingDelivery">
+                {{ savingDelivery ? 'Saving...' : 'Save Delivery' }}
+              </button>
             </div>
+
+          <!-- Change Status — bottom strip -->
+          <div class="status-bottom-bar">
+            <span class="meta-label" style="font-size:0.82rem;">Change Status</span>
+            <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.orderstatus)">
+              {{ selectedOrder.orderstatus }}
+            </span>
+            <span style="color:#bbb;">→</span>
+            <select
+              class="status-select status-select--panel"
+              [value]="editStatus"
+              (change)="editStatus = $any($event.target).value">
+              <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+            </select>
             <button
-              class="status-save-btn status-save-btn--full"
+              class="status-save-btn"
               [class.status-save-btn--active]="editStatus !== selectedOrder.orderstatus"
               [disabled]="editStatus === selectedOrder.orderstatus || savingStatus[selectedOrder.orderid]"
               (click)="saveEditStatus()">
               {{ savingStatus[selectedOrder?.orderid] ? 'Saving...' : 'Save Status' }}
             </button>
-            <p class="status-hint" *ngIf="editStatus === selectedOrder.orderstatus">
-              Select a different status to enable save.
-            </p>
-            <p class="status-hint status-hint--changed" *ngIf="editStatus !== selectedOrder.orderstatus">
-              {{ selectedOrder.orderstatus }} → <strong>{{ editStatus }}</strong>
-            </p>
+            <span class="status-hint status-hint--changed" *ngIf="editStatus !== selectedOrder.orderstatus">
+              Will change to <strong>{{ editStatus }}</strong>
+            </span>
           </div>
+
         </div>
 
       </div>
@@ -100,9 +138,11 @@
   <!-- Add Order Panel -->
   <div class="form-backdrop" [class.open]="isAddPanelOpen" (click)="closeAddPanel()"></div>
   <div class="form-container" [class.open]="isAddPanelOpen">
-    <p style="font-size:larger;">Add Order</p>
-    <button (click)="closeAddPanel()" class="add-close-btn">&times;</button>
-
+    <div class="form-header">
+      <span class="form-header-title">Add Order</span>
+      <button type="button" (click)="closeAddPanel()" class="close-btn" title="Close">&#10005;</button>
+    </div>
+    <div class="form-body">
     <form [formGroup]="orderForm" (ngSubmit)="submitOrder()" class="form-section">
 
       <mat-form-field appearance="fill" class="form-field">
@@ -174,6 +214,7 @@
         </button>
       </div>
     </form>
+    </div>
   </div>
 
   <!-- Stats Cards -->
@@ -226,7 +267,8 @@
       <dxi-column dataField="customername"       caption="Customer Name"></dxi-column>
       <dxi-column dataField="customerphone"      caption="Phone"         [width]="130"></dxi-column>
       <dxi-column dataField="order_grand_total"  caption="Grand Total"   [width]="130" dataType="number" format="₹ #,##0.00"></dxi-column>
-      <dxi-column caption="Status" [width]="130" alignment="center" cellTemplate="statusTemplate"></dxi-column>
+      <dxi-column caption="Status" [width]="120" alignment="center" cellTemplate="statusTemplate"></dxi-column>
+      <dxi-column caption="Delivery" [width]="110" alignment="center" cellTemplate="deliveryTemplate"></dxi-column>
       <dxi-column caption="Actions" [width]="100" alignment="center" cellTemplate="actionTemplate"></dxi-column>
 
       <div *dxTemplate="let data of 'statusTemplate'">
@@ -235,9 +277,18 @@
         </span>
       </div>
 
+      <div *dxTemplate="let data of 'deliveryTemplate'">
+        <span class="status-badge" [ngClass]="getDeliveryStatusClass(data.data.deliverystatus)">
+          {{ data.data.deliverystatus || 'PENDING' }}
+        </span>
+      </div>
+
       <div *dxTemplate="let data of 'actionTemplate'" style="display:flex; gap:10px; justify-content:center;">
-        <a (click)="viewOrder(data.data)" style="cursor:pointer;" title="Edit / View">
+        <a (click)="viewOrder(data.data)" style="cursor:pointer;" title="View / Deliver">
           <span class="material-symbols-outlined action-icon edit-icon">edit</span>
+        </a>
+        <a (click)="printOrderFromGrid(data.data)" style="cursor:pointer;" title="Print">
+          <span class="material-symbols-outlined action-icon print-icon">print</span>
         </a>
         <a (click)="deleteOrder(data.data)" style="cursor:pointer;" title="Delete">
           <span class="material-symbols-outlined action-icon delete-icon">delete</span>
@@ -247,5 +298,6 @@
       <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
     </dx-data-grid>
   </div>
+
 
 </section>

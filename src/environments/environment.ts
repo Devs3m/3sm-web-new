@@ -15,7 +15,12 @@ export const environment = {
   /** Base URL for V Card API (VCardMaster). Falls back to apiHost if not set. */
   vcardApiUrl: 'https://connectsite.in/' as string,
   authHeaderFormat: 'Bearer' as 'Bearer' | 'token',
-  portalApiKey: ''
+  portalApiKey: '',
+  whatsappNumber: '',
+  /** UPI payment details shown on order print receipt */
+  upiId: '9884422526@okbizaxis',
+  upiName: 'Sri Sankara Trading',
+  upiPhone: '+91 98844 22526'
 };
 
 /*
