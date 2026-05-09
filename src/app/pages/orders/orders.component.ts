@@ -177,6 +177,7 @@ export class OrdersComponent implements OnInit {
     this.editStatus         = order.orderstatus;
     this.isViewPanelOpen    = true;
     this.itemsLoading       = true;
+    this.savedAll           = false;
 
     this.ordersService.getOrderDetails(order.orderid).subscribe({
       next: (items) => {
@@ -481,6 +482,44 @@ export class OrdersComponent implements OnInit {
       win.document.write(html);
       win.document.close();
     }
+  }
+
+  savingAll = false;
+  savedAll = false;
+
+  saveAll(): void {
+    this.savingAll = true;
+    const deliveryDone = new Promise<void>(resolve => {
+      if (!this.deliveryItems.length) { resolve(); return; }
+      const payload = this.deliveryItems.map(it => ({
+        orderdetailid: it.orderdetailid ?? it.id,
+        deliveredqty:  Math.min(Number(it.deliveredqty) || 0, it.salequantity ?? 0)
+      }));
+      this.ordersService.updateDelivery(this.selectedOrder.orderid, payload).subscribe({
+        next: () => { this.updateGridDeliveryStatus(this.selectedOrder.orderid); resolve(); },
+        error: () => resolve()
+      });
+    });
+
+    const statusDone = new Promise<void>(resolve => {
+      if (this.editStatus === this.selectedOrder.orderstatus) { resolve(); return; }
+      this.ordersService.updateOrderStatus(this.selectedOrder.orderid, this.editStatus).subscribe({
+        next: () => {
+          const row = this.orders.find(o => o.orderid === this.selectedOrder.orderid);
+          if (row) row.orderstatus = this.editStatus;
+          this.selectedOrder.orderstatus = this.editStatus;
+          this.pendingOrders   = this.orders.filter(o => o.orderstatus === 'PENDING').length;
+          this.confirmedOrders = this.orders.filter(o => o.orderstatus === 'CONFIRMED').length;
+          resolve();
+        },
+        error: () => resolve()
+      });
+    });
+
+    Promise.all([deliveryDone, statusDone]).then(() => {
+      this.savingAll = false;
+      this.savedAll  = true;
+    });
   }
 
   getPendingQty(item: any): number {

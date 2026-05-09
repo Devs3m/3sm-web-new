@@ -21,116 +21,100 @@
       </div>
     </div>
 
-    <div class="view-panel-body" *ngIf="selectedOrder">
-      <div class="panel-columns">
-
-        <!-- LEFT: Customer info + order items -->
-        <div class="panel-col-left">
-
-          <div class="order-info-card">
-              <div class="order-info-cell">
-                <span class="oic-label">Order #</span>
-                <span class="oic-value oic-orderid">#{{ selectedOrder.orderid }}</span>
-              </div>
-              <div class="order-info-cell">
-                <span class="oic-label">Date</span>
-                <span class="oic-value">{{ selectedOrder.orderdate | date:'dd/MM/yyyy' }}</span>
-              </div>
-              <div class="order-info-cell">
-                <span class="oic-label">Customer</span>
-                <span class="oic-value">{{ selectedOrder.customername }}</span>
-              </div>
-              <div class="order-info-cell">
-                <span class="oic-label">Phone</span>
-                <span class="oic-value">{{ selectedOrder.customerphone }}</span>
-              </div>
-              <div class="order-info-cell">
-                <span class="oic-label">Status</span>
-                <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.orderstatus)">{{ selectedOrder.orderstatus }}</span>
-              </div>
-              <div class="order-info-cell">
-                <span class="oic-label">{{ getDeliveredTotal() < selectedOrder.order_grand_total ? 'Delivered Total' : 'Grand Total' }}</span>
-                <span class="oic-value oic-total">&#8377; {{ getDeliveredTotal() | number:'1.2-2' }}</span>
-                <span class="oic-order-total" *ngIf="getDeliveredTotal() < selectedOrder.order_grand_total">
-                  Order: &#8377; {{ selectedOrder.order_grand_total | number:'1.2-2' }}
-                </span>
-              </div>
-            </div>
-
-            <p class="items-heading">Order Items</p>
-            <div class="items-loading" *ngIf="itemsLoading">Loading items...</div>
-            <div class="items-table-wrap">
-              <table class="items-table" *ngIf="!itemsLoading && deliveryItems.length > 0">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Product</th>
-                    <th style="text-align:center;">Ordered</th>
-                    <th style="text-align:center;width:86px;">Delivered</th>
-                    <th style="text-align:center;">Pending</th>
-                    <th style="text-align:right;">MRP</th>
-                    <th style="text-align:right;">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let item of deliveryItems; let i = index">
-                    <td>{{ i + 1 }}</td>
-                    <td>{{ item.productname }}</td>
-                    <td style="text-align:center;">{{ item.salequantity }}</td>
-                    <td style="text-align:center;">
-                      <input class="qty-input" type="number" min="0"
-                             [max]="item.salequantity"
-                             [(ngModel)]="item.deliveredqty"
-                             [ngModelOptions]="{standalone:true}" />
-                    </td>
-                    <td style="text-align:center;">
-                      <span [class]="getPendingQty(item) > 0 ? 'pending-qty' : 'done-qty'">
-                        {{ getPendingQty(item) }}
-                      </span>
-                    </td>
-                    <td style="text-align:right;">&#8377; {{ item.salemrp | number:'1.2-2' }}</td>
-                    <td style="text-align:right;">&#8377; {{ item.saletotalamount | number:'1.2-2' }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p class="no-items" *ngIf="!itemsLoading && deliveryItems.length === 0">No items found.</p>
-
-            <!-- Save Delivery -->
-            <div class="delivery-actions" *ngIf="!itemsLoading && deliveryItems.length > 0">
-              <button class="save-order-btn" (click)="saveDelivery()" [disabled]="savingDelivery">
-                {{ savingDelivery ? 'Saving...' : 'Save Delivery' }}
-              </button>
-            </div>
-
-          <!-- Change Status — bottom strip -->
-          <div class="status-bottom-bar">
-            <span class="meta-label" style="font-size:0.82rem;">Change Status</span>
-            <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.orderstatus)">
-              {{ selectedOrder.orderstatus }}
-            </span>
-            <span style="color:#bbb;">→</span>
-            <select
-              class="status-select status-select--panel"
-              [value]="editStatus"
-              (change)="editStatus = $any($event.target).value">
-              <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
-            </select>
-            <button
-              class="status-save-btn"
-              [class.status-save-btn--active]="editStatus !== selectedOrder.orderstatus"
-              [disabled]="editStatus === selectedOrder.orderstatus || savingStatus[selectedOrder.orderid]"
-              (click)="saveEditStatus()">
-              {{ savingStatus[selectedOrder?.orderid] ? 'Saving...' : 'Save Status' }}
-            </button>
-            <span class="status-hint status-hint--changed" *ngIf="editStatus !== selectedOrder.orderstatus">
-              Will change to <strong>{{ editStatus }}</strong>
-            </span>
-          </div>
-
+    <!-- Fixed info header -->
+    <div class="panel-info-header" *ngIf="selectedOrder">
+      <div class="order-info-card">
+        <div class="order-info-cell">
+          <span class="oic-label">Order #</span>
+          <span class="oic-value oic-orderid">#{{ selectedOrder.orderid }}</span>
         </div>
-
+        <div class="order-info-cell">
+          <span class="oic-label">Date</span>
+          <span class="oic-value">{{ selectedOrder.orderdate | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="order-info-cell">
+          <span class="oic-label">Customer</span>
+          <span class="oic-value">{{ selectedOrder.customername }}</span>
+        </div>
+        <div class="order-info-cell">
+          <span class="oic-label">Phone</span>
+          <span class="oic-value">{{ selectedOrder.customerphone }}</span>
+        </div>
+        <div class="order-info-cell">
+          <span class="oic-label">Status</span>
+          <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.orderstatus)">{{ selectedOrder.orderstatus }}</span>
+        </div>
+        <div class="order-info-cell">
+          <span class="oic-label">{{ getDeliveredTotal() < selectedOrder.order_grand_total ? 'Delivered Total' : 'Grand Total' }}</span>
+          <span class="oic-value oic-total">&#8377; {{ getDeliveredTotal() | number:'1.2-2' }}</span>
+          <span class="oic-order-total" *ngIf="getDeliveredTotal() < selectedOrder.order_grand_total">
+            Order: &#8377; {{ selectedOrder.order_grand_total | number:'1.2-2' }}
+          </span>
+        </div>
       </div>
+      <p class="items-heading" style="margin:10px 0 4px;">Order Items</p>
+    </div>
+
+    <!-- Scrollable items area -->
+    <div class="panel-scroll-body" *ngIf="selectedOrder">
+      <div class="items-loading" *ngIf="itemsLoading">Loading items...</div>
+      <div class="items-table-wrap">
+        <table class="items-table" *ngIf="!itemsLoading && deliveryItems.length > 0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Product</th>
+              <th style="text-align:center;">Ordered</th>
+              <th style="text-align:center;width:86px;">Delivered</th>
+              <th style="text-align:center;">Pending</th>
+              <th style="text-align:right;">MRP</th>
+              <th style="text-align:right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of deliveryItems; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ item.productname }}</td>
+              <td style="text-align:center;">{{ item.salequantity }}</td>
+              <td style="text-align:center;">
+                <input class="qty-input" type="number" min="0"
+                       [max]="item.salequantity"
+                       [(ngModel)]="item.deliveredqty"
+                       [ngModelOptions]="{standalone:true}"
+                       (input)="savedAll = false" />
+              </td>
+              <td style="text-align:center;">
+                <span [class]="getPendingQty(item) > 0 ? 'pending-qty' : 'done-qty'">
+                  {{ getPendingQty(item) }}
+                </span>
+              </td>
+              <td style="text-align:right;">&#8377; {{ item.salemrp | number:'1.2-2' }}</td>
+              <td style="text-align:right;">&#8377; {{ item.saletotalamount | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="no-items" *ngIf="!itemsLoading && deliveryItems.length === 0">No items found.</p>
+    </div>
+
+    <!-- Fixed footer — status + single save -->
+    <div class="panel-fixed-footer" *ngIf="selectedOrder">
+      <span class="meta-label" style="font-size:0.82rem;">Status</span>
+      <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.orderstatus)">{{ selectedOrder.orderstatus }}</span>
+      <span style="color:#bbb;">→</span>
+      <select class="status-select status-select--panel"
+              [value]="editStatus"
+              (change)="editStatus = $any($event.target).value; savedAll = false">
+        <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+      </select>
+      <button class="save-order-btn"
+              (click)="saveAll()"
+              [disabled]="savingAll || savedAll">
+        {{ savingAll ? 'Saving...' : savedAll ? 'Saved ✓' : 'Save' }}
+      </button>
+      <span class="status-hint status-hint--changed" *ngIf="editStatus !== selectedOrder.orderstatus">
+        → <strong>{{ editStatus }}</strong>
+      </span>
     </div>
   </div>
   </ng-container>

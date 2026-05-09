@@ -228,37 +228,34 @@
   color: #c62828;
   border-color: #ffcdd2;
 }
-.view-panel-body {
-  padding: 20px;
+/* Fixed order info section */
+.panel-info-header {
+  padding: 12px 20px 10px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #e8e8e8;
+  background: #fff;
+}
+
+/* Scrollable items only */
+.panel-scroll-body {
+  flex: 1 1 0;
   overflow-y: auto;
-  flex: 1;
+  padding: 10px 20px;
+  min-height: 0;
 }
 
-/* Single column layout — status moved to bottom */
-.panel-columns {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.panel-col-left {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Status bottom bar */
-.status-bottom-bar {
+/* Fixed footer — status + save */
+.panel-fixed-footer {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  padding: 12px 0 4px;
-  margin-top: 8px;
+  padding: 10px 20px;
   border-top: 1.5px solid #e0e0e0;
+  background: #fafafa;
+  flex-shrink: 0;
 }
+
 
 /* Order info card — compact grid replacing individual meta rows */
 .order-info-card {
