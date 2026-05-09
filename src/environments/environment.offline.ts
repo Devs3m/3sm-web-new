@@ -11,4 +11,9 @@ export const environment = {
   apiHost: '',
   vcardApiUrl: '' as string,
   authHeaderFormat: 'Bearer' as 'Bearer' | 'token',
+  portalApiKey: '',
+  whatsappNumber: '',
+  upiId: '',
+  upiName: '',
+  upiPhone: ''
 };

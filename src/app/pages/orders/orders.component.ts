@@ -248,11 +248,50 @@ export class OrdersComponent implements OnInit {
     });
   }
 
+  private async loadImageAsBase64(url: string): Promise<string> {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(reader.result as string);
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(blob);
+      });
+    } catch { return ''; }
+  }
+
+  private getAccountLogoUrl(): Promise<string> {
+    return new Promise(resolve => {
+      this.portalService.getAccountDetails(this.accountId).subscribe({
+        next: (data: any) => resolve(data?.accountlogo ?? data?.logoUrl ?? ''),
+        error: () => resolve('')
+      });
+    });
+  }
+
+  private getInstanceManagerPhone(): Promise<string> {
+    return new Promise(resolve => {
+      this.portalService.getInstanceDetails(this.instanceId).subscribe({
+        next: (data: any) => resolve(data?.managermobile ?? data?.managerphone ?? this.upiPhone),
+        error: () => resolve(this.upiPhone)
+      });
+    });
+  }
+
   async printOrder(): Promise<void> {
     const order = this.selectedOrder;
     const items = this.selectedOrderItems;
     const upiUrl = `upi://pay?pa=${this.upiId}&pn=${encodeURIComponent(this.upiName)}&cu=INR`;
-    const qrDataUrl = await QRCode.toDataURL(upiUrl, { width: 100, margin: 1 });
+    const [accountLogoUrl, instancePhone] = await Promise.all([
+      this.getAccountLogoUrl(),
+      this.getInstanceManagerPhone()
+    ]);
+    const [qrDataUrl, customerLogoDataUrl, connectsiteLogoDataUrl] = await Promise.all([
+      QRCode.toDataURL(upiUrl, { width: 100, margin: 1 }),
+      accountLogoUrl ? this.loadImageAsBase64(accountLogoUrl) : Promise.resolve(''),
+      this.loadImageAsBase64('assets/logo.png')
+    ]);
 
     const fmt = (n: any) => parseFloat(String(n || 0)).toFixed(2);
     const deliveredItems = this.deliveryItems.filter(it => (Number(it.deliveredqty) || 0) > 0);
@@ -272,42 +311,39 @@ export class OrdersComponent implements OnInit {
 <meta charset="UTF-8"/>
 <title>order-${order.orderid}</title>
 <style>
-  @page { size: 105mm 148mm; margin: 4mm; }
+  @page { size: 105mm 148mm; margin-top: 0; margin-right: 4mm; margin-bottom: 4mm; margin-left: 4mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt; color: #111; width: 97mm; margin-top: 0; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt; color: #111; width: 97mm; }
 
-  /* Shop header — single line */
+  /* Shop header */
   .header { display: flex; align-items: center; justify-content: center; gap: 8px; padding-bottom: 4px; flex-wrap: wrap; }
+  .shop-logo { width: 28px; height: 28px; object-fit: contain; }
   .shop-name { font-size: 10.5pt; font-weight: 700; }
   .shop-divider { color: #bbb; font-size: 9pt; }
   .shop-sub  { font-size: 8pt; color: #555; }
 
+  /* Order info single line */
+  .order-meta-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 8pt;
+    padding: 4px 6px;
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin: 4px 0;
+    flex-wrap: wrap;
+  }
+  .oml-item { display: flex; align-items: center; gap: 3px; }
+  .oml-label { color: #888; font-weight: 600; font-size: 7pt; }
+  .oml-value { font-weight: 700; color: #111; }
+  .oml-sep { color: #ccc; }
+
   hr { border: none; border-top: 1px dashed #aaa; margin: 4px 0; }
   hr.solid { border-top: 1.5px solid #000; margin: 4px 0; }
 
-  /* Order info card — 2×2 grid */
-  .order-card {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 4px 0;
-  }
-  .oc-cell {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 6px;
-    border-right: 1px solid #e0e0e0;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  .oc-cell:nth-child(2n) { border-right: none; }
-  .oc-cell:nth-last-child(-n+2) { border-bottom: none; }
-  .oc-label { font-size: 7pt; color: #888; font-weight: 600; white-space: nowrap; }
-  .oc-label::after { content: ':'; }
-  .oc-value { font-size: 8pt; font-weight: 600; color: #111; }
-  .oc-id    { font-size: 8.5pt; font-weight: 700; color: #1a5c42; }
 
   .items-gap { margin-top: 8px; }
 
@@ -338,36 +374,44 @@ export class OrdersComponent implements OnInit {
   .upi-apps { font-size: 6.5pt; color: #666; margin-top: 4px; line-height: 1.5; }
 
   .footer { text-align: center; font-size: 7pt; color: #888; margin-top: 6px; padding-top: 4px; border-top: 1px solid #ddd; }
+  .powered-by { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px; font-size: 6.5pt; color: #aaa; }
+  .cs-logo { width: 14px; height: 14px; object-fit: contain; }
+  .shop-logo { width: 28px; height: 28px; object-fit: contain; border-radius: 4px; }
 </style>
 </head>
 <body>
 
 <div class="header">
+  ${customerLogoDataUrl ? `<img class="shop-logo" src="${customerLogoDataUrl}" alt="logo"/>` : ''}
   <span class="shop-name">${this.upiName}</span>
   <span class="shop-divider">|</span>
-  <span class="shop-sub">${this.upiPhone}</span>
+  <span class="shop-sub">${instancePhone}</span>
 </div>
 
 <hr class="solid"/>
 
-<!-- Order info card -->
-<div class="order-card">
-  <div class="oc-cell">
-    <div class="oc-label">Order #</div>
-    <div class="oc-value oc-id">#${order.orderid}</div>
+<!-- Order + date + phone — single line -->
+<div class="order-meta-line">
+  <div class="oml-item">
+    <span class="oml-label">Order#</span>
+    <span class="oml-value">${order.orderid}</span>
   </div>
-  <div class="oc-cell">
-    <div class="oc-label">Date</div>
-    <div class="oc-value">${new Date(order.orderdate).toLocaleDateString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric' })}</div>
+  <span class="oml-sep">|</span>
+  <div class="oml-item">
+    <span class="oml-label">Date</span>
+    <span class="oml-value">${new Date(order.orderdate).toLocaleDateString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric' })}</span>
   </div>
-  <div class="oc-cell">
-    <div class="oc-label">Customer</div>
-    <div class="oc-value">${order.customername ?? ''}</div>
+  <span class="oml-sep">|</span>
+  <div class="oml-item">
+    <span class="oml-label">Phone</span>
+    <span class="oml-value">${order.customerphone ?? ''}</span>
   </div>
-  <div class="oc-cell">
-    <div class="oc-label">Phone</div>
-    <div class="oc-value">${order.customerphone ?? ''}</div>
-  </div>
+</div>
+
+<!-- Customer name -->
+<div style="font-size:8.5pt; padding:3px 6px 4px;">
+  <span style="color:#888; font-size:7pt; font-weight:600;">Customer:</span>
+  <span style="font-weight:700;"> ${order.customername ?? ''}</span>
 </div>
 
 <div class="items-gap"></div>
@@ -402,7 +446,7 @@ export class OrdersComponent implements OnInit {
 <hr/>
 
 <div class="upi-section">
-  <div class="upi-title">&#9654; Pay via UPI</div>
+  <div class="upi-title">Scan and Pay</div>
   <div class="upi-body">
     <img class="qr-img" src="${qrDataUrl}" alt="UPI QR"/>
     <div class="upi-info">
@@ -413,7 +457,14 @@ export class OrdersComponent implements OnInit {
   </div>
 </div>
 
-<div class="footer">Thank you for your order!</div>
+<div class="footer">
+  <div class="powered-by">
+    <span>Thank you for your order!</span>
+    <span class="oml-sep">|</span>
+    ${connectsiteLogoDataUrl ? `<img src="${connectsiteLogoDataUrl}" alt="Connectsite" class="cs-logo"/>` : ''}
+    <span>Powered by <strong>connectsite.in</strong></span>
+  </div>
+</div>
 
 <script>
   window.onload = function() {
