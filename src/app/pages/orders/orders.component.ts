@@ -288,7 +288,7 @@ export class OrdersComponent implements OnInit {
       this.getInstanceManagerPhone()
     ]);
     const [qrDataUrl, customerLogoDataUrl, connectsiteLogoDataUrl] = await Promise.all([
-      QRCode.toDataURL(upiUrl, { width: 100, margin: 1 }),
+      QRCode.toDataURL(upiUrl, { width: 80, margin: 1 }),
       accountLogoUrl ? this.loadImageAsBase64(accountLogoUrl) : Promise.resolve(''),
       this.loadImageAsBase64('assets/logo.png')
     ]);
@@ -311,10 +311,10 @@ export class OrdersComponent implements OnInit {
 <meta charset="UTF-8"/>
 <title>order-${order.orderid}</title>
 <style>
-  @page { size: 105mm 148mm; margin-top: 0; margin-right: 4mm; margin-bottom: 4mm; margin-left: 4mm; }
+  @page { size: 105mm 148mm; margin: 3mm 4mm 4mm 4mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { margin: 0; padding: 0; }
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt; color: #111; width: 97mm; }
+  html, body { margin: 0; padding: 0; width: 100%; max-width: 97mm; overflow: hidden; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 8pt; color: #111; }
 
   /* Shop header */
   .header { display: flex; align-items: center; justify-content: center; gap: 8px; padding-bottom: 4px; flex-wrap: wrap; }
@@ -327,19 +327,21 @@ export class OrdersComponent implements OnInit {
   .order-meta-line {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 8pt;
-    padding: 4px 6px;
+    gap: 5px;
+    font-size: 7.5pt;
+    padding: 3px 5px;
     background: #f8f8f8;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
-    margin: 4px 0;
-    flex-wrap: wrap;
+    margin: 3px 0;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    width: 100%;
   }
-  .oml-item { display: flex; align-items: center; gap: 3px; }
-  .oml-label { color: #888; font-weight: 600; font-size: 7pt; }
-  .oml-value { font-weight: 700; color: #111; }
-  .oml-sep { color: #ccc; }
+  .oml-item { display: flex; align-items: center; gap: 2px; min-width: 0; }
+  .oml-label { color: #888; font-weight: 600; font-size: 6.5pt; white-space: nowrap; }
+  .oml-value { font-weight: 700; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .oml-sep { color: #ccc; flex-shrink: 0; }
 
   hr { border: none; border-top: 1px dashed #aaa; margin: 4px 0; }
   hr.solid { border-top: 1.5px solid #000; margin: 4px 0; }
@@ -348,15 +350,15 @@ export class OrdersComponent implements OnInit {
   .items-gap { margin-top: 8px; }
 
   /* Items table */
-  table.items { width: 100%; border-collapse: collapse; font-size: 8pt; margin: 3px 0; table-layout: fixed; }
-  table.items col.c-no   { width: 7%; }
-  table.items col.c-name { width: 43%; }
+  table.items { width: 100%; border-collapse: collapse; font-size: 7.5pt; margin: 3px 0; table-layout: fixed; }
+  table.items col.c-no   { width: 6%; }
+  table.items col.c-name { width: 44%; }
   table.items col.c-qty  { width: 10%; }
   table.items col.c-mrp  { width: 20%; }
   table.items col.c-tot  { width: 20%; }
-  table.items th { border-bottom: 1.5px solid #000; padding: 3px 2px; font-weight: 700; text-align: left; font-size: 7.5pt; }
+  table.items th { border-bottom: 1.5px solid #000; padding: 2px 2px; font-weight: 700; text-align: left; font-size: 7pt; }
   table.items th.r, table.items td.r { text-align: right; }
-  table.items td { padding: 2.5px 2px; border-bottom: 0.5px solid #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  table.items td { padding: 2px; border-bottom: 0.5px solid #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* Total */
   .total-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
@@ -364,19 +366,19 @@ export class OrdersComponent implements OnInit {
   .total-value { font-weight: 700; font-size: 10pt; }
 
   /* UPI section */
-  .upi-section { margin-top: 5px; }
+  .upi-section { margin-top: 5px; width: 100%; }
   .upi-title { font-weight: 700; font-size: 7.5pt; letter-spacing: 0.04em; margin-bottom: 4px; text-align: center; }
-  .upi-body { display: flex; align-items: center; justify-content: center; gap: 10px; }
-  .qr-img { width: 72px; height: 72px; }
-  .upi-info { text-align: left; }
-  .upi-id   { font-size: 7pt; font-weight: 700; word-break: break-all; }
-  .upi-name { font-size: 7.5pt; font-weight: 600; margin-bottom: 3px; }
-  .upi-apps { font-size: 6.5pt; color: #666; margin-top: 4px; line-height: 1.5; }
+  .upi-body { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+  .qr-img { width: 62px; height: 62px; flex-shrink: 0; }
+  .upi-info { text-align: left; min-width: 0; flex: 1; }
+  .upi-id   { font-size: 6.5pt; font-weight: 700; word-break: break-all; }
+  .upi-name { font-size: 7pt; font-weight: 600; margin-bottom: 2px; }
+  .upi-apps { font-size: 6pt; color: #666; margin-top: 3px; line-height: 1.5; }
 
-  .footer { text-align: center; font-size: 7pt; color: #888; margin-top: 6px; padding-top: 4px; border-top: 1px solid #ddd; }
-  .powered-by { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px; font-size: 6.5pt; color: #aaa; }
-  .cs-logo { width: 14px; height: 14px; object-fit: contain; }
-  .shop-logo { width: 28px; height: 28px; object-fit: contain; border-radius: 4px; }
+  .footer { text-align: center; font-size: 6.5pt; color: #888; margin-top: 5px; padding-top: 3px; border-top: 1px solid #ddd; width: 100%; }
+  .powered-by { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 6.5pt; color: #aaa; flex-wrap: nowrap; }
+  .cs-logo { width: 12px; height: 12px; object-fit: contain; flex-shrink: 0; }
+  .shop-logo { width: 26px; height: 26px; object-fit: contain; border-radius: 3px; flex-shrink: 0; }
 </style>
 </head>
 <body>
