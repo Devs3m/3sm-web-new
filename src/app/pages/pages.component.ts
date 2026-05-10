@@ -34,6 +34,7 @@ export class PagesComponent implements OnInit {
 
   accountName: string = '';
   accountLogo: string = '';
+  instanceManagerPhone: string = '';
 
   constructor(
     public authService: AuthService,
@@ -144,6 +145,7 @@ export class PagesComponent implements OnInit {
               : st === 'all'
                 ? 'all'
                 : 'sales';
+        this.instanceManagerPhone = instance?.managermobile || instance?.managerphone || instance?.managernumber || '';
         this.cdr.detectChanges();
       },
       error: () => {

@@ -46,11 +46,6 @@
     <mat-icon class="example-icon" aria-label="Example">shopping_cart_checkout_24</mat-icon>
   </button>
 
-  <a href="https://wa.me/919042041321" target="_blank">
-    <button mat-icon-button>
-      <mat-icon class="example-icon" aria-label="Example">forum_24"</mat-icon>
-    </button>
-   </a>
 
    <button mat-icon-button *ngIf="authService.isAuthenticated()" (click)="authService.logout()">
     <mat-icon class="example-icon" aria-label="Example">logout_24</mat-icon>
@@ -157,7 +152,7 @@
     <router-outlet></router-outlet>
   </div>
 </mat-sidenav-container>
-<app-whatsapp-widget></app-whatsapp-widget>
+<app-whatsapp-widget [number]="instanceManagerPhone"></app-whatsapp-widget>
 </ng-container>
 
 <ng-template #fullPageVCard>

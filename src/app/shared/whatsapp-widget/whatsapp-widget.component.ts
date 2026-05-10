@@ -1,5 +1,4 @@
-import { Component } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-whatsapp-widget',
@@ -7,10 +6,20 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./whatsapp-widget.component.css']
 })
 export class WhatsappWidgetComponent {
-  readonly number = environment.whatsappNumber;
+  @Input() number: string = '';
+  panelOpen = false;
+  userMessage = '';
 
-  openChat(): void {
-    const url = `https://wa.me/${this.number}?text=${encodeURIComponent('Hello, I have a query.')}`;
+  togglePanel(): void {
+    this.panelOpen = !this.panelOpen;
+  }
+
+  sendMessage(): void {
+    const text = this.userMessage.trim() || 'Hello, I have a query.';
+    const cleaned = this.number.replace(/\D/g, '');
+    const url = `https://wa.me/${cleaned}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank', 'noopener');
+    this.userMessage = '';
+    this.panelOpen = false;
   }
 }
