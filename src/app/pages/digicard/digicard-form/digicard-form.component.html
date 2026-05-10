@@ -1,4 +1,4 @@
-<section>
+﻿<section>
     <div class="form-backdrop" [class.open]="isFormOpen" (click)="restDigicardForm()"></div>
     <div class="form-container" [class.open]="isFormOpen">
         <p style="font-size: larger;">Add City</p>
@@ -215,16 +215,23 @@
 </div>
 
     <div class="pos-relative">
-        <div class="btn-pos-list">
-            <button (click)="toggleForm()" class="add-btn">
-                <mat-icon>add_circle</mat-icon>
-            </button>
-        </div>
-        <dx-data-grid [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" [dataSource]="apiData"
+    <dx-data-grid [sortByGroupSummaryInfo]="[{ summaryItem: 'count', sortOrder: 'desc' }]" [dataSource]="apiData"
             [allowColumnReordering]="true" [allowColumnResizing]="true" [showBorders]="true"
             [headerFilter]="{ visible: true }" [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
             title="Digicard" [columns]="['digicardid','companyname', 'digicardmobile1','createddate','Actions']"
             [paging]="{ pageSize: 12 }" [showBorders]="true" (onExporting)="onExporting($event)">
+
+      <dxo-toolbar>
+        <dxi-item location="before">
+          <div *dxTemplate>
+            <button (click)="toggleForm()" class="add-btn">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        </dxi-item>
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+      </dxo-toolbar>
 
             <dxi-column dataField="digicardid" caption="Digicard ID" [cellTemplate]="'digiTemplate'"></dxi-column>
             <dxi-column dataField="companyname" caption="Company Name"></dxi-column>

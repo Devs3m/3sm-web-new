@@ -119,7 +119,10 @@ body { margin: 10; font-family: Roboto, "Helvetica Neue", sans-serif; padding: 0
 }
 mat-toolbar {
   display: flex !important;
-  align-items: left !important;
+  align-items: center !important;
+  position: relative !important;
+  background-color: #263238 !important;
+  color: #fff !important;
 }
 .mdc-list-item__primary-text{
   display: flex;
@@ -329,13 +332,12 @@ html, body {
 
 .add-btn{
   border-radius: 2px;
-  background: transparent ;
+  background: transparent;
   color: black;
   text-align: center;
   font-size: 18px;
   border: none;
   box-shadow: none;
- 
   margin-left: 0px !important;
   width: inherit !important;
 }
@@ -371,15 +373,12 @@ box-shadow: gray;
 }
 .btn-primary{
   display: block;
-  /* margin-top: 20px; */
-  /* width: 10%; */
-  /* margin-left: 855px !important; */
-  /* margin: 0 auto; */
   box-shadow: none;
   font-size: 16px;
   font-weight: 500;
   padding: 8px 15px;
-  background-color: var(--primary-color);
+  background-color: #111 !important;
+  color: #fff !important;
 }
 .btn-primary.w-100{
     width: 100%;
@@ -406,16 +405,16 @@ box-shadow: gray;
   cursor: pointer;
 }
 .edit-icon {
-  color: #337ab7;
+  color: #111;
 }
 .delete-icon {
-  color: #f44336;
+  color: #111;
 }
 .print-icon {
-  color: #c62828;
+  color: #111;
 }
 .view-icon {
-  color: #337ab7;
+  color: #111;
 }
 
 /* Mat Datepicker calendar overlay - ensure visible above other content */

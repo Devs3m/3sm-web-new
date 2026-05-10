@@ -11,6 +11,7 @@ import { PermissionService } from '../service/permission.service';
 import { SupplierService } from '../service/supplier.service';
 import { PurchaseService } from '../service/purchase.service';
 import { OrdersService } from '../orders/orders.service';
+import { ProductService } from '../service/product.service';
 import { MenuSettingsService } from '../service/menu-settings.service';
 import * as Highcharts from 'highcharts';
 import { formatDisplayDecimal } from '../../core/display-number-format';
@@ -115,9 +116,39 @@ export class DashboardComponent implements OnInit {
   orderConfirmed = 0;
   orderCancelled = 0;
   orderValue = 0;
+  orderPendingValue = 0;
+  orderTotalValue = 0;
 
   get showOrdersCard(): boolean {
     return this.menuSettings.isEnabled('orders');
+  }
+
+  get dynamicHint(): string {
+    if (!this.filterMonthDisplayLabel) return '';
+    const monthFiltered: string[] = [];
+    const overall: string[] = [];
+
+    if (this.menuSettings.isEnabled('sales') || this.menuSettings.isEnabled('inventorysales')) {
+      monthFiltered.push('Sales');
+    }
+    if (this.menuSettings.isEnabled('purchase')) monthFiltered.push('Purchases');
+    if (this.menuSettings.isEnabled('orders'))   monthFiltered.push('Orders');
+
+    if (this.showAccountAndInstanceCards) {
+      overall.push('Company', 'Instances');
+    }
+    if (this.menuSettings.isEnabled('supplier')) overall.push('Suppliers');
+    if (this.menuSettings.isEnabled('product'))  overall.push('Products');
+    overall.push('Customers');
+
+    const parts: string[] = [];
+    if (monthFiltered.length) {
+      parts.push(`${monthFiltered.join(', ')} use <strong>${this.filterMonthDisplayLabel}</strong>`);
+    }
+    if (overall.length) {
+      parts.push(`${overall.join(', ')} show overall figures`);
+    }
+    return parts.join('. ') + (parts.length ? '.' : '');
   }
 
   /** Product sales only (no service sales dashboard) — inventory or ecommerce instance. */
@@ -170,6 +201,7 @@ export class DashboardComponent implements OnInit {
     private supplierService: SupplierService,
     private purchaseService: PurchaseService,
     private ordersService: OrdersService,
+    private productService: ProductService,
     private authService: AuthService,
     private permissionService: PermissionService,
     public menuSettings: MenuSettingsService
@@ -177,7 +209,17 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.filterMonth = this.getCurrentMonthYm();
+    this.buildProductChart();
+    this.buildOrderRoseChart();
+    this.buildOverviewBarChart();
+    this.buildPurchaseBarChart();
+    this.buildSalesBarChart();
+    this.serviceSalesBarOptions = this.miniBarOptions(['Invoices'], [{ y: 0, color: '#ff9800' }]);
+    this.productSalesBarOptions = this.miniBarOptions(['Invoices'], [{ y: 0, color: '#00acc1' }]);
     this.loadDashboardData();
+    if (this.menuSettings.isEnabled('product')) {
+      this.loadProductMetrics();
+    }
     if (this.showOrdersCard) {
       this.loadOrderMetrics();
     }
@@ -195,10 +237,229 @@ export class DashboardComponent implements OnInit {
         this.orderPending   = list.filter(o => o.orderstatus === 'PENDING').length;
         this.orderConfirmed = list.filter(o => o.orderstatus === 'CONFIRMED').length;
         this.orderCancelled = list.filter(o => o.orderstatus === 'CANCELLED').length;
-        this.orderValue     = list
-          .filter(o => o.orderstatus === 'CONFIRMED')
-          .reduce((sum: number, o: any) => sum + (Number(o.order_grand_total ?? o.grandtotal ?? 0) || 0), 0);
+        const val = (o: any) => Number(o.order_grand_total ?? o.grandtotal ?? 0) || 0;
+        this.orderValue        = list.filter(o => o.orderstatus === 'CONFIRMED').reduce((s, o) => s + val(o), 0);
+        this.orderPendingValue = list.filter(o => o.orderstatus === 'PENDING').reduce((s, o) => s + val(o), 0);
+        this.orderTotalValue   = list.reduce((s, o) => s + val(o), 0);
+        this.buildOrderRoseChart();
       });
+  }
+
+  // Product metrics
+  productTotal = 0;
+  productActive = 0;
+  productInactive = 0;
+  productBarOptions: Highcharts.Options = {};
+
+  orderRoseOptions: Highcharts.Options = {};
+  overviewBarOptions: Highcharts.Options = {};
+  purchaseBarOptions: Highcharts.Options = {};
+  salesBarOptions: Highcharts.Options = {};
+  serviceSalesBarOptions: Highcharts.Options = {};
+  productSalesBarOptions: Highcharts.Options = {};
+
+  loadProductMetrics(): void {
+    this.productService.getProductDetails().pipe(catchError(() => of([]))).subscribe((data: any[]) => {
+      const list = Array.isArray(data) ? data : [];
+      this.productTotal    = list.length;
+      this.productActive   = list.filter(p => p.productisactive === true || p.productisactive === 'true' || p.productisactive === 1).length;
+      this.productInactive = this.productTotal - this.productActive;
+      this.buildProductChart();
+    });
+  }
+
+  buildProductChart(): void {
+    this.productBarOptions = {
+      chart: { type: 'pie', backgroundColor: 'transparent', height: 140, plotBorderWidth: 0, margin: [0,0,0,0], spacing: [4,4,4,4] },
+      title: { text: '' },
+      credits: { enabled: false },
+      legend: { enabled: false },
+      tooltip: { pointFormat: '<b>{point.name}</b>: {point.y}' },
+      plotOptions: {
+        pie: {
+          innerSize: '55%',
+          borderWidth: 3,
+          borderColor: '#f0f2f8',
+          dataLabels: {
+            enabled: true,
+            format: '{point.y}',
+            distance: -14,
+            style: { fontSize: '10px', fontWeight: '700', textOutline: 'none', color: '#fff' },
+            filter: { property: 'y', operator: '>', value: 0 }
+          },
+          startAngle: -90
+        }
+      },
+      series: [{
+        type: 'pie',
+        name: 'Products',
+        center: ['50%', '50%'],
+        size: '80%',
+        data: [
+          { name: 'Active',   y: this.productActive,   color: '#43a047' },
+          { name: 'Inactive', y: this.productInactive, color: '#e53935' },
+          ...(this.productTotal === 0 ? [{ name: 'No products', y: 1, color: '#e8ecf4' }] : [])
+        ]
+      }] as any
+    };
+  }
+
+  buildOverviewBarChart(): void {
+    const categories = [];
+    const data: any[] = [];
+    if (this.showAccountAndInstanceCards) {
+      categories.push('Company', 'Instances');
+      data.push(
+        { y: this.accountCount,  color: '#4e6ef2' },
+        { y: this.instanceCount, color: '#7c5cbf' }
+      );
+    }
+    categories.push('Customers');
+    data.push({ y: this.customerCount, color: '#1abc9c' });
+
+    this.overviewBarOptions = {
+      chart: { type: 'bar', backgroundColor: 'transparent', height: 140, margin: [4, 16, 4, 4], spacing: [2,2,2,2] },
+      title: { text: '' },
+      credits: { enabled: false },
+      legend: { enabled: false },
+      tooltip: { pointFormat: '<b>{point.category}</b>: {point.y}' },
+      xAxis: {
+        categories,
+        lineWidth: 0,
+        tickWidth: 0,
+        labels: { style: { fontSize: '10px', color: '#697386', fontWeight: '600' } }
+      },
+      yAxis: { visible: false, min: 0 },
+      plotOptions: {
+        bar: {
+          borderRadius: 4,
+          borderWidth: 0,
+          dataLabels: {
+            enabled: true,
+            format: '{point.y}',
+            style: { fontSize: '10px', fontWeight: '700', textOutline: 'none', color: '#1a1f36' }
+          }
+        }
+      },
+      series: [{ type: 'bar', name: 'Overview', colorByPoint: true, data }] as any
+    };
+  }
+
+  private miniBarOptions(categories: string[], data: any[]): Highcharts.Options {
+    return {
+      chart: { type: 'bar', backgroundColor: 'transparent', height: 140, margin: [4, 36, 4, 4], spacing: [2,2,2,2] },
+      title: { text: '' },
+      credits: { enabled: false },
+      legend: { enabled: false },
+      tooltip: { pointFormat: '<b>{point.category}</b>: {point.y}' },
+      xAxis: { categories, lineWidth: 0, tickWidth: 0, labels: { style: { fontSize: '10px', color: '#697386', fontWeight: '600' } } },
+      yAxis: { visible: false, min: 0 },
+      plotOptions: {
+        bar: {
+          borderRadius: 4, borderWidth: 0, colorByPoint: true,
+          dataLabels: { enabled: true, format: '{point.y}', style: { fontSize: '10px', fontWeight: '700', textOutline: 'none', color: '#1a1f36' } }
+        }
+      },
+      series: [{ type: 'bar', name: '', data } as any]
+    };
+  }
+
+  buildPurchaseBarChart(): void {
+    const categories: string[] = [];
+    const data: any[] = [];
+    if (this.menuSettings.isEnabled('supplier')) {
+      categories.push('Suppliers'); data.push({ y: this.supplierCount, color: '#5d6d8a' });
+    }
+    if (this.menuSettings.isEnabled('purchase')) {
+      categories.push('GRNs'); data.push({ y: this.purchaseCount, color: '#2196f3' });
+      categories.push('Stock Items'); data.push({ y: this.stockProductsAvailable, color: '#00bfa5' });
+    }
+    this.purchaseBarOptions = this.miniBarOptions(categories, data);
+  }
+
+  buildSalesBarChart(): void {
+    const svcCats: string[] = [];
+    const svcData: any[] = [];
+    if (this.showCustomersCardInSalesFirst) {
+      svcCats.push('Customers'); svcData.push({ y: this.customerCount, color: '#1abc9c' });
+    }
+    svcCats.push('Invoices'); svcData.push({ y: this.serviceSalesCount, color: '#ff9800' });
+    this.serviceSalesBarOptions = this.miniBarOptions(svcCats, svcData);
+
+    this.productSalesBarOptions = this.miniBarOptions(
+      ['Invoices'],
+      [{ y: this.productSalesCount, color: '#00acc1' }]
+    );
+  }
+
+  getOrderValuesGradient(): string {
+    const total = this.orderTotalValue || 1;
+    const confirmed = (this.orderValue         / total) * 360;
+    const pending   = (this.orderPendingValue  / total) * 360;
+    return `conic-gradient(#43a047 0deg ${confirmed}deg, #ff9800 ${confirmed}deg ${confirmed + pending}deg, #e8ecf4 ${confirmed + pending}deg 360deg)`;
+  }
+
+  getOrdersGradient(): string {
+    const total = this.orderTotal || 1;
+    const p = (this.orderPending   / total) * 360;
+    const c = (this.orderConfirmed / total) * 360;
+    const x = (this.orderCancelled / total) * 360;
+    const rest = 360 - p - c - x;
+    return `conic-gradient(#ff9800 0deg ${p}deg, #43a047 ${p}deg ${p+c}deg, #e53935 ${p+c}deg ${p+c+x}deg, #e8ecf4 ${p+c+x}deg 360deg)`;
+  }
+
+  getProductsGradient(): string {
+    const total = this.productTotal || 1;
+    const a = (this.productActive   / total) * 360;
+    const i = (this.productInactive / total) * 360;
+    return `conic-gradient(#43a047 0deg ${a}deg, #e53935 ${a}deg ${a+i}deg, #e8ecf4 ${a+i}deg 360deg)`;
+  }
+
+  buildOrderRoseChart(): void {
+    const total = this.orderTotal || 1;
+    this.orderRoseOptions = {
+      chart: {
+        type: 'pie',
+        backgroundColor: 'transparent',
+        height: 140,
+        plotBorderWidth: 0,
+        margin: [0, 0, 0, 0],
+        spacing: [4, 4, 4, 4]
+      },
+      title: { text: '' },
+      credits: { enabled: false },
+      legend: { enabled: false },
+      tooltip: {
+        pointFormat: '<b>{point.name}</b>: {point.y} ({point.percentage:.0f}%)'
+      },
+      plotOptions: {
+        pie: {
+          innerSize: '55%',
+          borderWidth: 3,
+          borderColor: '#f0f2f8',
+          dataLabels: {
+            enabled: true,
+            format: '{point.y}',
+            distance: -14,
+            style: { fontSize: '10px', fontWeight: '700', textOutline: 'none', color: '#fff' },
+            filter: { property: 'y', operator: '>', value: 0 }
+          },
+          startAngle: -90
+        }
+      },
+      series: [{
+        type: 'pie',
+        name: 'Orders',
+        center: ['50%', '50%'],
+        size: '80%',
+        data: [
+          { name: 'Pending',   y: this.orderPending,   color: '#ff9800' },
+          { name: 'Confirmed', y: this.orderConfirmed, color: '#43a047' },
+          { name: 'Cancelled', y: this.orderCancelled, color: '#e53935' },
+          ...(this.orderTotal === 0 ? [{ name: 'No orders', y: 1, color: '#e8ecf4' }] : [])
+        ]
+      }] as any
+    };
   }
 
   private getCurrentMonthYm(): string {
@@ -488,6 +749,7 @@ export class DashboardComponent implements OnInit {
     this.instanceCount = c.instanceList.length;
     this.customerCount = c.customerList.length;
     this.supplierCount = c.suppliersFiltered.length;
+    this.buildOverviewBarChart();
 
     this.currentStockValue = c.stockValue.totalStockValue;
     this.stockProductsAvailable = c.stockValue.productsAvailable;
@@ -517,6 +779,9 @@ export class DashboardComponent implements OnInit {
       this.salesCount = this.productSalesCount;
       this.salesValue = this.productSalesValue;
     }
+
+    this.buildPurchaseBarChart();
+    this.buildSalesBarChart();
 
     this.buildChart(
       this.showServiceSalesDashboard ? c.salesFiltered : [],

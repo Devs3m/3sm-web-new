@@ -1,4 +1,4 @@
-<section>  
+﻿<section>  
     <div class="form-backdrop" [class.open]="isFormOpen" (click)="restGstForm()"></div>
     <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">Add GST %</p>
@@ -73,14 +73,7 @@
       </div>
 
       <div class="pos-relative">
-        <div class="btn-pos-list">
-          <button (click)="toggleForm()" class="add-btn" >
-            <mat-icon>add_circle</mat-icon>
-          </button>
-        </div>
-    
-    
-        <dx-data-grid 
+    <dx-data-grid 
         [dataSource]="apiData"
         [allowColumnReordering]="true" 
         [allowColumnResizing]="true" 
@@ -90,6 +83,18 @@
         title="GST %" 
         [paging]="{ pageSize: 12 }" 
         [showBorders]="true" (onExporting)="onExporting($event)">
+
+      <dxo-toolbar>
+        <dxi-item location="before">
+          <div *dxTemplate>
+            <button (click)="toggleForm()" class="add-btn">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        </dxi-item>
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+      </dxo-toolbar>
 
     
       <dxi-column dataField="gstid"[allowSorting]="true" [sortOrder]="'asc'"caption="GST ID" [width]="130"></dxi-column>

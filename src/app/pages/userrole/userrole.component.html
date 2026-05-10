@@ -1,4 +1,4 @@
-<section>
+﻿<section>
   <div class="form-backdrop" [class.open]="isFormOpen" (click)="restuserroleForm()"></div>
   <div *ngIf="permissionNotification" class="permission-toast" [ngClass]="permissionNotification.type" role="alert">
     <span>{{ permissionNotification.message }}</span>
@@ -74,14 +74,7 @@
 </div>
 
     <div class="pos-relative">
-      <div class="btn-pos-list">
-        <button *appHasPermission="'userrole:create'" (click)="toggleForm()" class="add-btn" >
-          <mat-icon>add_circle</mat-icon>
-        </button>
-      </div>
-
-  
-      <dx-data-grid 
+  <dx-data-grid 
       [dataSource]="apiData"
       [allowColumnReordering]="true" 
       [allowColumnResizing]="true" 
@@ -91,8 +84,19 @@
       [paging]="{ pageSize: 12 }" 
       title="User Role"  
       [showBorders]="true" (onExporting)="onExporting($event)">
-  
-      <dxi-column dataField="userroleid" caption="Userrole ID" [width]="150" [allowSorting]="true"  [calculateSortValue]="userroleIdSortValue" [sortOrder]="'desc'" [sortIndex]="0"></dxi-column>
+
+      <dxo-toolbar>
+        <dxi-item *appHasPermission="'userrole:create'" location="before">
+          <div *dxTemplate>
+            <button (click)="toggleForm()" class="add-btn">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        </dxi-item>
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+      </dxo-toolbar>
+  <dxi-column dataField="userroleid" caption="Userrole ID" [width]="150" [allowSorting]="true"  [calculateSortValue]="userroleIdSortValue" [sortOrder]="'desc'" [sortIndex]="0"></dxi-column>
       <dxi-column dataField="userrolename" caption="Userrole Name" [width]="220"></dxi-column>
       <dxi-column dataField="createddate" caption="Created Date" [width]="225" [calculateCellValue]="createdDateCellValue"></dxi-column>
       <dxi-column dataField="updateddate" caption="Updated Date" [width]="225" [calculateCellValue]="updatedDateCellValue"></dxi-column>

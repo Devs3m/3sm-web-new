@@ -5,6 +5,7 @@ import { UserService } from './service/user.service';
 import { PermissionService } from './service/permission.service';
 import { InstanceService } from './service/instance.service';
 import { MenuSettingsService } from './service/menu-settings.service';
+import { AccountService } from './service/account.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -16,6 +17,14 @@ export class PagesComponent implements OnInit {
   title = '3sm-web';
   shouldRun: any;
   hideNavForVCard: boolean = false;
+  sidebarExpanded: boolean = true;
+
+  toggleSidebar(): void {
+    this.sidebarExpanded = !this.sidebarExpanded;
+    this.cdr.detectChanges();
+    // Re-trigger after transition completes so container recalculates content margin
+    setTimeout(() => this.cdr.detectChanges(), 260);
+  }
   loggedInUser: any = null;
   userName: string = '';
   userEmail: string = '';
@@ -23,12 +32,16 @@ export class PagesComponent implements OnInit {
   /** 'sales' | 'inventory_sales' | 'ecommerce' | 'all' from current instance; null = loading or super admin (show both) */
   instanceSalestype: 'sales' | 'inventory_sales' | 'ecommerce' | 'all' | null = null;
 
+  accountName: string = '';
+  accountLogo: string = '';
+
   constructor(
     public authService: AuthService,
     private userService: UserService,
     public permissionService: PermissionService,
     private instanceService: InstanceService,
     public menuSettings: MenuSettingsService,
+    private accountService: AccountService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -43,6 +56,7 @@ export class PagesComponent implements OnInit {
     this.fetchUserDetailsFromAPI();
     this.getUserRole();
     this.loadInstanceSalestype();
+    this.loadAccountDetails();
     this.menuSettings.loadFromApi().subscribe();
     
     // Wait for permissions to load before showing menus
@@ -137,6 +151,42 @@ export class PagesComponent implements OnInit {
         this.instanceSalestype = 'sales';
         this.cdr.detectChanges();
       }
+    });
+  }
+
+  loadAccountDetails(): void {
+    const accountId = this.authService.getAccountId();
+    if (!accountId) {
+      this.loadAccountFromList();
+      return;
+    }
+    this.accountService.getAccountById(accountId).subscribe({
+      next: (account: any) => {
+        const data = Array.isArray(account) ? account[0] : account;
+        if (data) {
+          this.accountName = data.companyname || data.accountname || data.name || '';
+          this.accountLogo = data.accountimage || data.logo || data.companylogo || '';
+          this.cdr.detectChanges();
+        }
+        if (!this.accountName) this.loadAccountFromList();
+      },
+      error: () => this.loadAccountFromList()
+    });
+  }
+
+  loadAccountFromList(): void {
+    this.accountService.getAccountDetails().subscribe({
+      next: (accounts: any) => {
+        const list = Array.isArray(accounts) ? accounts : accounts?.data || [];
+        const accountId = this.authService.getAccountId();
+        const account = accountId ? list.find((a: any) => a.accountid == accountId || a.id == accountId) : list[0];
+        if (account) {
+          this.accountName = account.companyname || account.accountname || account.name || '';
+          this.accountLogo = account.accountimage || account.logo || account.companylogo || '';
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {}
     });
   }
 

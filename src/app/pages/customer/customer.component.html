@@ -1,4 +1,4 @@
-<section>
+﻿<section>
   <div class="form-backdrop" [class.open]="isFormOpen" (click)="resetForm()"></div>
   <!-- Add / Edit Form -->
   <div class="form-container" [class.open]="isFormOpen">
@@ -160,12 +160,6 @@
   </div>
 
   <div class="pos-relative">
-    <div class="btn-pos-list">
-      <button *appHasPermission="'customer:create'" (click)="toggleForm()" class="add-btn">
-        <mat-icon>add_circle</mat-icon>
-      </button>
-    </div>
-
     <dx-data-grid
       [dataSource]="customers"
       [allowColumnReordering]="true"
@@ -176,6 +170,18 @@
       [paging]="{ pageSize: 15 }"
       (onExporting)="onExporting($event)"
       title="Customers">
+
+      <dxo-toolbar>
+        <dxi-item *appHasPermission="'customer:create'" location="before">
+          <div *dxTemplate>
+            <button *appHasPermission="'customer:create'" (click)="toggleForm()" class="add-btn">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        </dxi-item>
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+      </dxo-toolbar>
 
       <dxi-column
         dataField="customerid"

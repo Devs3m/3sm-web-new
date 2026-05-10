@@ -1,4 +1,4 @@
-<ng-container>
+﻿<ng-container>
 <section class="sales-container" [class.form-mode]="isFormOpen" [class.sales-add-customer-popup-open]="showAddCustomerModal">
 
   <!-- Invoice Form -->
@@ -342,12 +342,7 @@
 </div>
 
     <div class="pos-relative">
-      <div class="btn-pos-list">
-        <button *appHasPermission="'sales:create'" routerLink="/pages/salesadd" class="add-btn">
-          <mat-icon>add_circle</mat-icon>
-        </button>
-      </div>
-      <dx-data-grid
+    <dx-data-grid
         [dataSource]="salesSummaryList"
         [allowColumnReordering]="true"
         [allowColumnResizing]="true"
@@ -357,6 +352,18 @@
         [paging]="{ pageSize: 15 }"
         title="Service Sales Summary"
         (onExporting)="onExporting($event)">
+
+      <dxo-toolbar>
+        <dxi-item *appHasPermission="'sales:create'" location="before">
+          <div *dxTemplate>
+            <button routerLink="/pages/salesadd" class="add-btn">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        </dxi-item>
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+      </dxo-toolbar>
         <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx', 'pdf']"></dxo-export>
         <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150" [calculateCellValue]="invoiceNoCellValue"></dxi-column>
         <dxi-column dataField="customername" caption="Customer Name"></dxi-column> 

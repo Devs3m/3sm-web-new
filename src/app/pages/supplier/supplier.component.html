@@ -1,4 +1,4 @@
-<section>
+﻿<section>
   <div class="form-backdrop" [class.open]="isFormOpen" (click)="resetForm()"></div>
   <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">{{ isEditMode ? 'Edit Supplier' : 'Add Supplier' }}</p>
@@ -136,12 +136,6 @@
   </div>
 
   <div class="pos-relative">
-    <div class="btn-pos-list">
-      <button *appHasPermission="'supplier:create'" (click)="toggleForm()" class="add-btn">
-        <mat-icon>add_circle</mat-icon>
-      </button>
-    </div>
-
     <dx-data-grid
       [dataSource]="suppliers"
       [allowColumnReordering]="true"
@@ -152,6 +146,18 @@
       [paging]="{ pageSize: 15 }"
       (onExporting)="onExporting($event)"
       title="Suppliers">
+
+      <dxo-toolbar>
+        <dxi-item *appHasPermission="'supplier:create'" location="before">
+          <div *dxTemplate>
+            <button *appHasPermission="'supplier:create'" (click)="toggleForm()" class="add-btn">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        </dxi-item>
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+      </dxo-toolbar>
 
       <dxi-column dataField="supplierid" caption="ID" [width]="80" [sortOrder]="'desc'" [sortIndex]="0"></dxi-column>
       <dxi-column dataField="suppliername" caption="Supplier Name" [width]="190"></dxi-column>

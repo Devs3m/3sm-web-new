@@ -9,233 +9,221 @@
     <div class="dashboard-header-actions">
       <label class="month-filter-label">
         <span class="month-filter-text">Month</span>
-        <input
-          class="month-filter-input"
-          type="month"
-          name="dashboardMonth"
-          [(ngModel)]="filterMonth"
-          (ngModelChange)="onFilterMonthChange()"
-          title="Filter sales, purchases, and chart" />
+        <input class="month-filter-input" type="month" name="dashboardMonth"
+          [(ngModel)]="filterMonth" (ngModelChange)="onFilterMonthChange()" title="Filter"/>
       </label>
-      <button type="button" class="refresh-btn" (click)="loadDashboardData()" title="Refresh data">
+      <button type="button" class="refresh-btn" (click)="loadDashboardData()" title="Refresh">
         <mat-icon>refresh</mat-icon>
       </button>
     </div>
   </div>
 
-  <p class="dashboard-filter-hint" *ngIf="!isLoading && filterMonthDisplayLabel && !isInstanceServiceSalesOnly">
-    Sales, purchase totals, and the chart use <strong>{{ filterMonthDisplayLabel }}</strong>. Company, customers, suppliers, and stock show overall figures.
-  </p>
-  <p class="dashboard-filter-hint" *ngIf="!isLoading && filterMonthDisplayLabel && isInstanceServiceSalesOnly">
-    Sales and the chart use <strong>{{ filterMonthDisplayLabel }}</strong>. Customer count is shown in the Sales section.
-  </p>
+  <p class="dashboard-filter-hint" *ngIf="!isLoading && dynamicHint"
+     [innerHTML]="dynamicHint"></p>
 
-  <!-- Loading state -->
+  <!-- Loading -->
   <div class="loading-overlay" *ngIf="isLoading">
     <mat-progress-spinner mode="indeterminate" diameter="48" color="primary"></mat-progress-spinner>
     <p>Loading dashboard...</p>
   </div>
 
-  <!-- ================= ORDERS SECTION ================= -->
-  <div class="card-section" *ngIf="!isLoading && showOrdersCard">
-    <h3 class="section-title">Orders</h3>
-    <div class="stat-cards five-col">
+  <!-- ================= ALL METRIC CARDS — ONE ROW ================= -->
+  <div class="dash-cards-row" *ngIf="!isLoading">
 
-      <div class="stat-card orders-total">
-        <div class="stat-icon-wrap"><mat-icon>shopping_bag</mat-icon></div>
-        <div class="stat-body">
-          <span class="stat-label">Total Orders</span>
-          <span class="stat-value">{{ orderTotal }}</span>
+    <!-- Orders -->
+    <div class="orders-rose-card" *ngIf="showOrdersCard">
+      <p class="rose-card-title">Orders</p>
+      <div class="css-donut-wrap">
+        <div class="css-donut" [style.background]="getOrdersGradient()">
+          <div class="css-donut-hole"></div>
         </div>
       </div>
-
-      <div class="stat-card orders-pending">
-        <div class="stat-icon-wrap"><mat-icon>hourglass_empty</mat-icon></div>
-        <div class="stat-body">
-          <span class="stat-label">Pending</span>
-          <span class="stat-value">{{ orderPending }}</span>
+      <div class="rose-legend">
+        <div class="rose-legend-item">
+          <span class="rose-dot" style="background:#ff9800;"></span>
+          <span class="rose-legend-label">Pending</span>
+          <span class="rose-legend-value">{{ orderPending }}</span>
+        </div>
+        <div class="rose-legend-item">
+          <span class="rose-dot" style="background:#43a047;"></span>
+          <span class="rose-legend-label">Confirmed</span>
+          <span class="rose-legend-value">{{ orderConfirmed }}</span>
+        </div>
+        <div class="rose-legend-item">
+          <span class="rose-dot" style="background:#e53935;"></span>
+          <span class="rose-legend-label">Cancelled</span>
+          <span class="rose-legend-value">{{ orderCancelled }}</span>
         </div>
       </div>
-
-      <div class="stat-card orders-confirmed">
-        <div class="stat-icon-wrap"><mat-icon>check_circle</mat-icon></div>
-        <div class="stat-body">
-          <span class="stat-label">Confirmed</span>
-          <span class="stat-value">{{ orderConfirmed }}</span>
-        </div>
+      <div class="rose-card-footer">
+        <span class="rose-footer-label">Total</span>
+        <span class="rose-footer-value">{{ orderTotal }}</span>
       </div>
-
-      <div class="stat-card orders-cancelled">
-        <div class="stat-icon-wrap"><mat-icon>cancel</mat-icon></div>
-        <div class="stat-body">
-          <span class="stat-label">Cancelled</span>
-          <span class="stat-value">{{ orderCancelled }}</span>
-        </div>
-      </div>
-
-      <div class="stat-card orders-value">
-        <div class="stat-icon-wrap"><mat-icon>currency_rupee</mat-icon></div>
-        <div class="stat-body">
-          <span class="stat-label">Confirmed Value</span>
-          <span class="stat-value">&#8377; {{ orderValue | number:'1.0-0' }}</span>
-        </div>
-      </div>
-
     </div>
+
+    <!-- Order Values -->
+    <div class="orders-rose-card" *ngIf="showOrdersCard">
+      <p class="rose-card-title">Order Values</p>
+
+      <!-- Stacked single bar -->
+      <div class="ov-bar-section">
+        <div class="ov-stacked-bar">
+          <div class="ov-segment ov-confirmed"
+            [style.width.%]="orderTotalValue ? (orderValue / orderTotalValue) * 100 : 0"
+            [title]="'Confirmed: ₹' + (orderValue | number:'1.0-0')"></div>
+          <div class="ov-segment ov-pending"
+            [style.width.%]="orderTotalValue ? (orderPendingValue / orderTotalValue) * 100 : 0"
+            [title]="'Pending: ₹' + (orderPendingValue | number:'1.0-0')"></div>
+        </div>
+        <div class="ov-bar-values">
+          <div class="ov-val-item">
+            <span class="ov-val-dot" style="background:#43a047;"></span>
+            <span class="ov-val-label">Confirmed</span>
+            <span class="ov-val-amt">&#8377; {{ orderValue | number:'1.0-0' }}</span>
+          </div>
+          <div class="ov-val-item">
+            <span class="ov-val-dot" style="background:#ff9800;"></span>
+            <span class="ov-val-label">Pending</span>
+            <span class="ov-val-amt">&#8377; {{ orderPendingValue | number:'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rose-card-footer">
+        <span class="rose-footer-label">Total</span>
+        <span class="rose-footer-value" style="font-size:14px;">&#8377; {{ orderTotalValue | number:'1.0-0' }}</span>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="orders-rose-card" *ngIf="menuSettings.isEnabled('product')">
+      <p class="rose-card-title">Products</p>
+      <div class="prod-vert-bars">
+        <div class="prod-vert-col">
+          <span class="prod-vert-count">{{ productActive }}</span>
+          <div class="prod-vert-track">
+            <div class="prod-vert-fill" style="background:#43a047;"
+              [style.height.%]="productTotal ? (productActive / productTotal) * 100 : 0"></div>
+          </div>
+          <span class="prod-vert-label">Active</span>
+        </div>
+        <div class="prod-vert-col">
+          <span class="prod-vert-count">{{ productInactive }}</span>
+          <div class="prod-vert-track">
+            <div class="prod-vert-fill" style="background:#e53935;"
+              [style.height.%]="productTotal ? (productInactive / productTotal) * 100 : 0"></div>
+          </div>
+          <span class="prod-vert-label">Inactive</span>
+        </div>
+      </div>
+      <div class="rose-card-footer">
+        <span class="rose-footer-label">Total</span>
+        <span class="rose-footer-value">{{ productTotal }}</span>
+      </div>
+    </div>
+
+    <!-- Overview -->
+    <div class="orders-rose-card" *ngIf="!showCustomersCardInSalesFirst">
+      <p class="rose-card-title">Overview</p>
+      <div class="rose-chart-wrap">
+        <highcharts-chart [Highcharts]="Highcharts" [options]="overviewBarOptions"
+          style="width:100%;height:140px;display:block;"></highcharts-chart>
+      </div>
+      <div class="rose-legend">
+        <div class="rose-legend-item" *ngIf="showAccountAndInstanceCards">
+          <span class="rose-dot" style="background:#4e6ef2;"></span>
+          <span class="rose-legend-label">Company</span>
+          <span class="rose-legend-value">{{ accountCount }}</span>
+        </div>
+        <div class="rose-legend-item" *ngIf="showAccountAndInstanceCards">
+          <span class="rose-dot" style="background:#7c5cbf;"></span>
+          <span class="rose-legend-label">Instances</span>
+          <span class="rose-legend-value">{{ instanceCount }}</span>
+        </div>
+        <div class="rose-legend-item">
+          <span class="rose-dot" style="background:#1abc9c;"></span>
+          <span class="rose-legend-label">Customers</span>
+          <span class="rose-legend-value">{{ customerCount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Purchases -->
+    <div class="orders-rose-card" *ngIf="!isInstanceServiceSalesOnly && (menuSettings.isEnabled('purchase') || menuSettings.isEnabled('supplier'))">
+      <p class="rose-card-title">Purchases</p>
+      <div class="rose-chart-wrap">
+        <highcharts-chart [Highcharts]="Highcharts" [options]="purchaseBarOptions"
+          style="width:100%;height:140px;display:block;"></highcharts-chart>
+      </div>
+      <div class="rose-legend">
+        <div class="rose-legend-item" *ngIf="menuSettings.isEnabled('supplier')">
+          <span class="rose-dot" style="background:#5d6d8a;"></span>
+          <span class="rose-legend-label">Suppliers</span>
+          <span class="rose-legend-value">{{ supplierCount }}</span>
+        </div>
+        <div class="rose-legend-item" *ngIf="menuSettings.isEnabled('purchase')">
+          <span class="rose-dot" style="background:#2196f3;"></span>
+          <span class="rose-legend-label">GRNs</span>
+          <span class="rose-legend-value">{{ purchaseCount }}</span>
+        </div>
+        <div class="rose-legend-item" *ngIf="menuSettings.isEnabled('purchase')">
+          <span class="rose-dot" style="background:#00bfa5;"></span>
+          <span class="rose-legend-label">Stock Items</span>
+          <span class="rose-legend-value">{{ stockProductsAvailable }}</span>
+        </div>
+        <div class="rose-legend-item rose-total-row">
+          <span class="rose-legend-label" style="font-weight:700;color:#1a1f36;">₹ Total</span>
+          <span class="rose-legend-value" style="font-size:13px;">{{ purchaseTotalValue | number:'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service Sales -->
+    <div class="orders-rose-card" *ngIf="showServiceSalesDashboard && menuSettings.isEnabled('sales')">
+      <p class="rose-card-title">Service Sales</p>
+      <div class="rose-chart-wrap">
+        <highcharts-chart [Highcharts]="Highcharts" [options]="serviceSalesBarOptions"
+          style="width:100%;height:140px;display:block;"></highcharts-chart>
+      </div>
+      <div class="rose-legend">
+        <div class="rose-legend-item" *ngIf="showCustomersCardInSalesFirst">
+          <span class="rose-dot" style="background:#1abc9c;"></span>
+          <span class="rose-legend-label">Customers</span>
+          <span class="rose-legend-value">{{ customerCount }}</span>
+        </div>
+        <div class="rose-legend-item">
+          <span class="rose-dot" style="background:#ff9800;"></span>
+          <span class="rose-legend-label">Invoices</span>
+          <span class="rose-legend-value">{{ serviceSalesCount }}</span>
+        </div>
+        <div class="rose-legend-item rose-total-row">
+          <span class="rose-legend-label" style="font-weight:700;color:#1a1f36;">₹ Total</span>
+          <span class="rose-legend-value" style="font-size:13px;">{{ serviceSalesValue | number:'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Sales -->
+    <div class="orders-rose-card" *ngIf="showProductSalesDashboard && menuSettings.isEnabled('inventorysales')">
+      <p class="rose-card-title">Product Sales</p>
+      <div class="rose-chart-wrap">
+        <highcharts-chart [Highcharts]="Highcharts" [options]="productSalesBarOptions"
+          style="width:100%;height:140px;display:block;"></highcharts-chart>
+      </div>
+      <div class="rose-legend">
+        <div class="rose-legend-item">
+          <span class="rose-dot" style="background:#00acc1;"></span>
+          <span class="rose-legend-label">Invoices</span>
+          <span class="rose-legend-value">{{ productSalesCount }}</span>
+        </div>
+        <div class="rose-legend-item rose-total-row">
+          <span class="rose-legend-label" style="font-weight:700;color:#1a1f36;">₹ Total</span>
+          <span class="rose-legend-value" style="font-size:13px;">{{ productSalesValue | number:'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Stat Cards -->
- <!-- PURCHASE SECTION -->
-<!-- ================= GENERAL SECTION ================= -->
-<div class="card-section" *ngIf="!showCustomersCardInSalesFirst">
-  <h3 class="section-title">Overview</h3>
-
-  <div class="stat-cards three-col">
-
-    <div class="stat-card accounts" *ngIf="showAccountAndInstanceCards">
-      <div class="stat-icon-wrap">
-        <mat-icon>business</mat-icon>
-      </div>
-      <div class="stat-body">
-        <span class="stat-label">Company</span>
-        <span class="stat-value">{{ accountCount }}</span>
-      </div>
-    </div>
-
-    <div class="stat-card instances" *ngIf="showAccountAndInstanceCards">
-      <div class="stat-icon-wrap">
-        <mat-icon>dns</mat-icon>
-      </div>
-      <div class="stat-body">
-        <span class="stat-label">Instances</span>
-        <span class="stat-value">{{ instanceCount }}</span>
-      </div>
-    </div>
-
-    <div class="stat-card customers">
-      <div class="stat-icon-wrap">
-        <mat-icon>people</mat-icon>
-      </div>
-      <div class="stat-body">
-        <span class="stat-label">Customers</span>
-        <span class="stat-value">{{ customerCount }}</span>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- ================= PURCHASE SECTION ================= -->
-<div class="card-section" *ngIf="!isInstanceServiceSalesOnly && (menuSettings.isEnabled('purchase') || menuSettings.isEnabled('supplier'))">
-  <h3 class="section-title">Purchases</h3>
-
-  <div class="stat-cards three-col">
-
-    <div class="stat-card suppliers" *ngIf="menuSettings.isEnabled('supplier')">
-      <div class="stat-icon-wrap">
-        <mat-icon>local_shipping</mat-icon>
-      </div>
-      <div class="stat-body">
-        <span class="stat-label">Suppliers</span>
-        <span class="stat-value">{{ supplierCount }}</span>
-      </div>
-    </div>
-
-    <div class="stat-card purchases" *ngIf="menuSettings.isEnabled('purchase')">
-      <div class="stat-icon-wrap">
-        <mat-icon>shopping_bag</mat-icon>
-      </div>
-      <div class="stat-body">
-        <span class="stat-label">Purchase total</span>
-        <div class="stat-value-block">
-          <span class="stat-value">₹{{ purchaseTotalValue | number:'1.2-2' }}</span>
-          <span class="stat-sub">{{ purchaseCount }} GRN(s)</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="stat-card stock-value" *ngIf="showCurrentStockValueCard && menuSettings.isEnabled('purchase')">
-      <div class="stat-icon-wrap">
-        <mat-icon>warehouse</mat-icon>
-      </div>
-      <div class="stat-body">
-        <span class="stat-label">Stock value</span>
-        <div class="stat-value-block">
-          <span class="stat-value">₹{{ currentStockValue | number:'1.2-2' }}</span>
-          <span class="stat-sub">{{ stockProductsAvailable }} products</span>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- ================= SALES SECTION ================= -->
-<div class="card-section" *ngIf="menuSettings.isEnabled('sales') || menuSettings.isEnabled('inventorysales')">
-  <h3 class="section-title">Sales</h3>
-
-  <div class="stat-cards three-col">
-    <div class="stat-card customers" *ngIf="showCustomersCardInSalesFirst">
-      <div class="stat-icon-wrap">
-        <mat-icon>people</mat-icon>
-      </div>
-      <div class="stat-body">
-        <span class="stat-label">Customers</span>
-        <span class="stat-value">{{ customerCount }}</span>
-      </div>
-    </div>
-
-    <div class="stat-card service-sales" *ngIf="showServiceSalesDashboard && menuSettings.isEnabled('sales')">
-      <div class="stat-icon-wrap">
-        <mat-icon>handyman</mat-icon>
-      </div>
-      <div class="stat-body">
-        <span class="stat-label">Service sales</span>
-        <div class="stat-value-block">
-          <span class="stat-value">₹{{ serviceSalesValue | number:'1.2-2' }}</span>
-          <span class="stat-sub">{{ serviceSalesCount }} invoice(s)</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="stat-card product-sales" *ngIf="showProductSalesDashboard && menuSettings.isEnabled('inventorysales')">
-      <div class="stat-icon-wrap">
-        <mat-icon>inventory_2</mat-icon>
-      </div>
-      <div class="stat-body">
-        <span class="stat-label">Product sales</span>
-        <div class="stat-value-block">
-          <span class="stat-value">₹{{ productSalesValue | number:'1.2-2' }}</span>
-          <span class="stat-sub">{{ productSalesCount }} invoice(s)</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="stat-card total-sales" *ngIf="showTotalSalesCard && !isInstanceBothSalesMode && menuSettings.isEnabled('sales') && menuSettings.isEnabled('inventorysales')">
-      <div class="stat-icon-wrap">
-        <mat-icon>summarize</mat-icon>
-      </div>
-      <div class="stat-body">
-        <span class="stat-label">Total sales</span>
-        <div class="stat-value-block">
-          <span class="stat-value">₹{{ salesValue | number:'1.2-2' }}</span>
-          <span class="stat-sub">{{ salesCount }} invoice(s)</span>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-  <!-- Chart -->
-  <div class="chart-card" *ngIf="!isLoading && (menuSettings.isEnabled('sales') || menuSettings.isEnabled('inventorysales'))">
-    <highcharts-chart
-      [Highcharts]="Highcharts"
-      [options]="chartOptions"
-      style="width: 100%; height: 360px; display: block;">
-    </highcharts-chart>
-  </div>
 
 </section>

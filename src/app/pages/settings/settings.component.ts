@@ -36,7 +36,7 @@ export class SettingsComponent implements OnInit {
   constructor(
     private settingsService: SettingsService,
     private formBuilder: FormBuilder,
-    private menuSettingsService: MenuSettingsService,
+    public menuSettings: MenuSettingsService,
     private permissionService: PermissionService,
     private authService: AuthService,
     private http: HttpClient,
@@ -75,8 +75,7 @@ export class SettingsComponent implements OnInit {
     this.isAdmin = this.permissionService.isSuperAdmin() ||
       this.permissionService.hasAnyPermissionForResource('user');
 
-    const allItems = this.menuSettingsService.getMenuItems();
-    this.menuItems = allItems.filter(item => this.hasAccess(item.key));
+    this.menuItems = this.menuSettings.getMenuItems();
 
     if (this.isAdmin) {
       this.loadAccountUsers();
@@ -125,10 +124,10 @@ export class SettingsComponent implements OnInit {
     this.http.get<{ menuSettings: any[] }>(`${this.apiUrl}/settings/user-preferences/${userId}`).pipe(
     ).subscribe({
       next: (res) => {
-        this.targetMenuItems = this.menuSettingsService['merge'](res?.menuSettings ?? []);
+        this.targetMenuItems = this.menuSettings['merge'](res?.menuSettings ?? []);
       },
       error: () => {
-        this.targetMenuItems = this.menuSettingsService['merge']([]);
+        this.targetMenuItems = this.menuSettings['merge']([]);
       }
     });
   }
@@ -152,7 +151,7 @@ export class SettingsComponent implements OnInit {
   }
 
   saveMenuSettings(): void {
-    this.menuSettingsService.saveMenuItems(this.menuItems).subscribe({
+    this.menuSettings.saveMenuItems(this.menuItems).subscribe({
       next: () => {
         this.menuSavedMessage = 'Menu settings saved.';
         setTimeout(() => { this.menuSavedMessage = ''; window.location.reload(); }, 1000);

@@ -97,7 +97,7 @@
     </mat-card>
 
     <!-- Quick Product Fields Card -->
-    <mat-card class="settings-section-card" *ngIf="isQuickProductEnabled()">
+    <mat-card class="settings-section-card" *ngIf="isQuickProductEnabled() && menuSettings.isEnabled('product')">
       <mat-card-header>
         <mat-icon mat-card-avatar>add_box</mat-icon>
         <mat-card-title>Quick Product Fields</mat-card-title>
@@ -128,7 +128,7 @@
     </mat-card>
 
     <!-- Sales Section -->
-    <mat-card class="settings-section-card">
+    <mat-card class="settings-section-card" *ngIf="menuSettings.isEnabled('sales') || menuSettings.isEnabled('inventorysales')">
       <mat-card-header>
         <mat-icon mat-card-avatar>point_of_sale</mat-icon>
         <mat-card-title>Sales</mat-card-title>
@@ -138,7 +138,7 @@
         <form [formGroup]="salesForm">
 
           <!-- Subsection: Expiry Configuration -->
-          <div class="setting-subsection">
+          <div class="setting-subsection" *ngIf="menuSettings.isEnabled('sales') || menuSettings.isEnabled('inventorysales')">
             <h4 class="subsection-title">
               <mat-icon>event_busy</mat-icon>
               Expiry configuration
@@ -181,7 +181,7 @@
           </div>
 
           <!-- Subsection: GST -->
-          <div class="setting-subsection">
+          <div class="setting-subsection" *ngIf="menuSettings.isEnabled('gst') || menuSettings.isEnabled('sales') || menuSettings.isEnabled('inventorysales')">
             <h4 class="subsection-title">
               <mat-icon>percent</mat-icon>
               GST
@@ -201,7 +201,7 @@
           </div>
 
           <!-- Subsection: Product Sales -->
-          <div class="setting-subsection">
+          <div class="setting-subsection" *ngIf="menuSettings.isEnabled('inventorysales')">
             <h4 class="subsection-title">
               <mat-icon>inventory_2</mat-icon>
               Product Sales
@@ -233,7 +233,7 @@
           </div>
 
           <!-- Subsection: Quantity -->
-          <div class="setting-subsection">
+          <div class="setting-subsection" *ngIf="menuSettings.isEnabled('sales') || menuSettings.isEnabled('inventorysales')">
             <h4 class="subsection-title">
               <mat-icon>numbers</mat-icon>
               Quantity

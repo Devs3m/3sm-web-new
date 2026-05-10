@@ -228,11 +228,6 @@
 
   <!-- Grid -->
   <div class="pos-relative">
-    <div class="btn-pos-list">
-      <button (click)="openAddPanel()" class="add-btn">
-        <mat-icon>add_circle</mat-icon>
-      </button>
-    </div>
     <dx-data-grid
       [dataSource]="orders"
       [allowColumnReordering]="true"
@@ -242,6 +237,18 @@
       [searchPanel]="{ visible: true, width: 240, placeholder: 'Search orders...' }"
       [paging]="{ pageSize: 15 }"
       title="Orders">
+
+      <dxo-toolbar>
+        <dxi-item location="before">
+          <div *dxTemplate>
+            <button (click)="openAddPanel()" class="add-btn">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        </dxi-item>
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+      </dxo-toolbar>
 
       <dxi-column dataField="orderid" caption="Order ID" [width]="100"
         [allowSorting]="true" [dataType]="'number'"
@@ -257,13 +264,13 @@
 
       <div *dxTemplate="let data of 'statusTemplate'">
         <span class="status-badge" [ngClass]="getStatusClass(data.data.orderstatus)">
-          {{ data.data.orderstatus }}
+          {{ data.data.orderstatus | titlecase }}
         </span>
       </div>
 
       <div *dxTemplate="let data of 'deliveryTemplate'">
         <span class="status-badge" [ngClass]="getDeliveryStatusClass(data.data.deliverystatus)">
-          {{ data.data.deliverystatus || 'PENDING' }}
+          {{ (data.data.deliverystatus || 'Pending') | titlecase }}
         </span>
       </div>
 

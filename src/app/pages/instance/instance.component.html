@@ -1,4 +1,4 @@
-<section>
+﻿<section>
   <div class="form-backdrop" [class.open]="isFormOpen" (click)="restinstanceForm()"></div>
   <div class="form-container" [class.open]="isFormOpen">
     <p style="font-size: larger;">{{ isEditMode ? 'Edit Instance' : 'Add Instance' }}</p>
@@ -190,13 +190,6 @@
 
   </div>
   <div class="pos-relative">
-    <div class="btn-pos-list">
-      <button *appHasPermission="'instance:create'" (click)="toggleForm()" class="add-btn">
-        <mat-icon>add_circle</mat-icon>
-      </button>
-    </div>
-
-
     <dx-data-grid
       [dataSource]="apiData"
       [allowColumnReordering]="true"
@@ -207,6 +200,18 @@
       [paging]="{ pageSize: 15 }"
       [showBorders]="true" (onExporting)="onExporting($event)"
       title="Instance">
+
+      <dxo-toolbar>
+        <dxi-item *appHasPermission="'instance:create'" location="before">
+          <div *dxTemplate>
+            <button *appHasPermission="'instance:create'" (click)="toggleForm()" class="add-btn">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        </dxi-item>
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+      </dxo-toolbar>
 
       <dxi-column
         dataField="instanceid"

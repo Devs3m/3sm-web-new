@@ -236,23 +236,29 @@
 </div>
 
     <div class="pos-relative">
-      <div class="btn-pos-list">
-        <button *appHasPermission="'product:create'" (click)="toggleForm()" class="add-btn">
-          <mat-icon>add_circle</mat-icon>
-        </button>
-      </div>
-
-   
-    <dx-data-grid 
+    <dx-data-grid
     [dataSource]="apiData"
-    [allowColumnReordering]="true" 
-    [allowColumnResizing]="true" 
+    [allowColumnReordering]="true"
+    [allowColumnResizing]="true"
     [showBorders]="true"
-    [headerFilter]="{ visible: true }" 
+    [headerFilter]="{ visible: true }"
     [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
-    [paging]="{ pageSize: 12 }" 
+    [paging]="{ pageSize: 12 }"
     title="Product"
     [showBorders]="true" (onExporting)="onExporting($event)" style="max-width: 100%;">
+
+      <dxo-toolbar>
+        <dxi-item *appHasPermission="'product:create'" location="before">
+          <div *dxTemplate>
+            <button (click)="toggleForm()" class="add-btn">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        </dxi-item>
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item name="columnChooserButton"></dxi-item>
+      </dxo-toolbar>
 
       <dxi-column
         dataField="productid"
