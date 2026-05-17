@@ -10,7 +10,18 @@
       "Bash(Get-ChildItem -Path \"e:\\\\3sm\\\\development\\\\3sm-web\\\\src\\\\app\\\\pages\\\\\" -Directory | Select-Object Name)",
       "PowerShell(Get-ChildItem -Path \"e:\\\\3sm\\\\development\\\\3sm-web\\\\src\\\\app\\\\pages\\\\\" | Where-Object {$_.PSIsContainer})",
       "Bash(findstr /i \"qr\")",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(curl -s http://localhost:3002/product/list)",
+      "Bash(curl -s \"http://localhost:3002/product/portal?accountid=56&instanceid=14\")",
+      "Bash(curl -s \"https://api.connectsite.in/product/portal?accountid=56&instanceid=14\")",
+      "Bash(curl -s \"https://api.connectsite.in/instance/details/14\")",
+      "Bash(curl -s \"https://api.connectsite.in/account/details/56\")",
+      "Bash(curl -s \"https://api-prod.connectsite.in/product/portal?accountid=56&instanceid=14\")",
+      "Bash(curl -s \"https://api-prod.connectsite.in/instance/details/14\")",
+      "Bash(curl -s \"https://api-prod.connectsite.in/account/details/56\")",
+      "Bash(xargs cat)",
+      "Bash(curl -s -I -H \"Origin: https://join.connectsite.in\" \"https://api-prod.connectsite.in/product/portal?accountid=56&instanceid=14\")",
+      "PowerShell(npx ng build --configuration prod-all 2>&1)"
     ]
   }
 }

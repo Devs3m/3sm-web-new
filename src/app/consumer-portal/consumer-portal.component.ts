@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ConsumerPortalService } from './consumer-portal.service';
 import { SaveOrderDto, OrderDetailDto } from './models/consumer-order.dto';
 
@@ -19,7 +21,7 @@ export class ConsumerPortalComponent implements OnInit {
 
   checkoutForm!: FormGroup;
 
-  loading = false;
+  loading = true;
   loadError = '';
   showCheckoutModal = false;
   submitting = false;
@@ -66,32 +68,32 @@ export class ConsumerPortalComponent implements OnInit {
     this.loading = true;
     this.loadError = '';
 
-    this.service.getAccountDetails(this.accountId).subscribe({
-      next: (data) => { this.account = data; },
-      error: () => {}
-    });
+    forkJoin({
+      account:  this.service.getAccountDetails(this.accountId).pipe(catchError(() => of(null))),
+      instance: this.service.getInstanceDetails(this.instanceId).pipe(catchError(() => of(null))),
+      products: this.service.getProducts(this.accountId, this.instanceId).pipe(catchError(() => of([])))
+    }).subscribe({
+      next: ({ account, instance, products }) => {
+        this.account  = account;
+        this.instance = instance;
 
-    this.service.getInstanceDetails(this.instanceId).subscribe({
-      next: (data) => { this.instance = data; },
-      error: () => {}
-    });
-
-    this.service.getProducts(this.accountId, this.instanceId).subscribe({
-      next: (data) => {
-        const raw = Array.isArray(data) ? data : [];
+        const raw = Array.isArray(products) ? products : [];
         this.products = raw
           .filter((p: any) => {
-            const aid = String(p.accountid ?? p.accountId ?? '');
-            const iid = String(p.instanceid ?? p.instanceId ?? '');
             const active = p.productisactive == null || p.productisactive === true
               || p.productisactive === 'true' || Number(p.productisactive) === 1;
-            return aid === String(this.accountId) && iid === String(this.instanceId) && active;
+            return active;
           })
           .map((p: any) => ({ ...p, orderQty: 0 }));
+
+        if (!raw.length) {
+          this.loadError = 'No products available for this store.';
+        }
+
         this.loading = false;
       },
       error: () => {
-        this.loadError = 'Failed to load products. Please try again.';
+        this.loadError = 'Failed to load store data. Please try again.';
         this.loading = false;
       }
     });
@@ -128,8 +130,15 @@ export class ConsumerPortalComponent implements OnInit {
     return ['All', ...Array.from(new Set(cats)).sort()];
   }
 
+  private readonly hiddenFromAll = ['pooja'];
+
   get filteredProducts(): any[] {
-    if (this.selectedCategory === 'All') return this.products;
+    if (this.selectedCategory === 'All') {
+      return this.products.filter(p => {
+        const cat = (p.productcategory || p.category || '').trim().toLowerCase();
+        return !this.hiddenFromAll.includes(cat);
+      });
+    }
     return this.products.filter(p =>
       (p.productcategory || p.category || '') === this.selectedCategory
     );

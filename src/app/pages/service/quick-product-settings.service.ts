@@ -99,7 +99,7 @@ export class QuickProductSettingsService {
     const userId = this.authService.getUserId?.();
     if (!userId) return of({ saved: 'local' });
 
-    return this.http.patch(`${this.apiUrl}/settings/user-preferences/${userId}`, {
+    return this.http.put(`${this.apiUrl}/settings/user-preferences/${userId}`, {
       quickProductFields: payload
     }).pipe(catchError(() => of({ saved: 'local' })));
   }

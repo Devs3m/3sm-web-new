@@ -122,7 +122,7 @@ export class PagesComponent implements OnInit {
   }
 
   private updateLayoutVisibility(url: string): void {
-    this.hideNavForVCard = /^\/pages\/digicard\/card(\/.*)?$/.test(url);
+    this.hideNavForVCard = /^\/pages\/digicard\/(card|new-card)(\/.*)?$/.test(url);
   }
 
   /** Fetch current instance salestype to control which sales menu (Service Sales vs Product Sales) to show */

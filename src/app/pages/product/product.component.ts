@@ -78,6 +78,11 @@ export class ProductComponent implements OnInit {
     const instanceId = this.authService.getInstanceId();
     this.loadInstanceSalesType(instanceId);
 
+    // Load quick product field settings for this user from API
+    this.quickProductSettings.loadFromApi().subscribe(() => {
+      this.cdr.detectChanges();
+    });
+
     this.productForm = this.fromBuilder.group({
       "productname": ["", [Validators.required, Validators.minLength(2)]],
       "productgeneric": [""],

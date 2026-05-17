@@ -5,8 +5,18 @@ import { MenuSettingsService, MenuItemSetting } from '../service/menu-settings.s
 import { QuickProductSettingsService, QuickProductField } from '../service/quick-product-settings.service';
 import { PermissionService } from '../service/permission.service';
 import { AuthService } from '../service/auth.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+export interface SyncEntity {
+  key: string;
+  label: string;
+  endpoint: string;
+  status: 'idle' | 'syncing' | 'success' | 'error';
+  message: string;
+}
 
 @Component({
   selector: 'app-settings',
@@ -23,8 +33,13 @@ export class SettingsComponent implements OnInit {
   quickProductFields: QuickProductField[] = [];
   quickProductSavedMessage = '';
 
+  // Single save
+  isSavingAll = false;
+  saveAllMessage = '';
+
   // Admin user management
   isAdmin = false;
+  isAdministrator = false;
   accountUsers: any[] = [];
   selectedUserId: number | null = null;
   targetMenuItems: MenuItemSetting[] = [];
@@ -32,6 +47,28 @@ export class SettingsComponent implements OnInit {
   targetSaving = false;
 
   private apiUrl = environment.apiUrl;
+  readonly isOffline = (environment as any).provisionOnlineBaseUrl === '/api' ||
+                       (window.location.hostname === 'localhost' && (environment as any).apiUrl === '/api');
+  readonly onlineBase: string = (environment as any).provisionOnlineBaseUrl || '';
+  get showSyncSection(): boolean {
+    const email = (this.authService.getUserEmail?.() || '').toLowerCase().trim();
+    return this.isOffline && email === 'admin@connectsite.in';
+  }
+
+  syncEntities: SyncEntity[] = [
+    { key: 'account',    label: 'Account',     endpoint: '/account/list',    status: 'idle', message: '' },
+    { key: 'instance',   label: 'Instance',    endpoint: '/instance/list',   status: 'idle', message: '' },
+    { key: 'product',    label: 'Product',     endpoint: '/product/list',    status: 'idle', message: '' },
+    { key: 'supplier',   label: 'Supplier',    endpoint: '/supplier/list',   status: 'idle', message: '' },
+    { key: 'customer',   label: 'Customer',    endpoint: '/customer/list',   status: 'idle', message: '' },
+    { key: 'user',       label: 'User',        endpoint: '/user/list',       status: 'idle', message: '' },
+    { key: 'userrole',   label: 'User Role',   endpoint: '/userrole/list',   status: 'idle', message: '' },
+    { key: 'permission', label: 'Permission',  endpoint: '/permission/list', status: 'idle', message: '' },
+    { key: 'gst',        label: 'GST',         endpoint: '/gst/list',        status: 'idle', message: '' },
+    { key: 'vat',        label: 'VAT',         endpoint: '/vat/list',        status: 'idle', message: '' },
+  ];
+  isSyncingAll = false;
+  syncOnlineToken = '';
 
   constructor(
     private settingsService: SettingsService,
@@ -54,7 +91,8 @@ export class SettingsComponent implements OnInit {
       case 'user':           return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('user');
       case 'userrole':       return this.permissionService.canManageRbac();
       case 'digicard':
-      case 'vcard':          return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('digicard');
+      case 'vcard':
+      case 'newvcard':       return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('digicard');
       case 'product':        return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('product');
       case 'sales':          return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('sales');
       case 'inventorysales': return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('sales');
@@ -75,6 +113,10 @@ export class SettingsComponent implements OnInit {
     this.isAdmin = this.permissionService.isSuperAdmin() ||
       this.permissionService.hasAnyPermissionForResource('user');
 
+    const roleName = (this.permissionService.getCurrentRoleName() || '').toLowerCase().trim();
+    this.isAdministrator = this.permissionService.isSuperAdmin() ||
+      roleName === 'administrator' || roleName === 'admin';
+
     this.menuItems = this.menuSettings.getMenuItems();
 
     if (this.isAdmin) {
@@ -82,6 +124,10 @@ export class SettingsComponent implements OnInit {
     }
     this.quickProductFields = this.quickProductSettingsService.getFields();
     this.quickProductSettingsService.loadFromApi().subscribe(fields => {
+      // Re-check role name after async load
+      const rn = (this.permissionService.getCurrentRoleName() || '').toLowerCase().trim();
+      this.isAdministrator = this.permissionService.isSuperAdmin() || rn === 'administrator' || rn === 'admin';
+
       if (Array.isArray(fields) && fields.length) {
         this.quickProductFields = fields;
       }
@@ -168,14 +214,101 @@ export class SettingsComponent implements OnInit {
   }
 
   saveQuickProductFields(): void {
+    this.quickProductSavedMessage = 'Saving...';
     this.quickProductSettingsService.saveFields(this.quickProductFields).subscribe({
-      next: () => {
-        this.quickProductSavedMessage = 'Quick product fields saved.';
+      next: (res) => {
+        this.quickProductSavedMessage = res?.saved === 'local'
+          ? 'Saved locally (API unavailable).'
+          : 'Quick product fields saved.';
         setTimeout(() => this.quickProductSavedMessage = '', 3000);
       },
-      error: () => {
-        this.quickProductSavedMessage = 'Saved locally (API unavailable).';
+      error: (err) => {
+        console.error('Save quick product fields error:', err);
+        this.quickProductSavedMessage = 'Failed to save. Please try again.';
         setTimeout(() => this.quickProductSavedMessage = '', 3000);
+      }
+    });
+  }
+
+  syncEntity(entity: SyncEntity): void {
+    if (!this.onlineBase || this.onlineBase === '/api') return;
+    entity.status = 'syncing';
+    entity.message = '';
+    const token = localStorage.getItem('token') || '';
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    this.http.get<any[]>(`${this.onlineBase}${entity.endpoint}`, { headers }).pipe(
+      catchError(err => { throw err; })
+    ).subscribe({
+      next: (data) => {
+        this.http.post(`${this.apiUrl}/sync/${entity.key}`, { data }).subscribe({
+          next: () => {
+            entity.status = 'success';
+            entity.message = `Synced ${Array.isArray(data) ? data.length : 0} records`;
+            setTimeout(() => { entity.status = 'idle'; entity.message = ''; }, 4000);
+          },
+          error: () => {
+            entity.status = 'error';
+            entity.message = 'Failed to save locally';
+          }
+        });
+      },
+      error: () => {
+        entity.status = 'error';
+        entity.message = 'Failed to fetch from server';
+      }
+    });
+  }
+
+  syncAll(): void {
+    this.isSyncingAll = true;
+    this.syncEntities.forEach(e => this.syncEntity(e));
+    setTimeout(() => this.isSyncingAll = false, 3000);
+  }
+
+  getSyncIcon(status: string): string {
+    switch (status) {
+      case 'syncing': return 'sync';
+      case 'success': return 'check_circle';
+      case 'error':   return 'error';
+      default:        return 'cloud_download';
+    }
+  }
+
+  saveAll(): void {
+    if (this.salesForm.invalid) return;
+    this.isSavingAll = true;
+    this.saveAllMessage = 'Saving...';
+
+    const userId = this.authService.getUserId?.();
+    const menuPayload = this.menuItems.map(({ key, enabled }) => ({ key, enabled }));
+    const qpPayload = this.quickProductFields.map(f => ({ key: f.key, enabled: f.mandatory ? true : f.enabled }));
+
+    // Save both in a single PUT to prevent overwrite
+    const combinedSave$ = userId
+      ? this.http.put(`${this.apiUrl}/settings/user-preferences/${userId}`, {
+          menuSettings: menuPayload,
+          quickProductFields: qpPayload
+        }).pipe(catchError(() => of(null)))
+      : of(null);
+
+    // Also update localStorage caches
+    localStorage.setItem(`menu_settings_${userId}`, JSON.stringify(this.menuItems));
+    localStorage.setItem(`qp_fields_${userId}`, JSON.stringify(qpPayload));
+
+    if (this.menuSettings.isEnabled('sales') || this.menuSettings.isEnabled('inventorysales')) {
+      this.saveSalesSettings();
+    }
+
+    combinedSave$.subscribe({
+      next: () => {
+        this.saveAllMessage = 'All settings saved.';
+        this.isSavingAll = false;
+        setTimeout(() => { this.saveAllMessage = ''; window.location.reload(); }, 1200);
+      },
+      error: () => {
+        this.saveAllMessage = 'Some settings could not be saved.';
+        this.isSavingAll = false;
+        setTimeout(() => this.saveAllMessage = '', 3000);
       }
     });
   }

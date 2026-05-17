@@ -91,6 +91,10 @@
         <mat-icon class="aligned-icon">badge</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">V Card</span>
       </a>
 
+      <a *ngIf="permissionService.hasAnyPermissionForResource('digicard') && menuSettings.isEnabled('newvcard')" mat-list-item routerLink='digicard/new-card' href="#" class="aligned-list-item" title="New V Card">
+        <mat-icon class="aligned-icon">contact_page</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">New V Card</span>
+      </a>
+
       <a *ngIf="permissionService.hasAnyPermissionForResource('product') && menuSettings.isEnabled('product')" mat-list-item routerLink='product' href="#" class="aligned-list-item" title="Product">
         <mat-icon class="aligned-icon">fastfood</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Product</span>
       </a>
