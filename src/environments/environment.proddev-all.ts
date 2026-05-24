@@ -1,11 +1,10 @@
 /**
- * proddev-all: Angular local (port 4201) + API api-prod.connectsite.in (3sm-prod DB)
- * Proxy forwards /api/* → https://api-prod.connectsite.in/*
+ * proddev-all: Angular deployed (join.connectsite.in) + API https://api.connectsite.in (dev DB)
  */
 export const environment = {
   production: true,
-  apiUrl: '/api',
-  provisionOnlineBaseUrl: 'https://api-prod.connectsite.in',
+  apiUrl: 'https://api.connectsite.in',
+  provisionOnlineBaseUrl: 'https://api.connectsite.in',
   apiHost: 'https://connectsite.in/',
   vcardApiUrl: 'https://connectsite.in/' as string,
   authHeaderFormat: 'Bearer' as 'Bearer' | 'token',

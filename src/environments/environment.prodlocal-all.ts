@@ -1,10 +1,11 @@
 /**
- * devlocal-web: Angular local + API https://api.connectsite.in (dev DB)
+ * prodlocal-all: Angular local + API http://localhost:3003 (3sm-prod DB)
+ * Run backend on port 3003 with 3sm-prod DB connection.
  */
 export const environment = {
-  production: false,
-  apiUrl: 'https://api.connectsite.in',
-  provisionOnlineBaseUrl: 'https://api.connectsite.in' as string,
+  production: true,
+  apiUrl: 'http://localhost:3003',
+  provisionOnlineBaseUrl: '' as string,
   apiHost: 'https://connectsite.in/',
   vcardApiUrl: 'https://connectsite.in/' as string,
   authHeaderFormat: 'Bearer' as 'Bearer' | 'token',

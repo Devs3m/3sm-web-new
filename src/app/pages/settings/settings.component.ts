@@ -9,6 +9,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { ConsumerPortalComponent } from '../../consumer-portal/consumer-portal.component';
 
 export interface SyncEntity {
   key: string;
@@ -50,6 +51,47 @@ export class SettingsComponent implements OnInit {
   readonly isOffline = (environment as any).provisionOnlineBaseUrl === '/api' ||
                        (window.location.hostname === 'localhost' && (environment as any).apiUrl === '/api');
   readonly onlineBase: string = (environment as any).provisionOnlineBaseUrl || '';
+
+  readonly envInfo = this.buildEnvInfo();
+  get isSuperAdmin(): boolean { return this.permissionService.isSuperAdmin(); }
+
+  portalLinkCopied = false;
+
+  getPortalToken(accountId: number, instanceId: number): string {
+    return ConsumerPortalComponent.encodePortalToken(accountId, instanceId);
+  }
+
+  getMaskedPortalUrl(accountId: number, instanceId: number): string {
+    const token = this.getPortalToken(accountId, instanceId);
+    return `${window.location.origin}/portal/${token}`;
+  }
+
+  copyPortalLink(accountId: number, instanceId: number): void {
+    navigator.clipboard.writeText(this.getMaskedPortalUrl(accountId, instanceId)).then(() => {
+      this.portalLinkCopied = true;
+      setTimeout(() => this.portalLinkCopied = false, 2000);
+    });
+  }
+
+  private buildEnvInfo() {
+    const apiUrl: string = (environment as any).apiUrl || '';
+    const production: boolean = (environment as any).production ?? false;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    let configName = 'Unknown';
+    let db = 'Unknown';
+    let frontend = isLocal ? `localhost:${window.location.port || 4200}` : window.location.hostname;
+
+    if (apiUrl === 'http://localhost:3002')        { configName = 'devlocal-all';   db = 'suns3m'; }
+    else if (apiUrl === 'http://localhost:3003')   { configName = 'prodlocal-all';  db = '3sm-prod'; }
+    else if (apiUrl === 'https://api.connectsite.in' && !production)  { configName = 'devlocal-web';  db = 'suns3m'; }
+    else if (apiUrl === 'https://api.connectsite.in' && production)   { configName = 'proddev-all';   db = 'suns3m'; }
+    else if (apiUrl === 'https://api-prod.connectsite.in' && !production) { configName = 'prodlocal-web'; db = '3sm-prod'; }
+    else if (apiUrl === 'https://api-prod.connectsite.in' && production)  { configName = 'prod-all';      db = '3sm-prod'; }
+    else if (apiUrl === '/api') { configName = 'offline'; db = 'Local'; }
+
+    return { configName, apiUrl, db, production, frontend };
+  }
   get showSyncSection(): boolean {
     const email = (this.authService.getUserEmail?.() || '').toLowerCase().trim();
     return this.isOffline && email === 'admin@connectsite.in';
@@ -75,7 +117,7 @@ export class SettingsComponent implements OnInit {
     private formBuilder: FormBuilder,
     public menuSettings: MenuSettingsService,
     private permissionService: PermissionService,
-    private authService: AuthService,
+    public authService: AuthService,
     private http: HttpClient,
     private quickProductSettingsService: QuickProductSettingsService
   ) {}

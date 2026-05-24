@@ -46,7 +46,7 @@ export class ConsumerPortalComponent implements OnInit {
     } else {
       const token = this.route.snapshot.paramMap.get('token') || '';
       try {
-        const decoded = atob(token);
+        const decoded = atob(ConsumerPortalComponent.padBase64(token));
         const [a, i] = decoded.split('-');
         this.accountId = Number(a);
         this.instanceId = Number(i);
@@ -84,7 +84,15 @@ export class ConsumerPortalComponent implements OnInit {
               || p.productisactive === 'true' || Number(p.productisactive) === 1;
             return active;
           })
-          .map((p: any) => ({ ...p, orderQty: 0 }));
+          .map((p: any) => ({ ...p, orderQty: 0 }))
+          .sort((a: any, b: any) => {
+            const catA = (a.productcategory || a.category || '').toLowerCase();
+            const catB = (b.productcategory || b.category || '').toLowerCase();
+            if (catA !== catB) return catA.localeCompare(catB);
+            const nameA = (a.productname || '').toLowerCase();
+            const nameB = (b.productname || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
 
         if (!raw.length) {
           this.loadError = 'No products available for this store.';
@@ -240,5 +248,15 @@ export class ConsumerPortalComponent implements OnInit {
     this.products.forEach(p => p.orderQty = 0);
     this.checkoutForm.reset();
     this.orderInvoiceNo = null;
+  }
+
+  /** Encode accountId + instanceId into a URL-safe token (no padding). */
+  static encodePortalToken(accountId: number, instanceId: number): string {
+    return btoa(`${accountId}-${instanceId}`).replace(/=/g, '');
+  }
+
+  /** Restore base64 padding stripped for URL safety. */
+  static padBase64(s: string): string {
+    return s + '=='.slice(0, (4 - s.length % 4) % 4);
   }
 }

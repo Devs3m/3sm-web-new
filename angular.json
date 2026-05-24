@@ -120,6 +120,104 @@
               "outputHashing": "all",
               "sourceMap": false,
               "buildOptimizer": true
+            },
+            "devlocal-all": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            },
+            "devlocal-web": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.devlocal-web.ts"
+                }
+              ],
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            },
+            "proddev-all": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.proddev-all.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "4.5mb",
+                  "maximumError": "5.5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "25kb",
+                  "maximumError": "30kb"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "buildOptimizer": true
+            },
+            "prodlocal-all": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prodlocal-all.ts"
+                }
+              ],
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            },
+            "prodlocal-web": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prodlocal-web.ts"
+                }
+              ],
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            },
+            "prod-all": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod-all.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "4.5mb",
+                  "maximumError": "5.5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "25kb",
+                  "maximumError": "30kb"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "buildOptimizer": true
             }
           },
           "defaultConfiguration": "production"
@@ -139,9 +237,27 @@
             "devapiprod": {
               "browserTarget": "3sm-web:build:devapiprod",
               "proxyConfig": "proxy.conf.devapiprod.json"
+            },
+            "devlocal-all": {
+              "browserTarget": "3sm-web:build:devlocal-all"
+            },
+            "devlocal-web": {
+              "browserTarget": "3sm-web:build:devlocal-web"
+            },
+            "proddev-all": {
+              "browserTarget": "3sm-web:build:proddev-all"
+            },
+            "prodlocal-all": {
+              "browserTarget": "3sm-web:build:prodlocal-all"
+            },
+            "prodlocal-web": {
+              "browserTarget": "3sm-web:build:prodlocal-web"
+            },
+            "prod-all": {
+              "browserTarget": "3sm-web:build:prod-all"
             }
           },
-          "defaultConfiguration": "devlocal"
+          "defaultConfiguration": "devlocal-web"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",

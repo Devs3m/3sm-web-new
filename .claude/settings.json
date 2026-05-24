@@ -21,7 +21,19 @@
       "Bash(curl -s \"https://api-prod.connectsite.in/account/details/56\")",
       "Bash(xargs cat)",
       "Bash(curl -s -I -H \"Origin: https://join.connectsite.in\" \"https://api-prod.connectsite.in/product/portal?accountid=56&instanceid=14\")",
-      "PowerShell(npx ng build --configuration prod-all 2>&1)"
+      "PowerShell(npx ng build --configuration prod-all 2>&1)",
+      "Bash(python3 -c ' *)",
+      "Bash(node -e ' *)",
+      "PowerShell(npx ng build --configuration devlocal-all 2>&1)",
+      "PowerShell(npx ng build --configuration proddev-all 2>&1)",
+      "PowerShell(npx ng build --configuration prodlocal-all 2>&1)",
+      "Bash(curl -s \"http://localhost:3002/account/details/59\")",
+      "Bash(curl -s \"https://api.connectsite.in/account/details/59\")",
+      "Bash(curl -s \"https://api-prod.connectsite.in/account/details/59\")",
+      "Bash(curl -sv \"http://localhost:3002/account/details/59\")",
+      "Bash(curl -s \"http://localhost:3002/account/list\")",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); accounts=data if isinstance\\(data,list\\) else data.get\\('result',[]\\); [print\\(f'id={a.get\\(\\\\\"accountid\\\\\"\\)} name={a.get\\(\\\\\"companyname\\\\\"\\)}'\\) for a in accounts[:10]]\")",
+      "Bash(ssh root@order.connectsite.in \"find /mnt -maxdepth 3 -type d -name '*web*' -o -maxdepth 3 -type d -name '*3sm*' 2>/dev/null | head -20\")"
     ]
   }
 }

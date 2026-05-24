@@ -1,10 +1,9 @@
 /**
- * prodlocal-web: Angular local (port 4200) + API server api-prod.connectsite.in
- * Use with proxy so browser calls /api/* and dev server forwards to api-prod.connectsite.in.
+ * prodlocal-web: Angular local + API https://api-prod.connectsite.in (prod DB)
  */
 export const environment = {
   production: false,
-  apiUrl: '/api',
+  apiUrl: 'https://api-prod.connectsite.in',
   provisionOnlineBaseUrl: 'https://api-prod.connectsite.in',
   apiHost: 'https://connectsite.in/',
   vcardApiUrl: 'https://connectsite.in/' as string,

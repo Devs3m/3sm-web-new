@@ -366,3 +366,90 @@
   border-top: 2px solid #e0e0e0;
   margin-top: 8px;
 }
+
+/* ── Environment Info Card ── */
+.env-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.env-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.env-row:last-child { border-bottom: none; }
+
+.env-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.env-label mat-icon {
+  font-size: 17px;
+  width: 17px;
+  height: 17px;
+  color: #888;
+}
+
+.env-value {
+  font-size: 13px;
+  color: #222;
+  font-weight: 500;
+}
+
+.env-url {
+  font-family: monospace;
+  font-size: 12px;
+  color: #444;
+  word-break: break-all;
+  text-align: right;
+  max-width: 60%;
+}
+
+.env-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.env-badge--config { background: #e8f0fe; color: #1a73e8; }
+.env-badge--prod   { background: #fce8e6; color: #c5221f; }
+.env-badge--dev    { background: #e6f4ea; color: #137333; }
+.env-badge--local  { background: #fef7e0; color: #b06000; }
+
+.env-row--portal { flex-wrap: wrap; gap: 8px; }
+
+.env-portal-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 65%;
+}
+
+.env-portal-url {
+  font-family: monospace;
+  font-size: 11px;
+  color: #1a73e8;
+  word-break: break-all;
+}
+
+.env-copy-btn {
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  flex-shrink: 0;
+}
+
+.env-copy-btn mat-icon { font-size: 16px; width: 16px; height: 16px; color: #555; }

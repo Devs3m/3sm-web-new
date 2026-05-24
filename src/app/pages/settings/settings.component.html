@@ -283,6 +283,80 @@
       </mat-card-content>
     </mat-card>
 
+    <!-- Environment Info Card (Super Admin only) -->
+    <mat-card class="settings-section-card env-info-card" *ngIf="isSuperAdmin">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>dns</mat-icon>
+        <mat-card-title>Environment</mat-card-title>
+        <mat-card-subtitle>Current connected environment details</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="env-grid">
+          <div class="env-row">
+            <span class="env-label"><mat-icon>tune</mat-icon> Config</span>
+            <span class="env-value env-badge env-badge--config">{{ envInfo.configName }}</span>
+          </div>
+          <div class="env-row">
+            <span class="env-label"><mat-icon>monitor</mat-icon> Frontend</span>
+            <span class="env-value">{{ envInfo.frontend }}</span>
+          </div>
+          <div class="env-row">
+            <span class="env-label"><mat-icon>cloud</mat-icon> API URL</span>
+            <span class="env-value env-url">{{ envInfo.apiUrl }}</span>
+          </div>
+          <div class="env-row">
+            <span class="env-label"><mat-icon>storage</mat-icon> Database</span>
+            <span class="env-value env-badge"
+              [ngClass]="envInfo.db === '3sm-prod' ? 'env-badge--prod' : envInfo.db === 'suns3m' ? 'env-badge--dev' : 'env-badge--local'">
+              {{ envInfo.db }}
+            </span>
+          </div>
+          <div class="env-row">
+            <span class="env-label"><mat-icon>build</mat-icon> Build Mode</span>
+            <span class="env-value env-badge" [ngClass]="envInfo.production ? 'env-badge--prod' : 'env-badge--dev'">
+              {{ envInfo.production ? 'Production' : 'Development' }}
+            </span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Portal Link Card (Super Admin + Administrator) -->
+    <mat-card class="settings-section-card env-info-card" *ngIf="isAdministrator">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>link</mat-icon>
+        <mat-card-title>Consumer Portal Link</mat-card-title>
+        <mat-card-subtitle>Shareable order portal link for your store</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="env-grid">
+          <div class="env-row env-row--portal">
+            <span class="env-label"><mat-icon>storefront</mat-icon> Portal URL</span>
+            <div class="env-portal-wrap">
+              <span class="env-url env-portal-url">
+                {{ getMaskedPortalUrl(authService.getAccountId(), authService.getInstanceId()) }}
+              </span>
+              <button mat-icon-button class="env-copy-btn"
+                (click)="copyPortalLink(authService.getAccountId(), authService.getInstanceId())"
+                [title]="portalLinkCopied ? 'Copied!' : 'Copy link'">
+                <mat-icon>{{ portalLinkCopied ? 'check' : 'content_copy' }}</mat-icon>
+              </button>
+            </div>
+          </div>
+          <div class="env-row">
+            <span class="env-label"><mat-icon>vpn_key</mat-icon> Token</span>
+            <span class="env-value env-badge env-badge--config">
+              {{ getPortalToken(authService.getAccountId(), authService.getInstanceId()) }}
+            </span>
+          </div>
+        </div>
+        <p class="setting-hint" style="margin-top:10px;">
+          This link is unique to your store. Share it with customers to place orders.
+          The account and instance IDs are encoded and remain fixed.
+        </p>
+      </mat-card-content>
+    </mat-card>
+
     <!-- Single Save Button -->
     <div class="settings-save-footer">
       <button mat-raised-button class="btn-primary" (click)="saveAll()" [disabled]="isSavingAll || salesForm.invalid">
