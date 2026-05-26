@@ -8,6 +8,8 @@ import { HttpClient } from '@angular/common/http';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
 import { environment } from '../../../environments/environment';
+import { catchError } from 'rxjs/operators';
+import { of, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-instance,input-prefix-suffix-example',
@@ -31,6 +33,61 @@ export class InstanceComponent implements OnInit {
   activeInstance: number = 0;
   deactiveInstance: number = 0;
   dropdownAccountItems: any[]=[];
+
+  // Sync / Online fetch
+  readonly isSuperAdmin = this.permissionService.isSuperAdmin();
+  readonly onlineBase: string = (environment as any).provisionOnlineBaseUrl || '';
+  readonly isOffline: boolean = (environment as any).apiUrl === '/api';
+  syncingInstanceId: number | null = null;
+  syncStatusMap: { [instanceId: number]: 'syncing' | 'success' | 'error' } = {};
+
+  private saveLocal(entity: string, data: any[]): Promise<any> {
+    return this.http.post(`${environment.apiUrl}/sync/${entity}`, { data })
+      .pipe(catchError(() => of(null))).toPromise();
+  }
+
+  pullToLocal(row: any): void {
+    if (!this.onlineBase || this.onlineBase === '/api') return;
+    const instanceId = Number(row.instanceid ?? row.instanceId);
+    const accountId  = Number(row.accountid  ?? row.accountId);
+    this.syncingInstanceId = instanceId;
+    this.syncStatusMap[instanceId] = 'syncing';
+
+    this.http.post<any>(`${environment.apiUrl}/sync/pull`, { accountid: accountId, instanceid: instanceId })
+      .pipe(catchError(() => of(null)))
+      .subscribe({
+        next: async (data) => {
+          if (!data) {
+            this.syncingInstanceId = null;
+            this.syncStatusMap[instanceId] = 'error';
+            setTimeout(() => delete this.syncStatusMap[instanceId], 4000);
+            return;
+          }
+          await Promise.all([
+            this.saveLocal('account',    data.account    ?? []),
+            this.saveLocal('instance',   data.instance   ?? []),
+            this.saveLocal('userrole',   data.userrole   ?? []),
+            this.saveLocal('permission', data.permission ?? []),
+            this.saveLocal('city',       data.city       ?? []),
+            this.saveLocal('gst',        data.gst        ?? []),
+            this.saveLocal('vat',        data.vat        ?? []),
+            this.saveLocal('user',       data.user       ?? []),
+            this.saveLocal('product',    data.product    ?? []),
+            this.saveLocal('supplier',   data.supplier   ?? []),
+            this.saveLocal('customer',   data.customer   ?? []),
+          ]);
+          this.syncingInstanceId = null;
+          this.syncStatusMap[instanceId] = 'success';
+          setTimeout(() => delete this.syncStatusMap[instanceId], 4000);
+        },
+        error: () => {
+          this.syncingInstanceId = null;
+          this.syncStatusMap[instanceId] = 'error';
+          setTimeout(() => delete this.syncStatusMap[instanceId], 4000);
+        }
+      });
+  }
+
   /** Ensure numeric sorting in DevExtreme when instanceid comes as string/bigint. */
   instanceIdSortValue = (rowData: any): number => {
     const v = rowData?.instanceid ?? rowData?.instanceId ?? 0;
@@ -132,25 +189,37 @@ export class InstanceComponent implements OnInit {
   }
 
   getInstanceDetails(): void {
-    const isSuperAdmin = this.permissionService.isSuperAdmin();
-    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
+    const accountId = this.isSuperAdmin ? null : this.authService.getAccountId();
+
+    // Offline + super admin → fetch live from online server
+    if (this.isOffline && this.isSuperAdmin && this.onlineBase && this.onlineBase !== '/api') {
+      const token = localStorage.getItem('token') || '';
+      const headers = { Authorization: `Bearer ${token}` };
+      this.http.get<any[]>(`${this.onlineBase}/instance/list`, { headers })
+        .pipe(catchError(() => of([])))
+        .subscribe(apidata => this.applyInstanceData(apidata, null));
+      return;
+    }
+
     this.instanceservice.getInstanceDetails().subscribe({
-      next: (apidata: any) => {
-        const raw = Array.isArray(apidata) ? apidata : [];
-        const filtered = accountId != null ? this.byAccountId(raw, accountId) : raw;
-        this.instance = filtered.sort((a: any, b: any) => {
-          const aId = Number(a?.instanceid ?? a?.instanceId ?? 0);
-          const bId = Number(b?.instanceid ?? b?.instanceId ?? 0);
-          return bId - aId; // descending by instanceid
-        });
-        this.apiData = [...this.instance];
-        this.totalInstance = filtered.length;
-        this.activeInstance = filtered.filter((i: any) => i.instanceisactive === true || i.instanceisactive === 'true' || i.instanceisactive === 1).length;
-        this.deactiveInstance = this.totalInstance - this.activeInstance;
-        console.log('Sorted Instance Details:', this.instance);
-      },
+      next: (apidata: any) => this.applyInstanceData(apidata, accountId),
       error: (err) => console.error('Error fetching instance details:', err)
     });
+  }
+
+  private applyInstanceData(apidata: any, accountId: number | null): void {
+    const raw = Array.isArray(apidata) ? apidata : [];
+    const filtered = accountId != null ? this.byAccountId(raw, accountId) : raw;
+    this.instance = filtered.sort((a: any, b: any) => {
+      const aId = Number(a?.instanceid ?? a?.instanceId ?? 0);
+      const bId = Number(b?.instanceid ?? b?.instanceId ?? 0);
+      return bId - aId;
+    });
+    this.apiData = [...this.instance];
+    this.totalInstance = filtered.length;
+    this.activeInstance = filtered.filter((i: any) =>
+      i.instanceisactive === true || i.instanceisactive === 'true' || i.instanceisactive === 1).length;
+    this.deactiveInstance = this.totalInstance - this.activeInstance;
   }
 
   getInstanceOrderby(): void {

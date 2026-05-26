@@ -7,7 +7,7 @@
 export const environment = {
   production: true,
   apiUrl: '/api',
-  provisionOnlineBaseUrl: '/api',
+  provisionOnlineBaseUrl: 'https://api-prod.connectsite.in',
   apiHost: '',
   vcardApiUrl: '' as string,
   authHeaderFormat: 'Bearer' as 'Bearer' | 'token',

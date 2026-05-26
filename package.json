@@ -17,6 +17,7 @@
     "build:proddev-all": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=proddev-all",
     "build:prodlocal-all": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=prodlocal-all",
     "build:prod-all": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=prod-all",
+    "build:offline": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build --configuration=offline",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

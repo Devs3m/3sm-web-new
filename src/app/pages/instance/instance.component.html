@@ -234,16 +234,31 @@
       <dxi-column dataField="ownermobile" caption="Owner Mobile" [width]="150"></dxi-column>
       <dxi-column dataField="owneremail" caption="Owner Email" [width]="250"></dxi-column>
       <dxi-column dataField="instanceisactive" caption="Active" [width]="125"></dxi-column>
-      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="125"></dxi-column>
+      <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="160"></dxi-column>
 
-
-      <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
+      <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center; align-items: center;">
         <a *appHasPermission="'instance:update'" (click)="editItem(data.data)" style="cursor: pointer;">
           <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>
         </a>
         <a *appHasPermission="'instance:delete'" (click)="deleteItem(data.data)" style="cursor: pointer;">
           <span class="material-symbols-outlined action-icon delete-icon" title="Delete">delete</span>
         </a>
+        <ng-container *ngIf="isSuperAdmin && onlineBase && onlineBase !== '/api'">
+          <a (click)="pullToLocal(data.data)" style="cursor: pointer;" title="Pull to Local DB">
+            <span *ngIf="syncingInstanceId !== data.data.instanceid"
+              class="material-symbols-outlined action-icon"
+              [style.color]="syncStatusMap[data.data.instanceid] === 'success' ? 'green'
+                           : syncStatusMap[data.data.instanceid] === 'error'   ? 'red'
+                           : '#555'">
+              {{ syncStatusMap[data.data.instanceid] === 'success' ? 'cloud_done'
+               : syncStatusMap[data.data.instanceid] === 'error'   ? 'cloud_off'
+               : 'cloud_download' }}
+            </span>
+            <mat-progress-spinner *ngIf="syncingInstanceId === data.data.instanceid"
+              diameter="18" mode="indeterminate" color="primary">
+            </mat-progress-spinner>
+          </a>
+        </ng-container>
       </div>
 
       <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
