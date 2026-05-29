@@ -56,28 +56,9 @@ export class InstanceComponent implements OnInit {
     this.http.post<any>(`${environment.apiUrl}/sync/pull`, { accountid: accountId, instanceid: instanceId })
       .pipe(catchError(() => of(null)))
       .subscribe({
-        next: async (data) => {
-          if (!data) {
-            this.syncingInstanceId = null;
-            this.syncStatusMap[instanceId] = 'error';
-            setTimeout(() => delete this.syncStatusMap[instanceId], 4000);
-            return;
-          }
-          await Promise.all([
-            this.saveLocal('account',    data.account    ?? []),
-            this.saveLocal('instance',   data.instance   ?? []),
-            this.saveLocal('userrole',   data.userrole   ?? []),
-            this.saveLocal('permission', data.permission ?? []),
-            this.saveLocal('city',       data.city       ?? []),
-            this.saveLocal('gst',        data.gst        ?? []),
-            this.saveLocal('vat',        data.vat        ?? []),
-            this.saveLocal('user',       data.user       ?? []),
-            this.saveLocal('product',    data.product    ?? []),
-            this.saveLocal('supplier',   data.supplier   ?? []),
-            this.saveLocal('customer',   data.customer   ?? []),
-          ]);
+        next: (res) => {
           this.syncingInstanceId = null;
-          this.syncStatusMap[instanceId] = 'success';
+          this.syncStatusMap[instanceId] = res?.success ? 'success' : 'error';
           setTimeout(() => delete this.syncStatusMap[instanceId], 4000);
         },
         error: () => {

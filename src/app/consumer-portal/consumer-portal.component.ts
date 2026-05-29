@@ -138,7 +138,16 @@ export class ConsumerPortalComponent implements OnInit {
     return ['All', ...Array.from(new Set(cats)).sort()];
   }
 
-  private readonly hiddenFromAll = ['pooja'];
+  private readonly hiddenCategoryRules: { accountid: number; instanceid: number; categories: string[] }[] = [
+    { accountid: 56, instanceid: 14, categories: ['pooja', 'medical'] },
+  ];
+
+  private get hiddenFromAll(): string[] {
+    const rule = this.hiddenCategoryRules.find(
+      r => r.accountid === this.accountId && r.instanceid === this.instanceId
+    );
+    return rule ? rule.categories : [];
+  }
 
   get filteredProducts(): any[] {
     if (this.selectedCategory === 'All') {
