@@ -374,15 +374,15 @@
         (onExporting)="onExporting($event)">
 
       <dxo-toolbar>
-        <dxi-item *appHasPermission="'sales:create'" location="before">
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item *appHasPermission="'sales:create'" location="after">
           <div *dxTemplate>
             <button routerLink="/pages/inventorysalesadd" class="add-btn">
               <mat-icon>add_circle</mat-icon>
             </button>
           </div>
         </dxi-item>
-        <dxi-item name="searchPanel"></dxi-item>
-        <dxi-item name="exportButton"></dxi-item>
       </dxo-toolbar>
         <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx', 'pdf']"></dxo-export>
         <dxi-column dataField="invoiceno" caption="Invoice No" [width]="150" [calculateCellValue]="invoiceNoCellValue"></dxi-column>
@@ -415,8 +415,13 @@
 <!-- Add Customer sliding panel: same slide and CSS as Customer module create form -->
 <div class="form-backdrop form-backdrop-sales" [class.open]="showAddCustomerModal" (click)="closeAddCustomerModal()"></div>
 <div class="form-container sales-add-customer-panel" [class.open]="showAddCustomerModal" role="dialog" aria-modal="true" aria-labelledby="sales-add-customer-title">
-  <p id="sales-add-customer-title" style="font-size: larger;">Add Customer</p>
-  <button type="button" (click)="closeAddCustomerModal()" class="close-btn" aria-label="Close">&times;</button>
+  <div class="form-header">
+    <div class="form-header-left">
+      <mat-icon class="form-header-icon">people</mat-icon>
+      <span id="sales-add-customer-title" class="form-title">Add Customer</span>
+    </div>
+    <button type="button" (click)="closeAddCustomerModal()" class="close-btn" aria-label="Close">&times;</button>
+  </div>
   <app-customer-form
     [hideHeader]="true"
     (customerSaved)="handleCustomerSaved($event)"

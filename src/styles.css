@@ -447,6 +447,27 @@ box-shadow: gray;
   color: #000000 !important;
 }
 
+/* Mat Select dropdown panel - white background, black text */
+.mat-mdc-select-panel {
+  background-color: #ffffff !important;
+}
+
+.mat-mdc-select-panel .mat-mdc-option {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.mat-mdc-select-panel .mat-mdc-option:hover,
+.mat-mdc-select-panel .mat-mdc-option.mat-mdc-option-active,
+.mat-mdc-select-panel .mat-mdc-option.mdc-list-item--selected {
+  background-color: #f0f4ff !important;
+  color: #000000 !important;
+}
+
+.mat-mdc-select-panel .mat-mdc-option .mdc-list-item__primary-text {
+  color: #000000 !important;
+}
+
 /* Listing stat cards — shared layout (icon + label + count one row), neutral B&W theme */
 .account-cards {
   display: flex;
@@ -472,10 +493,16 @@ box-shadow: gray;
   max-width: 320px;
 }
 
-.account-card.total,
-.account-card.active,
-.account-card.inactive {
+.account-card.total {
   border-left: 6px solid #337ab7;
+  background-color: #ffffff;
+}
+.account-card.active {
+  border-left: 6px solid #2e7d32;
+  background-color: #ffffff;
+}
+.account-card.inactive {
+  border-left: 6px solid #c62828;
   background-color: #ffffff;
 }
 
@@ -593,6 +620,12 @@ box-shadow: gray;
   font-size: 14px;
 }
 
+/* Floating label scales down toward its top-left corner, not its center,
+   so it stays aligned with the start of the text box when it floats up */
+.mdc-floating-label {
+  transform-origin: left top;
+}
+
 /* Input text */
 .mat-mdc-input-element {
   font-size: 14px;
@@ -675,4 +708,160 @@ box-shadow: gray;
   .form-submit {
     justify-content: center;
   }
+}
+
+/* =============================================================================
+   Sidebar "Reports" flyout submenu (mat-menu renders in a CDK overlay on
+   <body>, so these rules must live in the global stylesheet, not a
+   component's scoped CSS).
+   ============================================================================= */
+.sidebar-submenu.mat-mdc-menu-panel {
+  background-color: #ffffff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18) !important;
+  min-width: 190px !important;
+}
+.sidebar-submenu .mat-mdc-menu-content {
+  padding: 6px !important;
+}
+.sidebar-submenu .mat-mdc-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #333 !important;
+}
+.sidebar-submenu .mat-mdc-menu-item .mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #757575;
+}
+.sidebar-submenu .mat-mdc-menu-item:hover {
+  background: #f0f4fa;
+  color: #337ab7 !important;
+}
+.sidebar-submenu .mat-mdc-menu-item:hover .mat-icon {
+  color: #337ab7;
+}
+.sidebar-submenu .mat-mdc-menu-item.submenu-active {
+  background: #e8f0fb;
+  color: #337ab7 !important;
+  font-weight: 500;
+}
+.sidebar-submenu .mat-mdc-menu-item.submenu-active .mat-icon {
+  color: #337ab7;
+}
+
+/* =============================================================================
+   Shared slide-over "Add/Edit" form header bar (grey, curved bottom corners)
+   Used across Product, Account, Instance, City, Customer, Supplier, GST,
+   VAT, User Role, etc. so all Add/Edit panels share the same look.
+   ============================================================================= */
+.form-container {
+  border-radius: 12px 0 0 12px;
+  overflow: hidden;
+}
+
+.form-container .form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  color: #000;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-radius: 0 0 12px 12px;
+}
+.form-container .form-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.form-container .form-header-icon {
+  color: #000 !important;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+.form-container .form-header .form-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+.form-container .form-header .close-btn {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  font-size: 24px;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 0;
+  margin-top: 0;
+  transition: background 0.2s;
+}
+.form-container .form-header .close-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Form body padding inside the slide-over panel */
+.form-container .form-section {
+  padding: 20px 20px 8px 20px;
+}
+
+/* Footer actions */
+.form-container .form-submit {
+  margin-top: 12px;
+  padding: 12px 20px 20px 20px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #eee;
+}
+.form-container .btn-cancel {
+  background: #fff;
+  color: #555;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.form-container .btn-cancel:hover {
+  background: #f5f5f5;
+}
+.form-container .form-submit .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #757575 !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.form-container .form-submit .btn-primary mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #fff !important;
+}
+.form-container .form-submit .btn-primary[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

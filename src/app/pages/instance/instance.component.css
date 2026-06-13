@@ -8,17 +8,16 @@
 
 .form-container {
   max-width: 100%;
-  margin: 15px auto;
-  padding: 20px;
-  border-radius: 8px;
+  padding: 0;
+  border-radius: 12px 0 0 12px;
   box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
   background-color: #ffff;
-  margin-top: 1% !important;
   height: auto !important;
   min-height: 400px !important;
   width: calc(100vw - 170px) !important;
-  max-height: calc(100vh - 24px) !important;
+  max-height: 100vh !important;
   overflow-y: auto;
+  overflow: hidden;
 }
 
 .form-submit {
@@ -49,30 +48,43 @@
   vertical-align: middle !important;
 }
 
-.close-btn {
-  background: transparent;
-  box-shadow: none;
-  border: none;
-  font-size: 30px;
-  color: black;
-  font-weight: 700;
-  margin-left: auto; display: block;
-  margin-top: -14px;
-}
 
 /* Keep control heights compact inside instance form so submit stays visible */
 :host ::ng-deep .form-container .mat-mdc-text-field-wrapper {
-  height: 42px !important;
+  height: 56px !important;
 }
 
 :host ::ng-deep .form-container .mat-mdc-form-field-infix {
-  min-height: 42px !important;
-  padding-top: 8px !important;
-  padding-bottom: 8px !important;
+  min-height: 56px !important;
+  padding-top: 20px !important;
+  padding-bottom: 6px !important;
+}
+
+/* Give the floating label room above the value text instead of overlapping it */
+:host ::ng-deep .form-container .mdc-floating-label {
+  top: 22px !important;
+}
+:host ::ng-deep .form-container .mdc-text-field--no-label .mdc-floating-label,
+:host ::ng-deep .form-container .mdc-floating-label--float-above {
+  top: 6px !important;
+  transform: translateY(-2px) scale(0.75) !important;
 }
 
 :host ::ng-deep .form-container .mat-mdc-form-field-subscript-wrapper {
   display: none;
+}
+
+/* Selected mat-select value must be visible (black text) */
+:host ::ng-deep .form-container .mat-mdc-select-value,
+:host ::ng-deep .form-container .mat-mdc-select-value-text,
+:host ::ng-deep .form-container .mat-mdc-select-min-line {
+  color: #000 !important;
+}
+:host ::ng-deep .form-container .mat-mdc-select-placeholder {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+:host ::ng-deep .form-container .mat-mdc-select-arrow {
+  color: #000 !important;
 }
 
 /* --- Material outline fields: neutral border (same as account) --- */

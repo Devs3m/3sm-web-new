@@ -1,8 +1,13 @@
 ﻿<section>
   <div class="form-backdrop" [class.open]="isFormOpen" (click)="restvatForm()"></div>
   <div class="form-container" [class.open]="isFormOpen">
-    <p style="font-size: larger;">Add VAT %</p>
-    <button (click)="restvatForm()" class="close-btn">&times;</button>
+    <div class="form-header">
+      <div class="form-header-left">
+        <mat-icon class="form-header-icon">percent</mat-icon>
+        <span class="form-title">VAT %</span>
+      </div>
+      <button (click)="restvatForm()" class="close-btn" title="Close">&times;</button>
+    </div>
       <form class="form-section" [formGroup]="vatForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
@@ -19,6 +24,7 @@
         </mat-form-field>
         <div class="form-submit">
           <button mat-raised-button type="submit" class="btn-primary" (click)="createVat()">
+            <mat-icon>add_circle</mat-icon>
             Submit
           </button>
           </div>
@@ -63,15 +69,15 @@
       [showBorders]="true" (onExporting)="onExporting($event)">
 
       <dxo-toolbar>
-        <dxi-item location="before">
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item location="after">
           <div *dxTemplate>
             <button (click)="toggleForm()" class="add-btn">
               <mat-icon>add_circle</mat-icon>
             </button>
           </div>
         </dxi-item>
-        <dxi-item name="searchPanel"></dxi-item>
-        <dxi-item name="exportButton"></dxi-item>
       </dxo-toolbar>
   
 

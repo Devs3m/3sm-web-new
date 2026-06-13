@@ -2,7 +2,10 @@
     <div class="form-backdrop" [class.open]="isFormOpen" (click)="restuserForm()"></div>
     <div class="form-container" [class.open]="isFormOpen">
         <div class="form-header">
-          <span class="form-header-title">{{ isEditMode ? 'Edit User' : 'Add User' }}</span>
+          <div class="form-header-left">
+            <mat-icon class="form-header-icon">person</mat-icon>
+            <span class="form-header-title">{{ isEditMode ? 'Edit User' : 'Add User' }}</span>
+          </div>
           <button (click)="restuserForm()" class="close-btn" title="Close">&#10005;</button>
         </div>
         <div class="form-body">
@@ -199,15 +202,15 @@
         title="User" >
 
         <dxo-toolbar>
-          <dxi-item *appHasPermission="'user:create'" location="before">
+          <dxi-item name="searchPanel"></dxi-item>
+          <dxi-item name="exportButton"></dxi-item>
+          <dxi-item *appHasPermission="'user:create'" location="after">
             <div *dxTemplate>
               <button (click)="toggleForm()" class="add-btn">
                 <mat-icon>add_circle</mat-icon>
               </button>
             </div>
           </dxi-item>
-          <dxi-item name="searchPanel"></dxi-item>
-          <dxi-item name="exportButton"></dxi-item>
         </dxo-toolbar>
 
 

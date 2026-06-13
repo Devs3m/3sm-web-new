@@ -1,8 +1,13 @@
 ﻿<section>  
     <div class="form-backdrop" [class.open]="isFormOpen" (click)="restGstForm()"></div>
     <div class="form-container" [class.open]="isFormOpen">
-    <p style="font-size: larger;">Add GST %</p>
-    <button (click)="restGstForm()" class="close-btn">&times;</button>
+    <div class="form-header">
+      <div class="form-header-left">
+        <mat-icon class="form-header-icon">percent</mat-icon>
+        <span class="form-title">{{ isEditMode ? 'Edit GST %' : 'Add GST %' }}</span>
+      </div>
+      <button (click)="restGstForm()" class="close-btn" title="Close">&times;</button>
+    </div>
       <form class="form-section" [formGroup]="gstForm" (ngSubmit)="onSubmit()">
 
         <mat-form-field appearance="outline" class="form-field">
@@ -40,7 +45,8 @@
        
         <div class="form-submit">
             <button mat-raised-button type="submit" class="btn-primary" (click)="createGst()">
-              Submit
+              <mat-icon>{{ isEditMode ? 'save' : 'add_circle' }}</mat-icon>
+              {{ isEditMode ? 'Update' : 'Submit' }}
             </button>
             </div>
 </form>
@@ -85,15 +91,15 @@
         [showBorders]="true" (onExporting)="onExporting($event)">
 
       <dxo-toolbar>
-        <dxi-item location="before">
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item location="after">
           <div *dxTemplate>
             <button (click)="toggleForm()" class="add-btn">
               <mat-icon>add_circle</mat-icon>
             </button>
           </div>
         </dxi-item>
-        <dxi-item name="searchPanel"></dxi-item>
-        <dxi-item name="exportButton"></dxi-item>
       </dxo-toolbar>
 
     

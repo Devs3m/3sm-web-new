@@ -261,8 +261,7 @@ export class InstanceComponent implements OnInit {
     });
   }
 
-  onSelectionAccountChange(event: Event): void {
-    const selectedValue = (event.target as HTMLSelectElement).value;
+  onSelectionAccountChange(selectedValue: any): void {
     console.log('Selected Account ID:', selectedValue);
     
     // Find the selected account by accountid (since the dropdown uses accountid as value)
@@ -282,8 +281,7 @@ export class InstanceComponent implements OnInit {
     }
   }
 
-  onSelectionChange(event: Event): void {
-    const selectedValue = (event.target as HTMLSelectElement).value;
+  onSelectionChange(selectedValue: any): void {
     console.log('Selected City Name:', selectedValue);
     const selectedItem = this.dropdownItems.find((item) => item.cityname === selectedValue);
     console.log('Selected City Item:', selectedItem);

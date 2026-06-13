@@ -2,8 +2,13 @@
   <div class="form-backdrop" [class.open]="isFormOpen" (click)="resetForm()"></div>
   <!-- Add / Edit Form -->
   <div class="form-container" [class.open]="isFormOpen">
-    <p style="font-size: larger;">{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</p>
-    <button (click)="resetForm()" class="close-btn">&times;</button>
+    <div class="form-header">
+      <div class="form-header-left">
+        <mat-icon class="form-header-icon">people</mat-icon>
+        <span class="form-title">{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</span>
+      </div>
+      <button (click)="resetForm()" class="close-btn" title="Close">&times;</button>
+    </div>
 
     <div *ngIf="errorMessage" class="error-message" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
       {{ errorMessage }}
@@ -100,12 +105,14 @@
         <ng-container *appHasPermission="'customer:create'">
           <button *ngIf="!isEditMode" mat-raised-button type="submit" class="btn-primary"
             [disabled]="customerForm.invalid || customerForm.pending">
+            <mat-icon>add_circle</mat-icon>
             Submit
           </button>
         </ng-container>
         <ng-container *appHasPermission="'customer:update'">
           <button *ngIf="isEditMode" mat-raised-button type="submit" class="btn-primary"
             [disabled]="customerForm.invalid || customerForm.pending">
+            <mat-icon>save</mat-icon>
             Update
           </button>
         </ng-container>
@@ -172,15 +179,15 @@
       title="Customers">
 
       <dxo-toolbar>
-        <dxi-item *appHasPermission="'customer:create'" location="before">
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item *appHasPermission="'customer:create'" location="after">
           <div *dxTemplate>
             <button *appHasPermission="'customer:create'" (click)="toggleForm()" class="add-btn">
               <mat-icon>add_circle</mat-icon>
             </button>
           </div>
         </dxi-item>
-        <dxi-item name="searchPanel"></dxi-item>
-        <dxi-item name="exportButton"></dxi-item>
       </dxo-toolbar>
 
       <dxi-column

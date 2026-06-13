@@ -8,14 +8,15 @@
 
 .form-container {
   max-width: 100%;
-  margin: 15px auto;
-  padding: 20px;
-  border-radius: 8px;
+  padding: 0;
+  border-radius: 12px 0 0 12px;
   box-shadow: 0 4px 8px rgba(243, 243, 243, 0.1);
   background-color: #ffff;
-  margin-top: 1% !important;
   height: auto !important;
   min-height: 400px !important;
+  max-height: 100vh !important;
+  overflow-y: auto;
+  overflow: hidden;
   width: calc(100vw - 170px) !important;
 }
 
@@ -139,18 +140,6 @@
   vertical-align: middle !important;
 }
 
-/* --- Close (×) on form header --- */
-
-.close-btn {
-  background: transparent;
-  box-shadow: none;
-  border: none;
-  font-size: 30px;
-  color: black;
-  font-weight: 700;
-  margin-left: auto; display: block;
-  margin-top: -14px;
-}
 
 /* --- Material outline fields: neutral border (not theme accent) --- */
 

@@ -259,8 +259,13 @@ export class DashboardComponent implements OnInit {
   productSalesBarOptions: Highcharts.Options = {};
 
   loadProductMetrics(): void {
+    const isSuperAdmin = this.permissionService.isSuperAdmin();
+    const accountId = isSuperAdmin ? null : this.authService.getAccountId();
+    const instanceId = isSuperAdmin ? null : this.authService.getInstanceId();
+
     this.productService.getProductDetails().pipe(catchError(() => of([]))).subscribe((data: any[]) => {
-      const list = Array.isArray(data) ? data : [];
+      const raw = Array.isArray(data) ? data : [];
+      const list = this.filterScopedRows(raw, accountId, instanceId);
       this.productTotal    = list.length;
       this.productActive   = list.filter(p => p.productisactive === true || p.productisactive === 'true' || p.productisactive === 1).length;
       this.productInactive = this.productTotal - this.productActive;

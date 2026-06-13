@@ -1,9 +1,14 @@
 ﻿<section>
   <div class="form-backdrop" [class.open]="isFormOpen" (click)="restaccountForm()"></div>
   <div class="form-container" [class.open]="isFormOpen">
-    <p style="font-size: larger;">{{ isEditMode ? 'Edit Account' : 'Add Account' }}</p>
-    <button (click)="restaccountForm()" class="close-btn">&times;</button>
-    
+    <div class="form-header">
+      <div class="form-header-left">
+        <mat-icon class="form-header-icon">business</mat-icon>
+        <span class="form-title">{{ isEditMode ? 'Edit Account' : 'Add Account' }}</span>
+      </div>
+      <button (click)="restaccountForm()" class="close-btn" title="Close">&times;</button>
+    </div>
+
     <!-- Error message display -->
     <div *ngIf="errorMessage" class="error-message" style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
       {{ errorMessage }}
@@ -214,15 +219,15 @@
       title="Account">
 
       <dxo-toolbar>
-        <dxi-item *appHasPermission="'account:create'" location="before">
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item *appHasPermission="'account:create'" location="after">
           <div *dxTemplate>
             <button *appHasPermission="'account:create'" (click)="toggleForm()" class="add-btn">
               <mat-icon>add_circle</mat-icon>
             </button>
           </div>
         </dxi-item>
-        <dxi-item name="searchPanel"></dxi-item>
-        <dxi-item name="exportButton"></dxi-item>
       </dxo-toolbar>
 
       <dxi-column dataField="accountid" [allowSorting]="true" [sortOrder]="'dsc'" caption="Company ID" [width]="140"></dxi-column>

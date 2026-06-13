@@ -133,8 +133,7 @@ export class SettingsComponent implements OnInit {
       case 'user':           return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('user');
       case 'userrole':       return this.permissionService.canManageRbac();
       case 'digicard':
-      case 'vcard':
-      case 'newvcard':       return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('digicard');
+      case 'vcard':          return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('digicard');
       case 'product':        return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('product');
       case 'sales':          return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('sales');
       case 'inventorysales': return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('sales');

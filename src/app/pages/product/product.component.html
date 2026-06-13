@@ -1,8 +1,13 @@
 <section>
   <div class="form-backdrop" [class.open]="isFormOpen" (click)="restproductForm()"></div>
   <div class="form-container" [class.open]="isFormOpen">
-    <p style="font-size: larger;">{{ isEditMode ? 'Edit Product' : 'Add Product' }}</p>
-    <button (click)="restproductForm()" class="close-btn">&times;</button>
+    <div class="form-header">
+      <div class="form-header-left">
+        <mat-icon class="form-header-icon">inventory_2</mat-icon>
+        <span class="form-title">{{ isEditMode ? 'Edit Product' : 'Add Product' }}</span>
+      </div>
+      <button (click)="restproductForm()" class="close-btn" title="Close">&times;</button>
+    </div>
     <form class="form-section" [formGroup]="productForm" (ngSubmit)="onSubmit()">
       
       <!-- Error Message Display -->
@@ -191,9 +196,11 @@
 
 
       <div class="form-submit">
+        <button type="button" class="btn-cancel" (click)="restproductForm()">Cancel</button>
         <button mat-raised-button type="submit" class="btn-primary"
                 [disabled]="productForm.invalid || productForm.pending || hasPendingValidators()">
-          {{ isEditMode ? 'Update' : 'Submit' }}
+          <mat-icon>{{ isEditMode ? 'save' : 'add_circle' }}</mat-icon>
+          {{ isEditMode ? 'Update Product' : 'Add Product' }}
         </button>
       </div>
     </form>
@@ -248,16 +255,16 @@
     [showBorders]="true" (onExporting)="onExporting($event)" style="max-width: 100%;">
 
       <dxo-toolbar>
-        <dxi-item *appHasPermission="'product:create'" location="before">
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item name="columnChooserButton"></dxi-item>
+        <dxi-item *appHasPermission="'product:create'" location="after">
           <div *dxTemplate>
             <button (click)="toggleForm()" class="add-btn">
               <mat-icon>add_circle</mat-icon>
             </button>
           </div>
         </dxi-item>
-        <dxi-item name="searchPanel"></dxi-item>
-        <dxi-item name="exportButton"></dxi-item>
-        <dxi-item name="columnChooserButton"></dxi-item>
       </dxo-toolbar>
 
       <dxi-column
@@ -274,10 +281,9 @@
       <dxi-column dataField="productmanufacturer" caption="Manufacturer" [width]="180"></dxi-column>
       <dxi-column dataField="productpackqty" caption="Packing" [width]="100"></dxi-column>
       <dxi-column dataField="productcategory" caption="Category" [width]="150"></dxi-column>
-      <dxi-column dataField="productisactive" caption="Active" [width]="120"></dxi-column>
+      <dxi-column dataField="productisactive" caption="Active" [width]="120" alignment="center" dataType="boolean"></dxi-column>
       <dxi-column [visible]="true" caption="Action" alignment="center" cellTemplate="actionTemplate" [width]="160"></dxi-column>
 
-    
       <div *dxTemplate="let data of 'actionTemplate'" style="display: flex; gap: 10px; justify-content: center;">
         <a *appHasPermission="'product:edit'" (click)="editItem(data.data)" style="cursor: pointer;">
           <span class="material-symbols-outlined action-icon edit-icon" title="Edit">edit</span>

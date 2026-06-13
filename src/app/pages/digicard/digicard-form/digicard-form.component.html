@@ -1,9 +1,14 @@
 ﻿<section>
     <div class="form-backdrop" [class.open]="isFormOpen" (click)="restDigicardForm()"></div>
     <div class="form-container" [class.open]="isFormOpen">
-        <p style="font-size: larger;">Add City</p>
-        <button (click)="restDigicardForm()" class="close-btn">&times;</button>
-        <form [formGroup]="digicardForm" (ngSubmit)="onSubmit()">
+        <div class="form-header">
+          <div class="form-header-left">
+            <mat-icon class="form-header-icon">badge</mat-icon>
+            <span class="form-title">Add Digicard</span>
+          </div>
+          <button (click)="restDigicardForm()" class="close-btn" title="Close">&times;</button>
+        </div>
+        <form [formGroup]="digicardForm" (ngSubmit)="onSubmit()" class="form-section">
 
             <mat-form-field appearance="outline" class="form-field">
                 <mat-label style="color:black">Company Name</mat-label>
@@ -174,7 +179,9 @@
             </div>
             <!-- // card-selection -->
             <div class="form-submit">
+                <button type="button" class="btn-cancel" (click)="restDigicardForm()">Cancel</button>
                 <button mat-raised-button type="submit" class="btn-primary" (click)="createDigicard()">
+                    <mat-icon>add_circle</mat-icon>
                     Submit
                 </button>
             </div>
@@ -222,15 +229,15 @@
             [paging]="{ pageSize: 12 }" [showBorders]="true" (onExporting)="onExporting($event)">
 
       <dxo-toolbar>
-        <dxi-item location="before">
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item location="after">
           <div *dxTemplate>
             <button (click)="toggleForm()" class="add-btn">
               <mat-icon>add_circle</mat-icon>
             </button>
           </div>
         </dxi-item>
-        <dxi-item name="searchPanel"></dxi-item>
-        <dxi-item name="exportButton"></dxi-item>
       </dxo-toolbar>
 
             <dxi-column dataField="digicardid" caption="Digicard ID" [cellTemplate]="'digiTemplate'"></dxi-column>

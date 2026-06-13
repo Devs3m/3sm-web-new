@@ -411,11 +411,6 @@
     </div>
 
     <div class="pos-relative purchase-list-grid-wrap">
-      <div class="btn-pos-list">
-        <button *appHasPermission="'purchase:create'" type="button" (click)="toggleForm()" class="add-btn">
-          <mat-icon>add_circle</mat-icon>
-        </button>
-      </div>
       <dx-data-grid
         class="purchase-list-datagrid"
         [dataSource]="purchases"
@@ -430,6 +425,17 @@
         [paging]="{ pageSize: 15 }"
         title="Purchase (GRN) summary"
         (onExporting)="onExporting($event)">
+        <dxo-toolbar>
+          <dxi-item name="searchPanel"></dxi-item>
+          <dxi-item name="exportButton"></dxi-item>
+          <dxi-item *appHasPermission="'purchase:create'" location="after">
+            <div *dxTemplate>
+              <button type="button" (click)="toggleForm()" class="add-btn">
+                <mat-icon>add_circle</mat-icon>
+              </button>
+            </div>
+          </dxi-item>
+        </dxo-toolbar>
         <dxo-export [enabled]="true" [allowExportSelectedData]="false" [formats]="['xlsx', 'pdf']"></dxo-export>
         <dxi-column
           dataField="purchasegrnno"

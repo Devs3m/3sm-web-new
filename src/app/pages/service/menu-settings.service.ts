@@ -20,7 +20,6 @@ export const DEFAULT_MENU: MenuItemSetting[] = [
   { key: 'userrole',       label: 'User Role',      icon: 'settings',        enabled: true },
   { key: 'digicard',       label: 'Digicard',       icon: 'star',            enabled: true },
   { key: 'vcard',          label: 'V Card',         icon: 'badge',           enabled: true },
-  { key: 'newvcard',       label: 'New V Card',     icon: 'contact_page',    enabled: true },
   { key: 'product',        label: 'Product',        icon: 'fastfood',        enabled: true },
   { key: 'sales',          label: 'Service Sales',  icon: 'point_of_sale',   enabled: true },
   { key: 'inventorysales', label: 'Product Sales',  icon: 'inventory_2',     enabled: true },

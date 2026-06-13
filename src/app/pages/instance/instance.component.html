@@ -1,21 +1,23 @@
 ﻿<section>
   <div class="form-backdrop" [class.open]="isFormOpen" (click)="restinstanceForm()"></div>
   <div class="form-container" [class.open]="isFormOpen">
-    <p style="font-size: larger;">{{ isEditMode ? 'Edit Instance' : 'Add Instance' }}</p>
-    <button (click)="restinstanceForm()" class="close-btn">&times;</button>
+    <div class="form-header">
+      <div class="form-header-left">
+        <mat-icon class="form-header-icon">apartment</mat-icon>
+        <span class="form-title">{{ isEditMode ? 'Edit Instance' : 'Add Instance' }}</span>
+      </div>
+      <button (click)="restinstanceForm()" class="close-btn" title="Close">&times;</button>
+    </div>
 
     <form class="form-section" [formGroup]="instanceForm" (ngSubmit)="onSubmit()">
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Account</mat-label>
-        <select matNativeControl
-                formControlName="accountid"
-                (change)="onSelectionAccountChange($event)">
-          <option value="" disabled>Select Account</option>
-          <option *ngFor="let item of dropdownAccountItems" [value]="item.accountid">
+        <mat-select formControlName="accountid" (selectionChange)="onSelectionAccountChange($event.value)">
+          <mat-option *ngFor="let item of dropdownAccountItems" [value]="item.accountid">
             {{ item.companyname }}
-          </option>
-        </select>
+          </mat-option>
+        </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field">
@@ -60,14 +62,11 @@
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">City</mat-label>
-        <select matNativeControl
-                formControlName="instancecity"
-                (change)="onSelectionChange($event)">
-          <option value="" disabled>Select City</option>
-          <option *ngFor="let item of dropdownItems" [value]="item.cityname">
+        <mat-select formControlName="instancecity" (selectionChange)="onSelectionChange($event.value)">
+          <mat-option *ngFor="let item of dropdownItems" [value]="item.cityname">
             {{ item.cityname }}
-          </option>
-        </select>
+          </mat-option>
+        </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field">
@@ -122,22 +121,20 @@
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Active</mat-label>
-        <select matNativeControl formControlName="instanceisactive">
-          <option value="" disabled>Select</option>
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
-        </select>
+        <mat-select formControlName="instanceisactive">
+          <mat-option [value]="true">Active</mat-option>
+          <mat-option [value]="false">Inactive</mat-option>
+        </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field">
         <mat-label style="color:black">Sales Page Type</mat-label>
-        <select matNativeControl formControlName="salestype">
-          <option value="" disabled>Select</option>
-          <option value="sales">Service Sales</option>
-          <option value="inventory_sales">Product Sales</option>
-          <option value="ecommerce">Ecommerce</option>
-          <option value="all">All Sales Pages</option>
-        </select>
+        <mat-select formControlName="salestype">
+          <mat-option value="sales">Service Sales</mat-option>
+          <mat-option value="inventory_sales">Product Sales</mat-option>
+          <mat-option value="ecommerce">Ecommerce</mat-option>
+          <mat-option value="all">All Sales Pages</mat-option>
+        </mat-select>
         <mat-hint>Controls which sales page appears in the side menu for this instance</mat-hint>
       </mat-form-field>
 
@@ -202,22 +199,22 @@
       title="Instance">
 
       <dxo-toolbar>
-        <dxi-item *appHasPermission="'instance:create'" location="before">
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item *appHasPermission="'instance:create'" location="after">
           <div *dxTemplate>
             <button *appHasPermission="'instance:create'" (click)="toggleForm()" class="add-btn">
               <mat-icon>add_circle</mat-icon>
             </button>
           </div>
         </dxi-item>
-        <dxi-item name="searchPanel"></dxi-item>
-        <dxi-item name="exportButton"></dxi-item>
       </dxo-toolbar>
 
       <dxi-column
         dataField="instanceid"
         caption="Instance ID"
-        [width]="130"
         [allowSorting]="true"
+        [calculateSortValue]="instanceIdSortValue"
         [sortOrder]="'desc'"
         [sortIndex]="0"
         [width]="150">

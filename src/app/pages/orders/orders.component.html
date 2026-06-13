@@ -123,63 +123,66 @@
   <div class="form-backdrop" [class.open]="isAddPanelOpen" (click)="closeAddPanel()"></div>
   <div class="form-container" [class.open]="isAddPanelOpen">
     <div class="form-header">
-      <span class="form-header-title">Add Order</span>
+      <div class="form-header-left">
+        <mat-icon class="form-header-icon">shopping_bag</mat-icon>
+        <span class="form-header-title">Add Order</span>
+      </div>
       <button type="button" (click)="closeAddPanel()" class="close-btn" title="Close">&#10005;</button>
     </div>
     <div class="form-body">
     <form [formGroup]="orderForm" (ngSubmit)="submitOrder()" class="form-section">
 
-      <mat-form-field appearance="fill" class="form-field">
-        <mat-label>Customer Name</mat-label>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Customer Name</mat-label>
         <input matInput formControlName="customername" placeholder="Customer name" />
         <mat-error *ngIf="orderForm.get('customername')?.invalid && orderForm.get('customername')?.touched">Required</mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="fill" class="form-field">
-        <mat-label>Phone Number</mat-label>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Phone Number</mat-label>
         <input matInput formControlName="customerphone" placeholder="10-digit mobile" maxlength="10" />
         <mat-error *ngIf="orderForm.get('customerphone')?.invalid && orderForm.get('customerphone')?.touched">Valid 10-digit number required</mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="fill" class="form-field">
-        <mat-label>Order Date</mat-label>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Order Date</mat-label>
         <input matInput type="date" formControlName="orderdate" />
       </mat-form-field>
 
-      <mat-form-field appearance="fill" class="form-field">
-        <mat-label>Status</mat-label>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Status</mat-label>
         <mat-select formControlName="orderstatus">
           <mat-option *ngFor="let s of statusOptions" [value]="s">{{ s }}</mat-option>
         </mat-select>
       </mat-form-field>
 
       <!-- Order Items -->
-      <div class="add-items-section" formArrayName="items">
+      <div class="add-items-section full-width" formArrayName="items">
         <div class="add-items-header">
           <span class="items-heading" style="margin:0;">Order Items</span>
           <button type="button" class="add-item-btn" (click)="addItem()">+ Add Item</button>
         </div>
 
         <div *ngFor="let item of itemControls; let i = index" [formGroupName]="i" class="item-row">
-          <mat-form-field appearance="fill" class="item-field-product">
-            <mat-label>Product</mat-label>
+          <mat-form-field appearance="outline" class="item-field-product">
+            <mat-label style="color:black">Product</mat-label>
             <mat-select formControlName="productid" (selectionChange)="onProductSelect(i, $event)">
               <mat-option *ngFor="let p of availableProducts" [value]="p.productid">{{ p.productname }}</mat-option>
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field appearance="fill" class="item-field-small">
-            <mat-label>MRP</mat-label>
+          <mat-form-field appearance="outline" class="item-field-small">
+            <mat-label style="color:black">MRP</mat-label>
             <input matInput type="number" formControlName="salemrp" readonly />
           </mat-form-field>
 
-          <mat-form-field appearance="fill" class="item-field-small">
-            <mat-label>Qty</mat-label>
+          <mat-form-field appearance="outline" class="item-field-small">
+            <mat-label style="color:black">Qty</mat-label>
             <input matInput type="number" min="1" formControlName="qty" (input)="recalcItem(i)" />
           </mat-form-field>
 
-          <mat-form-field appearance="fill" class="item-field-small">
-            <mat-label>Amount</mat-label>
+          <mat-form-field appearance="outline" class="item-field-small">
+            <mat-label style="color:black">Amount</mat-label>
             <input matInput type="number" formControlName="amount" readonly />
           </mat-form-field>
 
@@ -187,7 +190,7 @@
         </div>
       </div>
 
-      <div class="grand-total-row">
+      <div class="grand-total-row full-width">
         <span>Grand Total</span>
         <strong>&#8377; {{ getFormGrandTotal() | number:'1.2-2' }}</strong>
       </div>
@@ -239,15 +242,15 @@
       title="Orders">
 
       <dxo-toolbar>
-        <dxi-item location="before">
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item location="after">
           <div *dxTemplate>
             <button (click)="openAddPanel()" class="add-btn">
               <mat-icon>add_circle</mat-icon>
             </button>
           </div>
         </dxi-item>
-        <dxi-item name="searchPanel"></dxi-item>
-        <dxi-item name="exportButton"></dxi-item>
       </dxo-toolbar>
 
       <dxi-column dataField="orderid" caption="Order ID" [width]="100"

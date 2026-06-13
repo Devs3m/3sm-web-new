@@ -67,21 +67,42 @@
         <mat-icon class="aligned-icon">dashboard</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Dashboard</span>
       </a>
 
-      <a *ngIf="permissionService.hasAnyPermissionForResource('account') && menuSettings.isEnabled('account')" mat-list-item routerLink='account' href="#" class="aligned-list-item" title="Account">
-        <mat-icon class="aligned-icon">perm_identity</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Account</span>
-      </a>
-
-      <a *ngIf="permissionService.hasAnyPermissionForResource('instance') && menuSettings.isEnabled('instance')" mat-list-item routerLink='instance' href="#" class="aligned-list-item" title="Instance">
-        <mat-icon class="aligned-icon">business</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Instance</span>
-      </a>
-
-      <a *ngIf="permissionService.hasAnyPermissionForResource('user') && menuSettings.isEnabled('user')" mat-list-item routerLink='user' href="#" class="aligned-list-item" title="User">
-        <mat-icon class="aligned-icon">person_add</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">User</span>
-      </a>
-
-      <a *ngIf="permissionService.canManageRbac() && menuSettings.isEnabled('userrole')" mat-list-item routerLink='userrole' href="#" class="aligned-list-item" title="User Role">
-        <mat-icon class="aligned-icon">settings_applications</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">User Role</span>
-      </a>
+      <ng-container *ngIf="(permissionService.hasAnyPermissionForResource('account') && menuSettings.isEnabled('account'))
+                        || (permissionService.hasAnyPermissionForResource('instance') && menuSettings.isEnabled('instance'))
+                        || (permissionService.hasAnyPermissionForResource('user') && menuSettings.isEnabled('user'))
+                        || (permissionService.canManageRbac() && menuSettings.isEnabled('userrole'))
+                        || (permissionService.hasAnyPermissionForResource('city') && menuSettings.isEnabled('city'))
+                        || (permissionService.hasAnyPermissionForResource('gst') && menuSettings.isEnabled('gst'))
+                        || (permissionService.hasAnyPermissionForResource('vat') && menuSettings.isEnabled('vat'))">
+        <button mat-list-item [matMenuTriggerFor]="mastersMenu" #mastersTrigger="matMenuTrigger" class="aligned-list-item" title="Masters">
+          <mat-icon class="aligned-icon">folder_open</mat-icon>
+          <span class="nav-label" *ngIf="sidebarExpanded">Masters</span>
+          <mat-icon class="submenu-caret" *ngIf="sidebarExpanded">{{ mastersTrigger.menuOpen ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+        <mat-menu #mastersMenu="matMenu" xPosition="after" yPosition="below" class="sidebar-submenu">
+          <button mat-menu-item *ngIf="permissionService.hasAnyPermissionForResource('account') && menuSettings.isEnabled('account')" routerLink="account" routerLinkActive="submenu-active">
+            <mat-icon>perm_identity</mat-icon><span>Account</span>
+          </button>
+          <button mat-menu-item *ngIf="permissionService.hasAnyPermissionForResource('instance') && menuSettings.isEnabled('instance')" routerLink="instance" routerLinkActive="submenu-active">
+            <mat-icon>business</mat-icon><span>Instance</span>
+          </button>
+          <button mat-menu-item *ngIf="permissionService.hasAnyPermissionForResource('user') && menuSettings.isEnabled('user')" routerLink="user" routerLinkActive="submenu-active">
+            <mat-icon>person_add</mat-icon><span>User</span>
+          </button>
+          <button mat-menu-item *ngIf="permissionService.canManageRbac() && menuSettings.isEnabled('userrole')" routerLink="userrole" routerLinkActive="submenu-active">
+            <mat-icon>settings_applications</mat-icon><span>User Role</span>
+          </button>
+          <button mat-menu-item *ngIf="permissionService.hasAnyPermissionForResource('city') && menuSettings.isEnabled('city')" routerLink="city" routerLinkActive="submenu-active">
+            <mat-icon>location_on</mat-icon><span>City</span>
+          </button>
+          <button mat-menu-item *ngIf="permissionService.hasAnyPermissionForResource('gst') && menuSettings.isEnabled('gst')" routerLink="gst" routerLinkActive="submenu-active">
+            <mat-icon>money</mat-icon><span>GST</span>
+          </button>
+          <button mat-menu-item *ngIf="permissionService.hasAnyPermissionForResource('vat') && menuSettings.isEnabled('vat')" routerLink="vat" routerLinkActive="submenu-active">
+            <mat-icon>money</mat-icon><span>VAT</span>
+          </button>
+        </mat-menu>
+      </ng-container>
 
       <a *ngIf="permissionService.hasAnyPermissionForResource('digicard') && menuSettings.isEnabled('digicard')" mat-list-item routerLink='digicard' href="#" class="aligned-list-item" title="Digicard">
         <mat-icon class="aligned-icon">local_activity</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Digicard</span>
@@ -89,10 +110,6 @@
 
       <a *ngIf="permissionService.hasAnyPermissionForResource('digicard') && menuSettings.isEnabled('vcard')" mat-list-item routerLink='digicard/card' href="#" class="aligned-list-item" title="V Card">
         <mat-icon class="aligned-icon">badge</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">V Card</span>
-      </a>
-
-      <a *ngIf="permissionService.hasAnyPermissionForResource('digicard') && menuSettings.isEnabled('newvcard')" mat-list-item routerLink='digicard/new-card' href="#" class="aligned-list-item" title="New V Card">
-        <mat-icon class="aligned-icon">contact_page</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">New V Card</span>
       </a>
 
       <a *ngIf="permissionService.hasAnyPermissionForResource('product') && menuSettings.isEnabled('product')" mat-list-item routerLink='product' href="#" class="aligned-list-item" title="Product">
@@ -123,26 +140,22 @@
         <mat-icon class="aligned-icon">shopping_bag</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Orders</span>
       </a>
 
-      <a *ngIf="permissionService.hasAnyPermissionForResource('city') && menuSettings.isEnabled('city')" mat-list-item routerLink='city' href="#" class="aligned-list-item" title="City">
-        <mat-icon class="aligned-icon">location_on</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">City</span>
-      </a>
-
-      <a *ngIf="permissionService.hasAnyPermissionForResource('gst') && menuSettings.isEnabled('gst')" mat-list-item routerLink='gst' href="#" class="aligned-list-item" title="GST">
-        <mat-icon class="aligned-icon">money</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Gst</span>
-      </a>
-
-      <a *ngIf="permissionService.hasAnyPermissionForResource('vat') && menuSettings.isEnabled('vat')" mat-list-item routerLink='vat' href="#" class="aligned-list-item" title="VAT">
-        <mat-icon class="aligned-icon">money</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Vat</span>
-      </a>
-
       <ng-container *ngIf="permissionService.hasAnyPermissionForResource('sales') && menuSettings.isEnabled('reports')">
-        <button mat-list-item [matMenuTriggerFor]="reportsMenu" class="aligned-list-item" title="Reports">
-          <mat-icon class="aligned-icon">bar_chart</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Reports</span>
+        <button mat-list-item [matMenuTriggerFor]="reportsMenu" #reportsTrigger="matMenuTrigger" class="aligned-list-item" title="Reports">
+          <mat-icon class="aligned-icon">bar_chart</mat-icon>
+          <span class="nav-label" *ngIf="sidebarExpanded">Reports</span>
+          <mat-icon class="submenu-caret" *ngIf="sidebarExpanded">{{ reportsTrigger.menuOpen ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
-        <mat-menu #reportsMenu="matMenu" xPosition="after" yPosition="below">
-          <button mat-menu-item routerLink="product-ledger"><span>Product Ledger</span></button>
-          <button mat-menu-item routerLink="sales-ledger"><span>Sales Ledger</span></button>
-          <button mat-menu-item routerLink="finance"><span>Finance</span></button>
+        <mat-menu #reportsMenu="matMenu" xPosition="after" yPosition="below" class="sidebar-submenu">
+          <button mat-menu-item routerLink="product-ledger" routerLinkActive="submenu-active">
+            <mat-icon>inventory_2</mat-icon><span>Product Ledger</span>
+          </button>
+          <button mat-menu-item routerLink="sales-ledger" routerLinkActive="submenu-active">
+            <mat-icon>receipt_long</mat-icon><span>Sales Ledger</span>
+          </button>
+          <button mat-menu-item routerLink="finance" routerLinkActive="submenu-active">
+            <mat-icon>account_balance</mat-icon><span>Finance</span>
+          </button>
         </mat-menu>
       </ng-container>
 

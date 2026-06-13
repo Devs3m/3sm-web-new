@@ -4,6 +4,8 @@
   display: flex;
   flex-direction: column;
   background: #fff !important;
+  border-radius: 12px 0 0 12px;
+  overflow: hidden;
 }
 
 /* Add panel header/body structure */
@@ -12,15 +14,28 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #f5f5f5;
+  color: #000;
   flex-shrink: 0;
+  border-radius: 0 0 12px 12px;
+}
+
+.form-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-header-icon {
+  color: #000 !important;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
 }
 
 .form-header-title {
   font-size: 1rem;
-  font-weight: 700;
-  color: #222;
+  font-weight: 600;
+  color: #000;
 }
 
 .form-body {
@@ -29,34 +44,32 @@
   padding: 20px;
 }
 
-/* Light fill for form fields in add panel */
 .form-body ::ng-deep .mat-mdc-text-field-wrapper {
-  background-color: #f9f9f9 !important;
+  background-color: transparent !important;
   width: 100% !important;
 }
 
 /* Close button style override for add panel */
 .form-header .close-btn {
-  background: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 4px;
   cursor: pointer;
-  color: #444;
+  color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 34px;
   height: 34px;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 0;
   margin: 0;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s;
 }
 .form-header .close-btn:hover {
-  background: #ffebee;
-  color: #c62828;
-  border-color: #ffcdd2;
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .btn-pos-list {
@@ -81,18 +94,8 @@
   cursor: pointer;
 }
 
-/* Add form layout */
-.form-section {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.form-field { width: calc(50% - 6px); }
-
 /* Items section */
-.add-items-section { width: 100%; margin-top: 8px; }
+.add-items-section { margin-top: 8px; }
 
 .add-items-header {
   display: flex;
@@ -119,7 +122,6 @@
 .remove-item-btn { background: none; border: none; color: #c62828; font-size: 1rem; cursor: pointer; padding: 4px; }
 
 .grand-total-row {
-  width: 100%;
   display: flex;
   justify-content: flex-end;
   align-items: center;
