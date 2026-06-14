@@ -141,6 +141,7 @@ export class SettingsComponent implements OnInit {
       case 'supplier':       return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('supplier');
       case 'purchase':       return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('purchase');
       case 'orders':         return true;
+      case 'stock':          return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('product');
       case 'city':           return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('city');
       case 'gst':            return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('gst');
       case 'vat':            return isSuperAdmin || this.permissionService.hasAnyPermissionForResource('vat');

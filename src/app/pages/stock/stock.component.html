@@ -1,0 +1,79 @@
+<section>
+
+  <div class="account-cards">
+
+    <mat-card class="account-card total">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>inventory_2</mat-icon>
+        </div>
+        <span class="card-label">Total Stock Items</span>
+        <span class="card-value">{{ totalItems }}</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="account-card active">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>inventory</mat-icon>
+        </div>
+        <span class="card-label">Total Quantity</span>
+        <span class="card-value">{{ totalQuantity | number:'1.0-2' }}</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="account-card inactive">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>currency_rupee</mat-icon>
+        </div>
+        <span class="card-label">Total Stock Value</span>
+        <span class="card-value">{{ totalStockValue | number:'1.2-2' }}</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="account-card warning">
+      <div class="card-content account-stat-row">
+        <div class="card-icon">
+          <mat-icon>event_busy</mat-icon>
+        </div>
+        <span class="card-label">Expiring in 30 Days</span>
+        <span class="card-value">{{ expiringSoon }}</span>
+      </div>
+    </mat-card>
+
+  </div>
+
+  <div class="pos-relative">
+    <dx-data-grid
+      [dataSource]="apiData"
+      [allowColumnReordering]="true"
+      [allowColumnResizing]="true"
+      [showBorders]="true"
+      [headerFilter]="{ visible: true }"
+      [searchPanel]="{ visible: true, width: 240, placeholder: 'Type to search...' }"
+      [paging]="{ pageSize: 12 }"
+      title="Stock"
+      (onExporting)="onExporting($event)" style="max-width: 100%;">
+
+      <dxo-toolbar>
+        <dxi-item name="searchPanel"></dxi-item>
+        <dxi-item name="exportButton"></dxi-item>
+        <dxi-item name="columnChooserButton"></dxi-item>
+      </dxo-toolbar>
+
+      <dxi-column dataField="stockid" caption="Stock ID" [sortOrder]="'desc'" [sortIndex]="0" [width]="100"></dxi-column>
+      <dxi-column dataField="productname" caption="Product Name" [width]="250"></dxi-column>
+      <dxi-column dataField="batchno" caption="Batch No" [width]="140"></dxi-column>
+      <dxi-column dataField="expirydate" caption="Expiry Date" [width]="130" [calculateCellValue]="expiryDateCellValue"></dxi-column>
+      <dxi-column dataField="createddate" caption="Age (Days)" [width]="150" alignment="center" [calculateCellValue]="ageCellValue"></dxi-column>
+      <dxi-column dataField="productpackqty" caption="Pack Qty" [width]="125" alignment="center"></dxi-column>
+      <dxi-column dataField="productqty" caption="Stock Qty" [width]="120" alignment="center" [calculateCellValue]="qtyCellValue" [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+      <dxi-column dataField="purchaseeachcost" caption="Cost" [width]="130" alignment="right" [calculateCellValue]="purchaseCostCellValue" [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+      <dxi-column dataField="producteachmrp" caption="MRP" [width]="80" alignment="right" [calculateCellValue]="mrpCellValue" [format]="{ type: 'fixedPoint', precision: 2 }"></dxi-column>
+
+      <dxo-export [enabled]="true" [allowExportSelectedData]="true"></dxo-export>
+    </dx-data-grid>
+  </div>
+
+</section>
