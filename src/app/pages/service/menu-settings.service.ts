@@ -27,10 +27,12 @@ export const DEFAULT_MENU: MenuItemSetting[] = [
   { key: 'supplier',       label: 'Supplier',       icon: 'local_shipping',  enabled: true },
   { key: 'purchase',       label: 'Purchase',       icon: 'receipt_long',    enabled: true },
   { key: 'orders',         label: 'Orders',         icon: 'shopping_bag',    enabled: true },
+  { key: 'stock',          label: 'Stock',          icon: 'inventory',       enabled: true },
   { key: 'city',           label: 'City',           icon: 'location_on',     enabled: true },
   { key: 'gst',            label: 'GST',            icon: 'money',           enabled: true },
   { key: 'vat',            label: 'VAT',            icon: 'money',           enabled: true },
   { key: 'reports',        label: 'Reports',        icon: 'bar_chart',       enabled: true },
+  { key: 'accounts',       label: 'Chart of Accounts', icon: 'account_balance_wallet', enabled: true },
   { key: 'quickproduct',   label: 'Quick Product',  icon: 'add_box',         enabled: false },
   { key: 'settings',       label: 'Settings',       icon: 'settings',        enabled: true },
 ];

@@ -39,6 +39,7 @@ export class OrdersComponent implements OnInit {
 
   orderIdSortValue = (row: any): number => Number(row?.orderid ?? 0);
   statusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED'];
+  paymentModeOptions = ['cash', 'credit'];
 
   readonly upiId    = environment.upiId;
   readonly upiName  = environment.upiName;
@@ -66,6 +67,7 @@ export class OrdersComponent implements OnInit {
       customerphone: ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
       orderdate:     [today, Validators.required],
       orderstatus:   ['PENDING', Validators.required],
+      paymentmode:   ['cash', Validators.required],
       items:         this.fb.array([])
     });
   }
@@ -134,7 +136,7 @@ export class OrdersComponent implements OnInit {
   submitOrder(): void {
     if (this.orderForm.invalid) return;
     this.submittingOrder = true;
-    const { customername, customerphone, orderdate, orderstatus } = this.orderForm.value;
+    const { customername, customerphone, orderdate, orderstatus, paymentmode } = this.orderForm.value;
     const now = new Date().toISOString();
     const items: OrderDetailDto[] = (this.orderForm.get('items') as FormArray).controls.map((c: any) => ({
       orderid: 0,
@@ -147,7 +149,7 @@ export class OrdersComponent implements OnInit {
     const dto: SaveOrderDto = {
       accountid: this.accountId, instanceid: this.instanceId,
       customername, customerphone, grandtotal: this.getFormGrandTotal(),
-      orderstatus, orderdate, createddate: now, updateddate: now, isactive: true, items
+      orderstatus, orderdate, createddate: now, updateddate: now, isactive: true, paymentmode, items
     };
     this.portalService.placeOrder(dto).subscribe({
       next: () => {

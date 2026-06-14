@@ -140,6 +140,10 @@
         <mat-icon class="aligned-icon">shopping_bag</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Orders</span>
       </a>
 
+      <a *ngIf="permissionService.hasAnyPermissionForResource('product') && menuSettings.isEnabled('stock')" mat-list-item routerLink='stock' href="#" class="aligned-list-item" title="Stock">
+        <mat-icon class="aligned-icon">inventory</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Stock</span>
+      </a>
+
       <ng-container *ngIf="permissionService.hasAnyPermissionForResource('sales') && menuSettings.isEnabled('reports')">
         <button mat-list-item [matMenuTriggerFor]="reportsMenu" #reportsTrigger="matMenuTrigger" class="aligned-list-item" title="Reports">
           <mat-icon class="aligned-icon">bar_chart</mat-icon>
@@ -158,6 +162,10 @@
           </button>
         </mat-menu>
       </ng-container>
+
+      <a *ngIf="permissionService.hasAnyPermissionForResource('accounts') && menuSettings.isEnabled('accounts')" mat-list-item routerLink='accounts' href="#" class="aligned-list-item" title="Chart of Accounts">
+        <mat-icon class="aligned-icon">account_balance_wallet</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Chart of Accounts</span>
+      </a>
 
       <a *ngIf="authService.isAuthenticated()" mat-list-item routerLink='settings' href="#" class="aligned-list-item" title="Settings">
         <mat-icon class="aligned-icon">settings</mat-icon><span class="nav-label" *ngIf="sidebarExpanded">Settings</span>

@@ -145,14 +145,21 @@ const routes: Routes = [
       },
       {
         path: 'accounts',
-        redirectTo: 'finance',
-        pathMatch: 'full',
+        loadChildren: () => import(`./accounts/accounts.module`).then(m => m.AccountsModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'accounts', action: 'view' } }
       },
       {
         path: 'orders',
         loadChildren: () => import(`./orders/orders.module`).then(m => m.OrdersModule),
         canActivate: [RoleGuard],
         data: { permission: { resource: 'orders', action: 'view' } }
+      },
+      {
+        path: 'stock',
+        loadChildren: () => import(`./stock/stock.module`).then(m => m.StockModule),
+        canActivate: [RoleGuard],
+        data: { permission: { resource: 'product', action: 'view' } }
       },
       {
         path: 'settings',

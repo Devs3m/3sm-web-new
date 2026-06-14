@@ -1,0 +1,38 @@
+<div class="ledger-container">
+  <button mat-button (click)="back()">&larr; Back to Chart of Accounts</button>
+
+  <h2>{{ account?.accountname || 'Account Ledger' }}</h2>
+  <div class="account-meta" *ngIf="account">
+    <span>Code: {{ account.accountcode }}</span>
+    <span>Type: {{ account.accounttype }}</span>
+    <span>Balance: {{ account.balance | number:'1.2-2' }}</span>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <dx-data-grid
+    [dataSource]="entries"
+    [showBorders]="true"
+    [remoteOperations]="false"
+    [columnAutoWidth]="true"
+  >
+    <dxi-column dataField="transactiondate" caption="Date" dataType="date" [width]="120"></dxi-column>
+    <dxi-column dataField="referencetype" caption="Reference Type" [width]="120"></dxi-column>
+    <dxi-column dataField="referenceid" caption="Reference #" [width]="120"></dxi-column>
+    <dxi-column dataField="description" caption="Description"></dxi-column>
+    <dxi-column
+      caption="Inward"
+      [calculateCellValue]="inwardCellValue"
+      format="#,##0.00"
+      alignment="right"
+      [width]="140"
+    ></dxi-column>
+    <dxi-column
+      caption="Outward"
+      [calculateCellValue]="outwardCellValue"
+      format="#,##0.00"
+      alignment="right"
+      [width]="140"
+    ></dxi-column>
+  </dx-data-grid>
+</div>

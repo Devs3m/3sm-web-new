@@ -156,6 +156,13 @@
         </mat-select>
       </mat-form-field>
 
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label style="color:black">Payment Mode</mat-label>
+        <mat-select formControlName="paymentmode">
+          <mat-option *ngFor="let p of paymentModeOptions" [value]="p">{{ p === 'cash' ? 'Cash' : 'Credit' }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
       <!-- Order Items -->
       <div class="add-items-section full-width" formArrayName="items">
         <div class="add-items-header">

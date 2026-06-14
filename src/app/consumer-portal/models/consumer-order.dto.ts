@@ -19,6 +19,7 @@ export interface SaveOrderDto {
   createddate: string;
   updateddate: string;
   isactive: boolean;
+  paymentmode?: 'cash' | 'credit';
   items: OrderDetailDto[];
 }
 

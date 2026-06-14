@@ -1,0 +1,26 @@
+<div class="coa-container">
+  <h2>Chart of Accounts</h2>
+
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <dx-data-grid
+    [dataSource]="accounts"
+    [showBorders]="true"
+    [remoteOperations]="false"
+    [columnAutoWidth]="true"
+  >
+    <dxi-column dataField="accountcode" caption="Code" [width]="180"></dxi-column>
+    <dxi-column dataField="accountname" caption="Account Name"></dxi-column>
+    <dxi-column dataField="accounttype" caption="Type" [width]="120"></dxi-column>
+    <dxi-column
+      caption="Balance"
+      [calculateCellValue]="balanceCellValue"
+      [width]="160"
+      format="#,##0.00"
+      alignment="right"
+    ></dxi-column>
+    <dxi-column type="buttons" caption="Ledger" [width]="100">
+      <dxi-button text="View" [onClick]="onLedgerClick"></dxi-button>
+    </dxi-column>
+  </dx-data-grid>
+</div>
