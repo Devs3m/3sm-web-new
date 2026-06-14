@@ -196,11 +196,10 @@
 
 
       <div class="form-submit">
-        <button type="button" class="btn-cancel" (click)="restproductForm()">Cancel</button>
         <button mat-raised-button type="submit" class="btn-primary"
                 [disabled]="productForm.invalid || productForm.pending || hasPendingValidators()">
           <mat-icon>{{ isEditMode ? 'save' : 'add_circle' }}</mat-icon>
-          {{ isEditMode ? 'Update Product' : 'Add Product' }}
+          {{ isEditMode ? 'Update' : 'Submit' }}
         </button>
       </div>
     </form>

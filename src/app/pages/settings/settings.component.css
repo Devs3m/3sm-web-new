@@ -360,6 +360,7 @@
 
 .settings-save-footer {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 16px;
   padding: 20px 0 8px;
