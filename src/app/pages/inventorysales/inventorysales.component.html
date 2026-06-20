@@ -11,159 +11,110 @@
       </div>
 
       <form id="salesForm" [formGroup]="salesForm" (ngSubmit)="onSubmit()">
-        <!-- Customer Details Section: 3 columns -->
+        <!-- Page Title -->
+        <div class="page-title-bar">
+          <mat-icon>inventory_2</mat-icon>
+          <h2>Product Sales</h2>
+        </div>
+
+        <!-- Header: single row with all fields -->
         <div class="form-section-card customer-section-card">
 
-          <!-- Col 1: Title -->
-          <div class="col-title">
-            <img src="assets/logo.png" class="brand-logo" alt="Connectsite Logo">
-            <h2 class="invoice-title-text">GST Invoice</h2>
-          </div>
-
-          <!-- Divider -->
-          <div class="customer-divider"></div>
-
-          <!-- Col 2: Customer -->
-          <div class="col-customer">
-            <div class="section-title customer-section-title">
-              <div class="customer-title-left">
-                <mat-icon>person</mat-icon>
-                <h3>Customer Details</h3>
-              </div>
-              <button type="button" class="add-customer-btn" title="Add New Customer" aria-label="Add New Customer" (click)="openAddCustomerModal()">
-                <mat-icon>person_add</mat-icon>
-                New Customer
-              </button>
-            </div>
-
-            <!-- Searchable customer input: shown only when no customer selected -->
-            <div class="customer-select-wrapper" *ngIf="!salesForm.get('customername')?.value">
-              <mat-form-field appearance="outline" class="customer-select-field">
-                <mat-label>Search by name or phone <span class="f-key-hint">F1</span></mat-label>
-                <input matInput
-                       #customerSelect
-                       [formControl]="customerSearchCtrl"
-                       [matAutocomplete]="customerAuto"
-                       placeholder="Type name or phone to search...">
-                <mat-autocomplete #customerAuto="matAutocomplete"
-                                 [displayWith]="customerDisplayFn"
-                                 (optionSelected)="onCustomerSelect($event.option.value)">
-                  <mat-option *ngFor="let customer of filteredCustomers" [value]="customer">
-                    <span class="customer-option-name">{{ customer.customername }}</span>
-                    <span class="customer-option-phone" *ngIf="customer.customermobile || customer.customermobileno">
-                      ({{ customer.customermobile || customer.customermobileno }})
-                    </span>
-                  </mat-option>
-                </mat-autocomplete>
-                <mat-error *ngIf="salesForm.get('customerid')?.hasError('required') && salesForm.get('customerid')?.touched">
-                  Customer is required
-                </mat-error>
-              </mat-form-field>
-            </div>
-
-            <!-- Info card: shown after customer is selected -->
-            <div class="customer-info-panel" *ngIf="salesForm.get('customername')?.value">
-              <div class="customer-card-header">
-                <span class="customer-card-title">
-                  <mat-icon>account_circle</mat-icon>
-                  {{ salesForm.get('customername')?.value }}
+          <!-- Customer search field -->
+          <mat-form-field *ngIf="!salesForm.get('customername')?.value" appearance="outline" class="header-field header-customer-field" floatLabel="always">
+            <mat-label>Customer</mat-label>
+            <input matInput
+                   #customerSelect
+                   [formControl]="customerSearchCtrl"
+                   [matAutocomplete]="customerAuto"
+                   placeholder="Search...">
+            <mat-autocomplete #customerAuto="matAutocomplete"
+                             [displayWith]="customerDisplayFn"
+                             panelWidth="320px"
+                             (optionSelected)="onCustomerSelect($event.option.value)">
+              <mat-option *ngFor="let customer of filteredCustomers" [value]="customer">
+                <span class="customer-option-name">{{ customer.customername }}</span>
+                <span class="customer-option-phone" *ngIf="customer.customermobile || customer.customermobileno">
+                  &nbsp;({{ customer.customermobile || customer.customermobileno }})
                 </span>
-                <div class="customer-card-actions">
-                  <button type="button" mat-icon-button class="card-action-btn edit-btn-card" title="Change Customer" (click)="clearCustomer()">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button type="button" mat-icon-button class="card-action-btn close-btn-card" title="Remove Customer" (click)="clearCustomer()">
-                    <mat-icon>close</mat-icon>
-                  </button>
-                </div>
-              </div>
-              <div class="customer-info-row" *ngIf="salesForm.get('customermobile')?.value">
-                <mat-icon class="info-icon">phone</mat-icon>
-                <span class="info-value">{{ salesForm.get('customermobile')?.value }}</span>
-              </div>
-              <div class="customer-info-row" *ngIf="salesForm.get('customeremail')?.value">
-                <mat-icon class="info-icon">email</mat-icon>
-                <span class="info-value">{{ salesForm.get('customeremail')?.value }}</span>
-              </div>
-              <div class="customer-info-row" *ngIf="salesForm.get('customeraddress')?.value">
-                <mat-icon class="info-icon">location_on</mat-icon>
-                <span class="info-value">{{ salesForm.get('customeraddress')?.value }}<span *ngIf="salesForm.get('customercity')?.value">, {{ salesForm.get('customercity')?.value }}</span><span *ngIf="salesForm.get('customerstate')?.value">, {{ salesForm.get('customerstate')?.value }}</span><span *ngIf="salesForm.get('customerpincode')?.value"> - {{ salesForm.get('customerpincode')?.value }}</span></span>
-              </div>
-              <div class="customer-info-row" *ngIf="salesForm.get('customergstin')?.value">
-                <mat-icon class="info-icon">badge</mat-icon>
-                <span class="info-value">GSTIN: {{ salesForm.get('customergstin')?.value }}</span>
-              </div>
-            </div>
+              </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="salesForm.get('customerid')?.hasError('required') && salesForm.get('customerid')?.touched">
+              Customer is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Selected customer chip -->
+          <div class="header-customer-selected" *ngIf="salesForm.get('customername')?.value">
+            <span class="header-customer-name">{{ salesForm.get('customername')?.value }}</span>
+            <button type="button" mat-icon-button class="header-clear-customer-btn" title="Remove Customer" (click)="clearCustomer()">
+              <mat-icon>close</mat-icon>
+            </button>
           </div>
 
-          <!-- Divider -->
-          <div class="customer-divider"></div>
+          <!-- Add Customer button -->
+          <button type="button" class="add-customer-btn header-add-customer-btn" title="Add New Customer" aria-label="Add New Customer" (click)="openAddCustomerModal()">
+            <mat-icon>person_add</mat-icon>
+            New
+          </button>
 
-          <!-- Col 3: Invoice Info -->
-          <div class="col-invoice">
-            <div class="section-title invoice-info-header">
-              <span class="invoice-info-title-group">
-                <mat-icon>receipt</mat-icon>
-                <h3>Invoice Info</h3>
-              </span>
-              <button *ngIf="isFormOpen && isInventorySalesAddPage" type="button" class="back-btn" (click)="goBackToInventorySales()">
-                <mat-icon>arrow_back</mat-icon>
-                Back
-              </button>
-            </div>
-            <div class="invoice-meta-fields">
-              <mat-form-field appearance="outline" class="invoice-meta-field">
-                <mat-label>Invoice No.</mat-label>
-                <input matInput [value]="invoiceDisplayValue" readonly placeholder="Invoice #">
-                <input type="hidden" formControlName="invoiceno">
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="invoice-meta-field">
-                <mat-label>Date</mat-label>
-                <input matInput [matDatepicker]="picker" formControlName="saledate" placeholder="Select date">
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="invoice-meta-field">
-                <mat-label>Payment Method</mat-label>
-                <select matNativeControl formControlName="paymentmethod">
-                  <option value="" disabled>Select payment method</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Credit">Credit</option>
-                  <option value="Credit Card">Credit Card</option>
-                  <option value="Debit Card">Debit Card</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="UPI">UPI</option>
-                  <option value="Cheque">Cheque</option>
-                  <option value="Other">Other</option>
-                </select>
-                <mat-error *ngIf="salesForm.get('paymentmethod')?.hasError('required') && salesForm.get('paymentmethod')?.touched">
-                  Payment method is required
-                </mat-error>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="invoice-meta-field">
-                <mat-label>Payment Status</mat-label>
-                <select matNativeControl formControlName="paymentstatus">
-                  <option value="" disabled>Select payment status</option>
-                  <option value="Paid">Paid</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Partial">Partial</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
-                <mat-error *ngIf="salesForm.get('paymentstatus')?.hasError('required') && salesForm.get('paymentstatus')?.touched">
-                  Payment status is required
-                </mat-error>
-              </mat-form-field>
-            </div>
-          </div>
+          <!-- Invoice No. -->
+          <mat-form-field appearance="outline" class="header-field" floatLabel="always">
+            <mat-label>Invoice No.</mat-label>
+            <input matInput [value]="invoiceDisplayValue" readonly>
+            <input type="hidden" formControlName="invoiceno">
+          </mat-form-field>
+
+          <!-- Date -->
+          <mat-form-field appearance="outline" class="header-field" floatLabel="always">
+            <mat-label>Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="saledate" placeholder="dd/mm/yyyy">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+
+          <!-- Payment Method -->
+          <mat-form-field appearance="outline" class="header-field" floatLabel="always">
+            <mat-label>Payment Method</mat-label>
+            <mat-select formControlName="paymentmethod">
+              <mat-option value="Cash">Cash</mat-option>
+              <mat-option value="Credit">Credit</mat-option>
+              <mat-option value="Credit Card">Credit Card</mat-option>
+              <mat-option value="Debit Card">Debit Card</mat-option>
+              <mat-option value="Bank Transfer">Bank Transfer</mat-option>
+              <mat-option value="UPI">UPI</mat-option>
+              <mat-option value="Cheque">Cheque</mat-option>
+              <mat-option value="Other">Other</mat-option>
+            </mat-select>
+            <mat-error *ngIf="salesForm.get('paymentmethod')?.hasError('required') && salesForm.get('paymentmethod')?.touched">
+              Payment method is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Payment Status -->
+          <mat-form-field appearance="outline" class="header-field" floatLabel="always">
+            <mat-label>Payment Status</mat-label>
+            <mat-select formControlName="paymentstatus">
+              <mat-option value="Paid">Paid</mat-option>
+              <mat-option value="Pending">Pending</mat-option>
+              <mat-option value="Partial">Partial</mat-option>
+              <mat-option value="Cancelled">Cancelled</mat-option>
+            </mat-select>
+            <mat-error *ngIf="salesForm.get('paymentstatus')?.hasError('required') && salesForm.get('paymentstatus')?.touched">
+              Payment status is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Back button -->
+          <button *ngIf="isFormOpen && isInventorySalesAddPage" type="button" class="back-btn header-back-btn" (click)="goBackToInventorySales()">
+            <mat-icon>arrow_back</mat-icon>
+            Back
+          </button>
 
         </div>
 
-        <!-- Add New Item Section -->
+        <!-- Items Section -->
         <div class="form-section-card">
-          <div class="section-title">
-            <mat-icon>inventory_2</mat-icon>
-            <h3>Add New Item</h3>
-          </div>
 
           <!-- Items Table -->
           <div class="items-table-container">
